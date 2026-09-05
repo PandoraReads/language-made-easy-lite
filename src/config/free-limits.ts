@@ -9,3 +9,6 @@ export const FREE_FLASHCARD_LIMIT = 250;
 
 /** 免费版每种语言的本地 MDX 词典上限(路径式 + 移动端导入合计;高级版 5 部)。 */
 export const FREE_MDX_DICT_LIMIT = 1;
+
+/** 免费版每天可用的字幕下载次数(生成视频笔记/工坊下载字幕;高级版无限)。 */
+export const FREE_SUBTITLE_DAILY_LIMIT = 5;

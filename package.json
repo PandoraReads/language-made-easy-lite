@@ -1,6 +1,6 @@
 {
   "name": "language-made-easy",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "description": "Learn English through immersive reading, instant word lookup, FSRS flashcard review, video shadowing, and dictation (Obsidian plugin).",
   "main": "main.js",
   "scripts": {
@@ -15,7 +15,7 @@
     "mdx-parity": "node scripts/mdx-parity.mjs",
     "test:engine": "esbuild scripts/verify-mdx-engine.ts --bundle --platform=node --format=cjs --outfile=node_modules/.tmp/verify-mdx-engine.cjs --log-level=warning && node node_modules/.tmp/verify-mdx-engine.cjs",
     "test:registry": "esbuild scripts/verify-store-registry.ts --bundle --platform=node --format=cjs --outfile=node_modules/.tmp/verify-store-registry.cjs --log-level=warning && node node_modules/.tmp/verify-store-registry.cjs",
-    "version": "node version-bump.mjs && npm run build",
+    "version": "node version-bump.mjs && npm run build:release",
     "test:sync-merge": "node scripts/verify-sync-merge.mjs",
     "test:workshop-folder": "node scripts/verify-workshop-folder.mjs",
     "build:release": "node esbuild.config.mjs --release"

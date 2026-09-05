@@ -15,6 +15,7 @@ import { BUILTIN_PROMPTS } from '../models';
 import type { PromptTemplate } from '../models';
 import { TeachingOverlay } from '../ui/teaching-overlay';
 import { UpgradeModal } from '../ui/upgrade-modal';
+import { checkSubtitleDailyQuota, recordSubtitleDownload } from '../core/free-quota';
 import { t } from '../i18n';
 import { buildSubtitleNoteFrontmatter, parseSrt, type SubtitleNoteMetadata } from '../utils/srt';
 
@@ -3742,6 +3743,8 @@ export class ShadowingView extends ItemView {
     // ============================================================
 
     private async fetchAndInsertSubtitles(): Promise<void> {
+        // 社区免费版:字幕下载每日配额校验(生成视频笔记与工坊下载共用本入口)
+        if (!checkSubtitleDailyQuota(this.app)) return;
         const file = this.file || this.app.workspace.getActiveFile();
         if (!file || file.extension !== 'md') {
             new Notice(t('shadowing.noActiveNote'));
@@ -3813,6 +3816,8 @@ export class ShadowingView extends ItemView {
         const latestContent = await this.app.vault.read(file);
         // Insert into note
         await this.insertSubtitlesIntoNote(file, latestContent, formatted, videoLineIndex);
+        // 社区免费版:字幕成功写入笔记后消耗今日配额(失败/无字幕路径不计数)
+        recordSubtitleDownload();
         new Notice(t('shadowing.subtitlesDownloaded', { raw: subtitles.length, merged: merged.length }));
     }
 

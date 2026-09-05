@@ -80,7 +80,8 @@ The Basic Edition is free forever. The **Full Edition** unlocks every advanced m
 | Local MDX dictionaries | **1** | **5** |
 | FSRS flashcards (flip mode / stats / sync / pet companion) | **250-card cap** | **Unlimited** |
 | AI analysis: 6 built-in templates / scoring / flashcard auto-fill / teaching cards | ✅ | ✅ |
-| Shadowing workshop (shadowing / dictation / speed / subtitle download) | ✅ | ✅ |
+| Shadowing workshop (shadowing / dictation / speed control) | ✅ | ✅ |
+| Video-note subtitle download | **5 per day** | **Unlimited** |
 | SRT to note, vocabulary test, YouTube subscriptions & preview | ✅ | ✅ |
 | **More languages**: German / French / Spanish / Korean / Russian / Japanese | — | ✅ |
 | **9 extra UI themes** (beyond Classic Paper & Ink) | — | ✅ |

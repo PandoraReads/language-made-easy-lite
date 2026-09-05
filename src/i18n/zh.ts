@@ -1219,6 +1219,8 @@ export default {
 		flashcardFeature: '无限量闪卡',
 		mdxLocked: '已达免费版词典上限（{count}/{limit} 部），升级解锁 5 部',
 		mdxFeature: '5 部本地词典',
+		subtitleFull: '今日字幕下载次数已用完（{used}/{limit}），升级解锁无限次',
+		subtitleFeature: '无限次字幕下载',
 	},
 
 	// ── Welcome Modal(首次加载通知)────────────────────────
@@ -1231,6 +1233,7 @@ export default {
 		colFull: '高级版',
 		rowEnglish: '英语学习（查词 / 闪卡 / 跟读 / AI 解析）',
 		rowMdx: '本地 MDX 词典',
+		rowSubtitles: '视频笔记字幕下载（高级版无限次）',
 		rowFlashcards: 'FSRS 闪卡复习（高级版无限量）',
 		rowLanguages: '英语以外语种（德 / 法 / 西 / 韩 / 俄 / 日）',
 		rowThemes: '界面主题（经典纸墨之外 9 款）',

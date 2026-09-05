@@ -57,6 +57,7 @@ import { parseSrt, buildSubtitleNoteBody, segmentsToTimestampLines } from './uti
 import { db } from './core/Database';
 import { FlashcardManagerModal } from './ui/flashcard-manager-modal';
 import { UpgradeModal } from './ui/upgrade-modal';
+import { checkSubtitleDailyQuota } from './core/free-quota';
 import { WelcomeModal } from './ui/welcome-modal';
 import { SyncManager } from './core/SyncManager';
 import { randomUUID } from './mocks/crypto';
@@ -553,6 +554,8 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 	}
 
 	public async createVideoNoteFromUrl(url: string, options?: { openNote?: boolean }): Promise<TFile | null> {
+		// 社区免费版:字幕下载每日配额——满额时先弹引导,不创建空笔记
+		if (!checkSubtitleDailyQuota(this.app)) return null;
 		const normalizedUrl = url.trim().startsWith('http') ? url.trim() : `https://${url.trim()}`;
 		// 不再把跟读工坊切到前台:后台复用已有工坊叶做创建/下载,
 		// 没有工坊叶时在右侧边栏静默建一个(不聚焦),最终只弹出笔记自己的标签页。

@@ -9,7 +9,7 @@ import { App, Notice } from 'obsidian';
 import { db } from './Database';
 import { UpgradeModal } from '../ui/upgrade-modal';
 import { t } from '../i18n';
-import { FREE_FLASHCARD_LIMIT } from '../config/free-limits';
+import { FREE_FLASHCARD_LIMIT, FREE_SUBTITLE_DAILY_LIMIT } from '../config/free-limits';
 
 /**
  * 闪卡配额校验:还有余量返回 true;触顶时弹 Notice「已满 X/250,升级解锁无限量」
@@ -27,5 +27,50 @@ export async function assertFlashcardQuota(app: App, adding = 1): Promise<boolea
 		// 统计失败不阻断写入(宁可漏拦不可误伤已有流程)
 		console.warn('[LME] flashcard quota check failed:', e);
 		return true;
+	}
+}
+
+// ── 字幕下载每日配额 ─────────────────────────────────────
+// 计数存 localStorage 的按日键(每天自动轮换,无需重置逻辑);
+// 失败/无字幕不消耗,仅字幕真正写入笔记后由调用方 record。
+
+function subtitleQuotaKey(): string {
+	const now = new Date();
+	const pad = (n: number) => String(n).padStart(2, '0');
+	return `lme.subdl.${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+}
+
+function getSubtitleUsedToday(): number {
+	try {
+		return parseInt(window.localStorage.getItem(subtitleQuotaKey()) || '0', 10) || 0;
+	} catch {
+		return 0;
+	}
+}
+
+/**
+ * 字幕下载每日配额校验:还有余量返回 true;今日已用完时弹 Notice 并打开
+ * 付费引导弹窗,返回 false。调用方在发起下载前检查,false 则中止。
+ */
+export function checkSubtitleDailyQuota(app: App): boolean {
+	try {
+		const used = getSubtitleUsedToday();
+		if (used < FREE_SUBTITLE_DAILY_LIMIT) return true;
+		new Notice(t('freeLimit.subtitleFull', { used: String(used), limit: String(FREE_SUBTITLE_DAILY_LIMIT) }), 5000);
+		new UpgradeModal(app, t('freeLimit.subtitleFeature')).open();
+		return false;
+	} catch (e) {
+		console.warn('[LME] subtitle quota check failed:', e);
+		return true;
+	}
+}
+
+/** 字幕成功写入笔记后调用:今日计数 +1。 */
+export function recordSubtitleDownload(): void {
+	try {
+		const used = getSubtitleUsedToday();
+		window.localStorage.setItem(subtitleQuotaKey(), String(used + 1));
+	} catch {
+		// localStorage 不可用时跳过计数(不阻断功能)
 	}
 }
