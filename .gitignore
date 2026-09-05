@@ -1,0 +1,50 @@
+# Node modules
+node_modules/
+
+# Build outputs
+main.js
+*.js.map
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+ehthumbs.db
+
+# Graded-vocab raw vendor data (large one-time downloads)
+scripts/vendor/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Temporary files
+*.tmp
+*.temp
+
+# Obsidian workspace
+workspace.json
+.workspace
+
+# Claude Code
+.claude/
+
+# Environment variables (contains secrets — never commit)
+.env
+.env.local
+.env.*.local
+.env.server
+.env.server.save
+.env*.save
+
+# Local runtime data (license keys etc.)
+/data/
