@@ -99,7 +99,7 @@ Questions about usage or the Full Edition? Scan the QR code to add the author on
 
 **From the Obsidian Community directory (recommended)**: Settings → Community plugins → Browse → search "Language Made Easy" → Install → Enable.
 
-**Manual**: download `main.js`, `manifest.json`, and `styles.css` from the latest [release](https://github.com/PandoraReads/language-made-easy-community/releases) into `.obsidian/plugins/language-made-easy/`, then enable the plugin in Settings → Community plugins.
+**Manual**: download `main.js`, `manifest.json`, and `styles.css` from the latest [release](https://github.com/PandoraReads/language-made-easy-lite/releases) into `.obsidian/plugins/language-made-easy/`, then enable the plugin in Settings → Community plugins.
 
 ### Getting started
 1. **AI features (optional)** — add an LLM provider with your own API key in plugin settings (OpenAI / DeepSeek / Gemini / Kimi / GLM / Qwen / OpenRouter / custom OpenAI-compatible)

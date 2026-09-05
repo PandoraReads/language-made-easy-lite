@@ -99,7 +99,7 @@
 
 **社区插件市场（推荐）**：设置 → 第三方插件 → 浏览 → 搜索 `Language Made Easy` → 安装 → 启用。
 
-**手动安装**：从最新 [Release](https://github.com/PandoraReads/language-made-easy-community/releases) 下载 `main.js`、`manifest.json`、`styles.css`，放入 `.obsidian/plugins/language-made-easy/`，然后在第三方插件中启用。
+**手动安装**：从最新 [Release](https://github.com/PandoraReads/language-made-easy-lite/releases) 下载 `main.js`、`manifest.json`、`styles.css`，放入 `.obsidian/plugins/language-made-easy/`，然后在第三方插件中启用。
 
 ### 快速上手
 1. **AI 功能（可选）**：在插件设置中添加大模型并填入你自己的 API Key（OpenAI / DeepSeek / Gemini / Kimi / GLM / Qwen / OpenRouter / 自定义兼容接口）
