@@ -4,6 +4,8 @@
 
 **Language Made Easy (LME)** 把你的 Obsidian 仓库变成一个完整的沉浸式英语学习工作台：阅读时即时查词、FSRS 间隔重复闪卡、字幕同步的视频跟读、AI 智能解析——全部在同一个地方完成，所有学习成果都以普通笔记的形式留在你的仓库里。
 
+<p align="center"><img src="./assets/screenshots/navigation.png" width="640" alt="LME 导航页"></p>
+
 > ### 💡 免费增值说明
 > 本插件基础功能免费安装、免费使用，进阶功能需升级为高级版后全部解锁，一次性买断，终身享受后续迭代版本。插件内的升级引导弹窗会展示购买链接。基础版与高级版区别见下方[功能对照表](#-基础版免费-vs-高级版完整版)。
 >
@@ -21,12 +23,16 @@
 - **发音播放**：智能预加载，点击即播
 - **一键入本**：加入生词本，数据同步保存至 IndexedDB 与自动维护的 Markdown 文件
 
+<p align="center"><img src="./assets/screenshots/dictionary-lookup.png" width="640" alt="双击查词：侧边栏即时显示释义"></p>
+
 ### 🧠 FSRS 闪卡复习系统 —— 学过的都记住
 - 最先进的 **FSRS 调度算法**（`ts-fsrs`），为每张卡计算最优复习间隔
 - **翻卡模式**：丝滑翻卡动画 + 翻页音效
 - **成长看板**：全年学习热力图、复习统计、每日复习提醒
 - **闪卡管理器**：搜索 / 按语言与掌握度筛选 / 排序 / 行内编辑 / 批量删除
 - **学习宠物** 🐣：孵蛋、升级、随连击成长，复习也有陪伴感
+
+<p align="center"><img src="./assets/screenshots/batch-flashcards.png" width="640" alt="AI 批量闪卡生成（高级版功能）"></p>
 
 ### 🎬 视频跟读工坊 —— 用真实视频学英语
 - **YouTube、Bilibili、本地音视频**统一在一个工坊里
@@ -35,6 +41,8 @@
 - **跟读模式 / 听写模式**一键切换
 - **精准播放控制**：0.8x / 1.0x / 1.25x 倍速，-5s / -10s 快速回跳
 - **工坊目录页**：全部字幕笔记统一管理，支持排序 / 筛选 / 分组
+
+<p align="center"><img src="./assets/screenshots/dictation-mode.png" width="640" alt="视频跟读与听写模式"></p>
 
 ### ✨ AI 智能解析 —— 自备 API Key，数据归你
 - **6 套内置解析模板**：综合解析、词汇难度分析、文化背景解析、双语对照精读、泛读随堂测验、盲记填空挑战
@@ -45,9 +53,13 @@
 - **互动教学卡**：答题暂停播放、答对自动续播
 - 支持 **OpenAI、DeepSeek、Google Gemini、Kimi、智谱 GLM、通义 Qwen、OpenRouter 及任意 OpenAI 兼容接口**——你的 Key 你做主
 
+<p align="center"><img src="./assets/screenshots/ai-analysis.png" width="640" alt="AI 智能解析报告"></p>
+
 ### 📺 YouTube 频道订阅
 - 频道订阅 + **分类管理 + RSS 轮询 + 新视频通知**
 - 卡片/列表双视图浏览，**应用内预览播放**，不用离开 Obsidian
+
+<p align="center"><img src="./assets/screenshots/youtube-subscriptions.png" width="640" alt="YouTube 频道订阅"></p>
 
 ### 📝 更多功能
 - **SRT 转字幕笔记**（单个 + 批量）

@@ -4,6 +4,8 @@
 
 **Language Made Easy (LME)** turns your Obsidian vault into a complete immersive English-learning workspace: instant dictionary lookup while reading, FSRS spaced-repetition flashcards, video shadowing with synced subtitles, and AI-powered analysis — all in one place, all stored as plain notes in your vault.
 
+<p align="center"><img src="./assets/screenshots/navigation.png" width="640" alt="LME navigation panel"></p>
+
 > ### 💡 Freemium notice
 > The basic features of this plugin are free to install and use; advanced features are fully unlocked with the Full Edition — a one-time purchase, with lifetime access to all future updates. The in-plugin upgrade dialog shows the purchase links. See the [feature comparison](#-free-basic-vs-full-edition) below for the differences.
 >
@@ -21,12 +23,16 @@
 - **Pronunciation**: audio playback with smart preloading
 - **One-click add** to your vocabulary notebook (IndexedDB + auto-maintained markdown file)
 
+<p align="center"><img src="./assets/screenshots/dictionary-lookup.png" width="640" alt="Double-click lookup with sidebar definitions"></p>
+
 ### 🧠 FSRS Flashcards — remember what you learn
 - State-of-the-art **FSRS scheduler** (`ts-fsrs`) computes optimal review intervals for every card
 - **Flip study mode** with smooth card animations and page-turn sound
 - **Growth dashboard**: year heatmap, review statistics, daily review reminder
 - **Flashcard manager**: search, filter by language/mastery, sort, inline edit, bulk delete
 - **Learning companion pet** 🐣: a small companion that hatches, levels up, and grows with your streaks
+
+<p align="center"><img src="./assets/screenshots/batch-flashcards.png" width="640" alt="AI batch flashcard generation (Full Edition)"></p>
 
 ### 🎬 Video Shadowing Workshop — learn from real videos
 - **YouTube, Bilibili, and local video/audio** files in one workspace
@@ -35,6 +41,8 @@
 - **Shadowing mode & dictation mode** — one-click switch between repeat-after and write-what-you-hear
 - **Precise playback control**: 0.8x / 1.0x / 1.25x speed, quick -5s / -10s jumps
 - **Workshop catalog page**: all your subtitle notes organized with sorting, filtering, and grouping
+
+<p align="center"><img src="./assets/screenshots/dictation-mode.png" width="640" alt="Video shadowing and dictation mode"></p>
 
 ### ✨ AI-Powered Analysis — bring your own API key
 - **6 built-in analysis templates**: comprehensive analysis, vocabulary difficulty, cultural background, bilingual close-reading, reading quiz, and blind-fill challenge
@@ -45,9 +53,13 @@
 - **Interactive teaching cards** with quizzes that pause playback and auto-continue
 - Works with **OpenAI, DeepSeek, Google Gemini, Kimi, GLM, Qwen, OpenRouter, or any OpenAI-compatible endpoint** — your key, your choice, your data
 
+<p align="center"><img src="./assets/screenshots/ai-analysis.png" width="640" alt="AI-powered analysis report"></p>
+
 ### 📺 YouTube Channel Subscriptions
 - Subscribe to channels with **categories, RSS polling, and new-video notifications**
 - Browse your feed in card/list views and **preview videos in-app** without leaving Obsidian
+
+<p align="center"><img src="./assets/screenshots/youtube-subscriptions.png" width="640" alt="YouTube channel subscriptions"></p>
 
 ### 📝 And more
 - **SRT to note** conversion (single & batch) for your own subtitle files
