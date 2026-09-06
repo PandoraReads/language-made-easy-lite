@@ -103,7 +103,7 @@ The Basic Edition is free forever. The **Full Edition** unlocks every advanced m
 | FSRS flashcards (flip mode / stats / sync / pet companion) | **250-card cap** | **Unlimited** |
 | AI analysis (6 templates / scoring / flashcard auto-fill) | **Partial** | **Full** |
 | Shadowing workshop (shadowing / dictation / speed control) | ✅ | ✅ |
-| Video-note subtitle download | **3 per day** | **Unlimited** |
+| Video note generation (incl. subtitle download) | **10 per week** | **Unlimited** |
 | SRT to note, vocabulary test, YouTube subscriptions & preview | ✅ | ✅ |
 | **More languages**: German / French / Spanish / Korean / Russian / Japanese | — | ✅ |
 | **9 extra UI themes** (beyond Classic Paper & Ink) | — | ✅ |

@@ -1209,7 +1209,7 @@ export default {
 		flashcardFeature: '无限量闪卡',
 		mdxLocked: '已达免费版词典上限（{count}/{limit} 部），升级解锁 5 部',
 		mdxFeature: '5 部本地词典',
-		subtitleFull: '今日字幕下载次数已用完（{used}/{limit}），升级解锁无限次',
+		subtitleFull: '本周视频笔记生成额度已用完（{used}/{limit} 篇），升级解锁无限次',
 		subtitleFeature: '无限次字幕下载',
 	},
 
