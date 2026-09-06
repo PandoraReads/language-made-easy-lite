@@ -23,6 +23,8 @@ Paste a YouTube / Bilibili link and the plugin fetches the title, channel, and c
 
 **Unified note management**: all video notes live in the workshop catalog page with sorting, filtering, and grouping; click a card to start shadowing, Shift+click to preview the note.
 
+<p align="center"><img src="./assets/screenshots/workshop-catalog.png" width="640" alt="Workshop catalog page"></p>
+
 ### 📖 Dictionary Assistant — read anything, look up instantly
 - **Instant lookup**: `Ctrl/Cmd + double-click` any word (or select text) — definitions appear in the sidebar instantly
 - **Context capture**: the full sentence containing the word is automatically saved as its example sentence
@@ -50,7 +52,9 @@ Paste a YouTube / Bilibili link and the plugin fetches the title, channel, and c
 - **Precise playback control**: 0.8x / 1.0x / 1.25x speed, quick -5s / -10s jumps
 - **Workshop catalog page**: all your subtitle notes organized with sorting, filtering, and grouping
 
-<p align="center"><img src="./assets/screenshots/dictation-mode.png" width="640" alt="Video shadowing and dictation mode"></p>
+<p align="center"><img src="./assets/screenshots/shadowing-mode.png" width="315" alt="Shadowing mode"> <img src="./assets/screenshots/dictation-mode.png" width="315" alt="Dictation mode"></p>
+<p align="center"><em>Shadowing mode (left) and dictation mode (right)</em></p>
+<p align="center"><img src="./assets/screenshots/focus-mode.png" width="640" alt="Focus mode"></p>
 
 ### ✨ AI-Powered Analysis — bring your own API key
 - **6 built-in analysis templates**: comprehensive analysis, vocabulary difficulty, cultural background, bilingual close-reading, reading quiz, and blind-fill challenge

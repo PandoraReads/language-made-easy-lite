@@ -23,6 +23,8 @@
 
 **视频笔记统一管理**：所有笔记集中在跟读工坊目录页，支持排序 / 筛选 / 分组；点击卡片直接进入跟读练习，Shift + 点击预览笔记内容。
 
+<p align="center"><img src="./assets/screenshots/workshop-catalog.png" width="640" alt="跟读工坊目录页"></p>
+
 ### 📖 沉浸式查词助手 —— 读到哪，查到哪
 - **即时查词**：`Ctrl/Cmd + 双击`任意单词（或拖拽选中），释义侧边栏即时呈现
 - **上下文抓取**：自动记录包含该词的完整句子作为例句，告别碎片化记忆
@@ -50,7 +52,9 @@
 - **精准播放控制**：0.8x / 1.0x / 1.25x 倍速，-5s / -10s 快速回跳
 - **工坊目录页**：全部字幕笔记统一管理，支持排序 / 筛选 / 分组
 
-<p align="center"><img src="./assets/screenshots/dictation-mode.png" width="640" alt="视频跟读与听写模式"></p>
+<p align="center"><img src="./assets/screenshots/shadowing-mode.png" width="315" alt="跟读模式"> <img src="./assets/screenshots/dictation-mode.png" width="315" alt="听写模式"></p>
+<p align="center"><em>跟读模式（左）与听写模式（右）</em></p>
+<p align="center"><img src="./assets/screenshots/focus-mode.png" width="640" alt="专注模式"></p>
 
 ### ✨ AI 智能解析 —— 自备 API Key，数据归你
 - **6 套内置解析模板**：综合解析、词汇难度分析、文化背景解析、双语对照精读、泛读随堂测验、盲记填空挑战
