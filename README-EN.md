@@ -58,6 +58,7 @@
 ### 📺 YouTube Channel Subscriptions
 - Subscribe to channels with **categories, RSS polling, and new-video notifications**
 - Browse your feed in card/list views and **preview videos in-app** without leaving Obsidian
+- **One-click video-note generation with subtitles**, including multi-select batch download
 
 <p align="center"><img src="./assets/screenshots/youtube-subscriptions.png" width="640" alt="YouTube channel subscriptions"></p>
 
@@ -79,7 +80,7 @@ The Basic Edition is free forever. The **Full Edition** unlocks every advanced m
 | Dictionary lookup (double-click / context capture / pronunciation / notebook) | ✅ | ✅ |
 | Local MDX dictionaries | **1** | **5** |
 | FSRS flashcards (flip mode / stats / sync / pet companion) | **250-card cap** | **Unlimited** |
-| AI analysis: 6 built-in templates / scoring / flashcard auto-fill / teaching cards | ✅ | ✅ |
+| AI analysis (6 templates / scoring / flashcard auto-fill / teaching cards) | **Partial** | **Full** |
 | Shadowing workshop (shadowing / dictation / speed control) | ✅ | ✅ |
 | Video-note subtitle download | **5 per day** | **Unlimited** |
 | SRT to note, vocabulary test, YouTube subscriptions & preview | ✅ | ✅ |
