@@ -4,7 +4,6 @@
 
 **Language Made Easy (LME)** turns your Obsidian vault into a complete immersive English-learning workspace: instant dictionary lookup while reading, FSRS spaced-repetition flashcards, video shadowing with synced subtitles, and AI-powered analysis — all in one place, all stored as plain notes in your vault.
 
-<p align="center"><img src="./assets/screenshots/navigation.png" width="640" alt="LME navigation panel"></p>
 
 > ### 💡 Freemium notice
 > The basic features of this plugin are free to install and use; advanced features are fully unlocked with the Full Edition — a one-time purchase, with lifetime access to all future updates. The in-plugin upgrade dialog shows the purchase links. See the [feature comparison](#-free-basic-vs-full-edition) below for the differences.
@@ -20,6 +19,8 @@ Paste a YouTube / Bilibili link and the plugin fetches the title, channel, and c
 - **Navigation panel**: the "Generate video note" button next to the search box
 - **Shadowing workshop**: click the workshop icon in the left ribbon and parse a link in the input box
 - **YouTube subscriptions page**: generate notes for any video while browsing your feed, **with multi-select batch download** (Full Edition)
+
+<p align="center"><img src="./assets/screenshots/navigation.png" width="640" alt="Navigation panel — the generate-video-note button next to the search box"></p>
 
 **Unified note management**: all video notes live in the workshop catalog page with sorting, filtering, and grouping; click a card to start shadowing, Shift+click to preview the note.
 
