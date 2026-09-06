@@ -11855,6 +11855,9 @@ body[class*="lme-style-"] .lme-shadowing-view.is-focus-mode .lme-shadowing-item:
   .lme-catalog-header { margin-bottom: 12px; }
   .lme-catalog-header h2 { font-size: 18px; }
   .lme-catalog-sub { margin-bottom: 8px; }
+  /* 标题行空间不足时按钮换到下一行,不再挤占标题 */
+  .lme-catalog-titlebar { flex-wrap: wrap; row-gap: 8px; }
+  .lme-catalog-folderbtn { max-width: 100%; }
   .lme-catalog-toolbar { gap: 6px 8px; margin-bottom: 10px; }
   /* zone 允许内部换行:筛选区四个字段+清除按钮整体放不进一行,拆两行仍保持 zone 归组 */
   .lme-catalog-zone { padding-left: 8px; flex-wrap: wrap; row-gap: 6px; }
@@ -12494,3 +12497,142 @@ body.theme-light[class*="lme-style-"] .lme-shadowing-view.is-focus-mode,
 .lme-nav-float-btn.lme-nav-upgrade-btn {
     color: var(--lme-gold-accent);
 }
+
+/* ══ ported from main 3.8.0: workshop folder picker + tag multi-select ══ */
+/* 标题行:标题居左,右侧路径按钮(就地弹文件夹选择器改目录指向) */
+.lme-catalog-titlebar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin: 0 0 6px;
+}
+.lme-catalog-titlebar h2 { margin: 0; min-width: 0; }
+.lme-catalog-folderbtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+    max-width: 55%;
+    height: 30px;
+    padding: 0 10px;
+    font-size: 12px;
+    border-radius: 8px;
+    border: 1px solid var(--lme-glass-border, var(--background-modifier-border));
+    background: var(--lme-paper-aged, var(--background-secondary));
+    color: var(--lme-text-muted, var(--text-normal));
+    cursor: pointer;
+}
+.lme-catalog-folderbtn:hover { color: var(--lme-text-primary, var(--text-normal)); border-color: var(--lme-accent, var(--interactive-accent)); }
+.lme-catalog-folderbtn svg { width: 14px; height: 14px; flex-shrink: 0; }
+.lme-catalog-folderbtn-path {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* 空态按钮行:就地换文件夹为主,打开设置为辅 */
+.lme-catalog-empty-btns {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+/* ── 文件夹选择弹窗(FolderPickerModal):图标 + 路径一行 ── */
+.lme-folderpick-row { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.lme-folderpick-icon { display: inline-flex; flex-shrink: 0; color: var(--lme-text-muted, var(--text-muted)); }
+.lme-folderpick-icon svg { width: 14px; height: 14px; }
+.lme-folderpick-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lme-folderpick-label.is-current { color: var(--lme-accent, var(--interactive-accent)); font-weight: 600; }
+
+/* ── 跟读工坊·标签多选筛选(入口按钮 + 弹层) ─────────────────── */
+.lme-catalog-tagbtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    height: 30px;
+    padding: 0 8px;
+    font-size: 13px;
+    border-radius: 8px;
+    border: 1px solid var(--lme-glass-border, var(--background-modifier-border));
+    background: var(--lme-paper-aged, var(--background-secondary));
+    color: var(--lme-text-primary, var(--text-normal));
+    cursor: pointer;
+}
+.lme-catalog-tagbtn:hover { border-color: var(--lme-accent, var(--interactive-accent)); }
+.lme-catalog-tagbtn.is-active {
+    border-color: var(--lme-accent, var(--interactive-accent));
+    background: var(--lme-accent-a5, var(--background-modifier-hover));
+}
+.lme-catalog-tagbtn-caret { display: inline-flex; align-items: center; }
+.lme-catalog-tagbtn-caret svg.svg-icon { width: 12px; height: 12px; }
+.lme-catalog-tagbtn-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    border-radius: 8px;
+    font-size: 11px;
+    line-height: 1;
+    background: var(--lme-accent, var(--interactive-accent));
+    color: var(--text-on-accent);
+}
+
+/* 弹层本体 */
+.lme-tagfilter-modal { max-width: 460px; }
+.lme-tagfilter-search { margin-bottom: 10px; }
+.lme-tagfilter-search-input {
+    width: 100%;
+    padding: 6px 10px;
+    font-size: 13px;
+    border-radius: 8px;
+    border: 1px solid var(--lme-glass-border, var(--background-modifier-border));
+    background: var(--lme-paper-aged, var(--background-secondary));
+    color: var(--lme-text-primary, var(--text-normal));
+}
+.lme-tagfilter-search-input:focus {
+    outline: none;
+    border-color: var(--lme-accent, var(--interactive-accent));
+}
+.lme-tagfilter-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    max-height: 46vh;
+    overflow-y: auto;
+    margin-bottom: 12px;
+}
+.lme-tagfilter-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    font-size: 12px;
+    border-radius: 12px;
+    border: 1px solid var(--lme-glass-border, var(--background-modifier-border));
+    background: var(--lme-paper-aged, var(--background-secondary));
+    color: var(--lme-text-muted, var(--text-muted));
+    cursor: pointer;
+}
+.lme-tagfilter-chip:hover { border-color: var(--lme-accent, var(--interactive-accent)); }
+.lme-tagfilter-chip.is-active {
+    border-color: var(--lme-accent, var(--interactive-accent));
+    background: var(--lme-accent-a5, var(--background-modifier-hover));
+    color: var(--lme-text-primary, var(--text-normal));
+}
+.lme-tagfilter-chip-x { font-size: 13px; line-height: 1; }
+.lme-tagfilter-btns { display: flex; justify-content: flex-end; }
+.lme-tagfilter-clear-btn {
+    padding: 4px 14px;
+    font-size: 13px;
+    border-radius: 8px;
+    border: 1px solid var(--lme-glass-border, var(--background-modifier-border));
+    background: var(--lme-paper-aged, var(--background-secondary));
+    color: var(--lme-text-muted, var(--text-muted));
+    cursor: pointer;
+}
+.lme-tagfilter-clear-btn:hover { color: var(--text-error); border-color: var(--text-error); }

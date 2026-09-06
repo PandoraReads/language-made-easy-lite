@@ -16,6 +16,8 @@ import type LanguageMadeEasyPlugin from '../main-unified-full';
 import { t } from '../i18n';
 import { ConfirmModal } from '../ui/confirm-modal';
 import { NotePreviewModal } from '../ui/note-preview-modal';
+import { FolderPickerModal } from '../ui/folder-picker-modal';
+import { TagFilterModal } from '../ui/tag-filter-modal';
 import {
     parseWorkshopNote,
     formatDuration,
@@ -88,7 +90,8 @@ export class WorkshopCatalogView extends ItemView {
 
     // 工具栏控件引用(chip 点击 / 清除时反向同步 select 显示)
     private channelSelect: HTMLSelectElement | null = null;
-    private tagSelect: HTMLSelectElement | null = null;
+    private tagBtn: HTMLButtonElement | null = null;   // 多选弹层入口
+    private allTags: string[] = [];
     private filterPracticeSelect: HTMLSelectElement | null = null;
     private filterSourceSelect: HTMLSelectElement | null = null;
     private dirBtn: HTMLButtonElement | null = null;
@@ -128,7 +131,7 @@ export class WorkshopCatalogView extends ItemView {
         }
         this.parseCache.clear();
         this.channelSelect = this.filterPracticeSelect = this.filterSourceSelect = null;
-        this.tagSelect = null;
+        this.tagBtn = null;
         this.dirBtn = this.gridBtn = this.listBtn = this.clearBtn = null;
         this.chiprowEl = this.resultsEl = this.bodyEl = null;
         this.contentEl.empty();
@@ -156,9 +159,20 @@ export class WorkshopCatalogView extends ItemView {
             try { await this.plugin.ensureWorkshopSamples(folder); } catch (e) { console.warn('[LME] ensureWorkshopSamples failed', e); }
         }
 
-        // Header
+        // Header:标题行右侧挂路径按钮——就地弹出文件夹选择器改指向,
+        // 不必再去设置页翻(空态/跨端路径漂移时最高频的操作)
         const header = contentEl.createDiv('lme-catalog-header');
-        header.createEl('h2', { text: t('nav.workshopCatalogTitle') });
+        const titleRow = header.createDiv('lme-catalog-titlebar');
+        titleRow.createEl('h2', { text: t('nav.workshopCatalogTitle') });
+        const folderBtn = titleRow.createEl('button', { cls: 'lme-catalog-folderbtn' });
+        folderBtn.type = 'button';
+        folderBtn.setAttr('title', t('nav.workshopCatalogChangeFolder'));
+        folderBtn.setAttr('aria-label', t('nav.workshopCatalogChangeFolder'));
+        folderBtn.setAttr('aria-haspopup', 'dialog');
+        setIcon(folderBtn.createSpan('lme-catalog-folderbtn-icon'), 'folder-open');
+        folderBtn.createSpan({ cls: 'lme-catalog-folderbtn-path', text: folder });
+        setIcon(folderBtn.createSpan('lme-catalog-folderbtn-caret'), 'chevron-down');
+        folderBtn.onclick = () => this.pickFolder();
         header.createEl('p', { text: t('nav.workshopCatalogDesc', { folder }), cls: 'lme-catalog-sub' });
 
         // 计算所有笔记属性(memoized)
@@ -340,18 +354,25 @@ export class WorkshopCatalogView extends ItemView {
         );
         this.field(filterZone, t('nav.workshopCatalogFilterChannel')).appendChild(this.channelSelect);
 
-        // 标签筛选:单选下拉,与卡片上的标签 chip 共享 filterTags(选一个=只留该标签;chip 可再叠加多选)
+        // 标签筛选:多选弹层入口按钮(全库标签去重排序后交给 TagFilterModal;
+        // toggle 走与卡片 chip 相同的 toggleTag,选中的展示靠 chiprow)
         const tagSet = new Set<string>();
         for (const p of this.allProps) for (const tg of p.tags) tagSet.add(tg);
-        this.tagSelect = this.buildSelect(
-            [
-                { value: 'all', label: t('nav.workshopCatalogFilterAll') },
-                ...[...tagSet].sort().map((tg) => ({ value: tg, label: '#' + tg })),
-            ],
-            this.filterTags.length === 1 ? this.filterTags[0] : 'all',
-            (v) => { this.filterTags = v === 'all' ? [] : [v]; },
-        );
-        this.field(filterZone, t('nav.workshopCatalogFilterTags')).appendChild(this.tagSelect);
+        this.allTags = [...tagSet].sort();
+        const tagField = this.field(filterZone, t('nav.workshopCatalogFilterTags'));
+        this.tagBtn = tagField.createEl('button', { cls: 'lme-catalog-tagbtn' });
+        this.tagBtn.type = 'button';
+        this.tagBtn.createSpan({ cls: 'lme-catalog-tagbtn-label', text: t('nav.workshopCatalogFilterTags') });
+        setIcon(this.tagBtn.createSpan('lme-catalog-tagbtn-caret'), 'chevron-down');
+        this.tagBtn.onclick = () => {
+            new TagFilterModal(this.app, {
+                tags: this.allTags,
+                selected: [...this.filterTags],
+                onToggle: (tag) => this.toggleTag(tag),
+                onClear: () => { this.filterTags = []; this.renderList(); },
+            }).open();
+        };
+        this.applyTagBtnState();
 
         // 清除(仅当任一筛选激活时显示)
         this.clearBtn = filterZone.createEl('button', { cls: 'lme-catalog-clear' });
@@ -658,11 +679,8 @@ export class WorkshopCatalogView extends ItemView {
         this.toggleSelectActive(this.filterPracticeSelect, this.filterPractice !== 'all');
         this.toggleSelectActive(this.filterSourceSelect, this.filterSource !== 'all');
         this.toggleSelectActive(this.channelSelect, this.filterChannel !== 'all');
-        // 标签下拉与 chip 同步:仅当恰好选中一个标签时显示该值,多选时回显"全部"(实际状态看 chip 行)
-        if (this.tagSelect) {
-            this.tagSelect.value = this.filterTags.length === 1 ? this.filterTags[0] : 'all';
-            this.toggleSelectActive(this.tagSelect, this.filterTags.length > 0);
-        }
+        // 标签多选按钮:激活态 + 选中计数徽章(实际选中集合看 chiprow)
+        this.applyTagBtnState();
         const anyFilter = this.filterPractice !== 'all'
             || this.filterSource !== 'all'
             || this.filterChannel !== 'all'
@@ -675,6 +693,25 @@ export class WorkshopCatalogView extends ItemView {
         sel.classList.toggle('is-active', on);
     }
 
+    /** 标签多选入口按钮状态:激活高亮 + 选中计数徽章。 */
+    private applyTagBtnState(): void {
+        if (!this.tagBtn) return;
+        const n = this.filterTags.length;
+        this.tagBtn.classList.toggle('is-active', n > 0);
+        this.tagBtn.setAttr('aria-pressed', String(n > 0));
+        const label = this.tagBtn.querySelector('.lme-catalog-tagbtn-label');
+        if (label) label.textContent = t('nav.workshopCatalogFilterTags');
+        let count = this.tagBtn.querySelector('.lme-catalog-tagbtn-count');
+        if (n > 0) {
+            if (!count) {
+                count = this.tagBtn.createSpan({ cls: 'lme-catalog-tagbtn-count' });
+            }
+            count.textContent = String(n);
+        } else if (count) {
+            count.remove();
+        }
+    }
+
     private clearFilters(): void {
         this.filterPractice = 'all';
         this.filterSource = 'all';
@@ -683,7 +720,7 @@ export class WorkshopCatalogView extends ItemView {
         if (this.filterPracticeSelect) this.filterPracticeSelect.value = 'all';
         if (this.filterSourceSelect) this.filterSourceSelect.value = 'all';
         if (this.channelSelect) this.channelSelect.value = 'all';
-        if (this.tagSelect) this.tagSelect.value = 'all';
+        if (this.tagBtn) this.applyTagBtnState();
         this.renderList();
     }
 
@@ -882,8 +919,37 @@ export class WorkshopCatalogView extends ItemView {
                 ? t('nav.workshopCatalogFolderMissing', { folder })
                 : t('nav.workshopCatalogEmpty', { folder }),
         });
-        const btn = empty.createEl('button', { cls: 'mod-cta', text: t('nav.workshopCatalogOpenSettings') });
-        btn.onclick = () => this.openSettings();
+        // 就地换路径为主操作(尤以"文件夹不存在"场景),打开设置为辅
+        const btns = empty.createDiv('lme-catalog-empty-btns');
+        const pick = btns.createEl('button', { cls: 'mod-cta', text: t('nav.workshopCatalogChangeFolder') });
+        pick.type = 'button';
+        pick.onclick = () => this.pickFolder();
+        const open = btns.createEl('button', { text: t('nav.workshopCatalogOpenSettings') });
+        open.type = 'button';
+        open.onclick = () => this.openSettings();
+    }
+
+    /**
+     * 就地更换目录文件夹:弹文件夹选择器(置顶默认项 + vault 全部文件夹),
+     * 选中即经 plugin.setWorkshopFolder 写 sidecar(读-合-写防跨端互覆)并刷新本页。
+     */
+    private pickFolder(): void {
+        new FolderPickerModal(this.app, {
+            defaultFolder: DEFAULT_WORKSHOP_FOLDER,
+            currentRaw: this.plugin.getWorkshopFolderRaw(),
+            onPick: (folder) => {
+                void this.plugin.setWorkshopFolder(folder)
+                    .then(() => {
+                        new Notice(t('nav.workshopCatalogFolderChanged', {
+                            folder: folder || DEFAULT_WORKSHOP_FOLDER,
+                        }));
+                    })
+                    .catch((e) => {
+                        console.warn('[LME] setWorkshopFolder failed', e);
+                        new Notice(t('nav.workshopCatalogFolderChangeFailed'));
+                    });
+            },
+        }).open();
     }
 
     private openSettings(): void {
