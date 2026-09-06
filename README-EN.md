@@ -42,6 +42,8 @@ Paste a YouTube / Bilibili link and the plugin fetches the title, channel, and c
 - **Flashcard manager**: search, filter by language/mastery, sort, inline edit, bulk delete
 - **Learning companion pet** 🐣: a small companion that hatches, levels up, and grows with your streaks
 
+<p align="center"><img src="./assets/screenshots/flashcard-review.png" width="300" alt="Flashcard review"> <img src="./assets/screenshots/flashcard-review-2.png" width="300" alt="Flashcard review stats"></p>
+
 <p align="center"><img src="./assets/screenshots/batch-flashcards.png" width="640" alt="AI batch flashcard generation (Full Edition)"></p>
 
 ### 🎬 Video Shadowing Workshop — learn from real videos

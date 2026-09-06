@@ -42,6 +42,8 @@
 - **闪卡管理器**：搜索 / 按语言与掌握度筛选 / 排序 / 行内编辑 / 批量删除
 - **学习宠物** 🐣：孵蛋、升级、随连击成长，复习也有陪伴感
 
+<p align="center"><img src="./assets/screenshots/flashcard-review.png" width="300" alt="闪卡复习"> <img src="./assets/screenshots/flashcard-review-2.png" width="300" alt="闪卡复习统计"></p>
+
 <p align="center"><img src="./assets/screenshots/batch-flashcards.png" width="640" alt="AI 批量闪卡生成（高级版功能）"></p>
 
 ### 🎬 视频跟读工坊 —— 用真实视频学英语
