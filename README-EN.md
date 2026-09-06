@@ -58,7 +58,6 @@ Paste a YouTube / Bilibili link and the plugin fetches the title, channel, and c
 - **Report history & catalog**: browse, search, group, and re-open past reports
 - **AI pronunciation scoring** on shadowing recordings
 - **One-click flashcard auto-fill**: let AI complete missing fields on your cards
-- **Interactive teaching cards** with quizzes that pause playback and auto-continue
 - Works with **OpenAI, DeepSeek, Google Gemini, Kimi, GLM, Qwen, OpenRouter, or any OpenAI-compatible endpoint** — your key, your choice, your data
 
 <p align="center"><img src="./assets/screenshots/ai-analysis.png" width="640" alt="AI-powered analysis report"></p>
@@ -88,7 +87,7 @@ The Basic Edition is free forever. The **Full Edition** unlocks every advanced m
 | Dictionary lookup (double-click / context capture / pronunciation / notebook) | ✅ | ✅ |
 | Local MDX dictionaries | **1** | **5** |
 | FSRS flashcards (flip mode / stats / sync / pet companion) | **250-card cap** | **Unlimited** |
-| AI analysis (6 templates / scoring / flashcard auto-fill / teaching cards) | **Partial** | **Full** |
+| AI analysis (6 templates / scoring / flashcard auto-fill) | **Partial** | **Full** |
 | Shadowing workshop (shadowing / dictation / speed control) | ✅ | ✅ |
 | Video-note subtitle download | **5 per day** | **Unlimited** |
 | SRT to note, vocabulary test, YouTube subscriptions & preview | ✅ | ✅ |
@@ -100,6 +99,7 @@ The Basic Edition is free forever. The **Full Edition** unlocks every advanced m
 | **One-click graded vocabulary annotation** (Oxford CEFR 3000/5000 + CN exam wordlists) | — | ✅ |
 | **Flashcard data import / export** (JSON / TXT / MD / CSV) | — | ✅ |
 | **Save AI reports locally** (note / HTML / long image) | — | ✅ |
+| **Video teaching cards** (quiz popups during playback) | — | ✅ |
 | **Listening / typing flashcard review modes** | — | ✅ |
 | **Custom AI prompt templates** (add / edit your own) | — | ✅ |
 

@@ -266,8 +266,6 @@ export interface LMESettings {
     // Video
 	    defaultPlaybackRate: number;
 	    shadowingBufferMs: number;  // ms before next timestamp to pause (default 500)
-	    teachingAutoContinue: boolean; // 教学点答对/倒计时后自动续播
-	    teachingCountdownSec: number;  // 纯讲解卡倒计时秒数
 	    videoDownloadFolder: string; // Vault-relative folder for Bilibili video downloads
 	    videoNoteFolder: string; // Vault-relative folder for generated video notes
 	    workshopCatalogFolder: string;      // 旧字段:已迁插件 sidecar workshop-catalog.json(3.6.0,防 data.json 被另一端旧快照覆写);仅作启动迁移源+旧版本 build 兼容镜像,读值走 plugin.getWorkshopFolder()
@@ -393,8 +391,6 @@ export const DEFAULT_SETTINGS: LMESettings = {
     cleanupDelayDays: 7,
 	    defaultPlaybackRate: 1.0,
 	    shadowingBufferMs: 500,
-	    teachingAutoContinue: true,
-	    teachingCountdownSec: 8,
 	    videoDownloadFolder: '',
 	    videoNoteFolder: '',
 	    workshopCatalogFolder: '',

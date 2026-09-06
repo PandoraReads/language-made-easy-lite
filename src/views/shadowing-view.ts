@@ -13,7 +13,6 @@ import { ShadowingPractice } from './shadowing-practice';
 import type { PracticeCallbacks } from './shadowing-practice';
 import { BUILTIN_PROMPTS } from '../models';
 import type { PromptTemplate } from '../models';
-import { TeachingOverlay } from '../ui/teaching-overlay';
 import { UpgradeModal } from '../ui/upgrade-modal';
 import { checkSubtitleDailyQuota, recordSubtitleDownload } from '../core/free-quota';
 import { t } from '../i18n';
@@ -79,9 +78,8 @@ export class ShadowingView extends ItemView {
     // Track which block already triggered an auto-pause in dictation mode
     private dictationPausedBlock: TimestampBlock | null = null;
     // 教学点浮层：本轮(lineIndex)已弹集合 + 当前浮层实例 + 上次时间(回跳检测清空)
+    // 社区免费版:讲解卡浮层已随完整版移除,保留已弹集合用于播放到讲解点时去重弹付费引导
     private teachingShown: Set<number> = new Set();
-    private teachingOverlay: TeachingOverlay | null = null;
-    private teachingBlock: TimestampBlock | null = null;
     private lastTeachingUpdateTime: number = 0;
     private playerOuterEl: HTMLElement | null = null;
     private playerContainerEl: HTMLElement | null = null;
@@ -173,9 +171,6 @@ export class ShadowingView extends ItemView {
         this.unregisterDictationShortcut();
         this.unregisterPlaybackShortcuts();
         this.detachDictationPlaySync();
-        this.teachingOverlay?.close();
-        this.teachingOverlay = null;
-        this.teachingBlock = null;
         this.teachingShown.clear();
         this.unregisterBookmarkShortcut();
         if (this.ytTimer) clearInterval(this.ytTimer);
@@ -1935,9 +1930,6 @@ export class ShadowingView extends ItemView {
         this.playbackKeyHandler = (evt: KeyboardEvent) => {
             if (evt.defaultPrevented) return;
             if (evt.repeat) return;
-            // 教学浮层打开时不抢键
-            if (this.teachingOverlay?.isOpen) return;
-
             const target = evt.target as HTMLElement | null;
             // 放行输入框与原生媒体控件:打字/移动光标正常,video/audio 聚焦时方向键保留原生 ±5s seek
             if (target?.closest('textarea, input, [contenteditable="true"], video, audio')) return;
@@ -1976,7 +1968,6 @@ export class ShadowingView extends ItemView {
         this.unregisterDictationShortcut();
         this.dictationKeyHandler = (evt: KeyboardEvent) => {
             if (this.learningMode !== 'dictation' || evt.key !== ' ' || evt.defaultPrevented || evt.repeat) return;
-            if (this.teachingOverlay?.isOpen) return;
 
             const target = evt.target as HTMLElement | null;
             if (target?.closest('textarea, input, [contenteditable="true"]')) return;
@@ -2766,14 +2757,16 @@ export class ShadowingView extends ItemView {
                 return;
             }
 
-            // 教学点:本块有未弹教学内容 → 播到块末再暂停弹卡
-            // (须早于影子/听写的末尾暂停,并抑制它们,否则会被提前打断)
+            // 社区免费版:视频讲解卡为完整版功能——播到讲解点暂停并弹一次付费引导
+            // (每块每轮只弹一次;须早于影子/听写的末尾暂停并抑制它们)
             const hasPendingTeaching = !this.loopSingleBlock
                 && !!this.activeBlock.teaching
-                && !this.teachingShown.has(this.activeBlock.lineIndex)
-                && !this.teachingOverlay?.isOpen;
+                && !this.teachingShown.has(this.activeBlock.lineIndex);
             if (hasPendingTeaching && currentTime >= this.activeBlock.endSec) {
-                this.maybeShowTeaching(this.activeBlock);
+                this.teachingShown.add(this.activeBlock.lineIndex);
+                this.pauseMedia();
+                if (this.ytPlayer && this.ytPlayer.pauseVideo) this.ytPlayer.pauseVideo();
+                new UpgradeModal(this.app, t('shadowing.teachingCard')).open();
                 return;
             }
 
@@ -2831,62 +2824,13 @@ export class ShadowingView extends ItemView {
         return null;
     }
 
-    // 教学点：进入带教学标记的块,播到块末自动暂停并弹浮层(本轮每块只弹一次)
-    private maybeShowTeaching(block: TimestampBlock): void {
-        if (!block.teaching) return;
-        if (this.teachingShown.has(block.lineIndex)) return;
-        if (this.teachingOverlay?.isOpen) return;
-        // 仅在正在播放时触发(YT 轮询即使暂停也会回调,需排除暂停态)
-        const ytPlaying = !!(this.ytPlayer && this.ytPlayer.getPlayerState && this.ytPlayer.getPlayerState() === 1);
-        if (this.isMediaPaused() && !ytPlaying) return;
-
-        this.teachingShown.add(block.lineIndex);
-        this.teachingBlock = block;
-        this.pauseMedia();
-        if (this.ytPlayer && this.ytPlayer.pauseVideo) this.ytPlayer.pauseVideo();
-
-        const host = this.contentEl.querySelector('.lme-player-container') as HTMLElement | null
-            ?? this.playerOuterEl;
-        if (!host) return;
-        this.teachingOverlay = new TeachingOverlay({
-            host,
-            sourcePath: this.file?.path ?? '',
-            autoContinue: this.plugin.settings.teachingAutoContinue,
-            countdownSec: this.plugin.settings.teachingCountdownSec,
-            onContinue: () => this.closeTeachingAndResume(),
-            onReplay: () => this.replayTeachingBlock(),
-        });
-        void this.teachingOverlay.show(block.teaching);
-    }
-
-    private closeTeachingAndResume(): void {
-        this.teachingOverlay?.close();
-        this.teachingOverlay = null;
-        this.teachingBlock = null;
-        this.playMedia();
-        if (this.ytPlayer && this.ytPlayer.playVideo) this.ytPlayer.playVideo();
-    }
-
-    // 重放当前教学块:回到块首播放,重放结束后再次弹题
-    private replayTeachingBlock(): void {
-        const block = this.teachingBlock ?? this.activeBlock;
-        if (!block) return;
-        const startSec = block.startSec;
-        this.teachingOverlay?.close();
-        this.teachingOverlay = null;
-        this.teachingBlock = null;
-        this.teachingShown.delete(block.lineIndex);
-        // seekTo 内部已 play；用捕获的块首，避免 YT 轮询导致 activeBlock 漂移到下一句
-        void this.seekTo(startSec);
-    }
+    // 社区免费版:maybeShowTeaching/closeTeachingAndResume/replayTeachingBlock
+    // 三个讲解卡浮层方法已随完整版移除;触发点改为上方付费引导。
 
     private async parseActiveNoteTimestamps(): Promise<void> {
         console.log('[EME] parseActiveNoteTimestamps() started');
 
         // 切换/重载笔记时清空教学点状态
-        this.teachingOverlay?.close();
-        this.teachingOverlay = null;
-        this.teachingBlock = null;
         this.teachingShown.clear();
 
         // Use standard detection logic consistent with autoDetectVideo

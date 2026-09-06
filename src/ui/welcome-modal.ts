@@ -24,6 +24,7 @@ const COMPARE_ROWS: Array<{ labelKey: string; basicFree: boolean; basicLabel?: s
 	{ labelKey: 'welcome.rowGradedVocab', basicFree: false },
 	{ labelKey: 'welcome.rowImportExport', basicFree: false },
 	{ labelKey: 'welcome.rowAiExport', basicFree: false },
+	{ labelKey: 'welcome.rowTeaching', basicFree: false },
 	{ labelKey: 'welcome.rowStudyModes', basicFree: false },
 	{ labelKey: 'welcome.rowPrompts', basicFree: false },
 ];
