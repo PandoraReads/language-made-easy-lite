@@ -15,6 +15,14 @@
 
 ## ✨ All Feature Modules
 
+### 🎬 One-Click Video Notes — from link to shadowing-ready note in one step
+Paste a YouTube / Bilibili link and the plugin fetches the title, channel, and cover, creates a structured subtitle note, and downloads the subtitles — ready for shadowing anytime. Three entry points:
+- **Navigation panel**: the "Generate video note" button next to the search box
+- **Shadowing workshop**: click the workshop icon in the left ribbon and parse a link in the input box
+- **YouTube subscriptions page**: generate notes for any video while browsing your feed, **with multi-select batch download** (Full Edition)
+
+**Unified note management**: all video notes live in the workshop catalog page with sorting, filtering, and grouping; click a card to start shadowing, Shift+click to preview the note.
+
 ### 📖 Dictionary Assistant — read anything, look up instantly
 - **Instant lookup**: `Ctrl/Cmd + double-click` any word (or select text) — definitions appear in the sidebar instantly
 - **Context capture**: the full sentence containing the word is automatically saved as its example sentence
