@@ -4,7 +4,7 @@
 
 **Language Made Easy (LME)** turns your Obsidian vault into a complete immersive English-learning workspace: instant dictionary lookup while reading, FSRS spaced-repetition flashcards, video shadowing with synced subtitles, and AI-powered analysis — all in one place, all stored as plain notes in your vault.
 
-<p align="center"><img src="./assets/screenshots/navigation-2.png" width="640" alt="LME navigation panel"></p>
+<p align="center"><img src="./assets/screenshots/hero-overview.png" width="640" alt="One-stop language learning solution"></p>
 
 
 > ### 💡 Freemium notice
@@ -22,7 +22,7 @@ Paste a YouTube / Bilibili link and the plugin fetches the title, channel, and c
 - **Shadowing workshop**: click the workshop icon in the left ribbon and parse a link in the input box
 - **YouTube subscriptions page**: generate notes for any video while browsing your feed, **with multi-select batch download** (Full Edition)
 
-<p align="center"><img src="./assets/screenshots/navigation.png" width="640" alt="Navigation panel — the generate-video-note button next to the search box"></p>
+<p align="center"><img src="./assets/screenshots/video-note.png" width="640" alt="Generated video note"></p>
 
 <p align="center"><img src="./assets/screenshots/nav-video-note.gif" width="640" alt="Enter a video link on the navigation panel to generate a video note in one click"></p>
 
@@ -49,7 +49,8 @@ Paste a YouTube / Bilibili link and the plugin fetches the title, channel, and c
 
 <p align="center"><img src="./assets/screenshots/flashcard-review.png" width="300" alt="Flashcard review"> <img src="./assets/screenshots/flashcard-review-2.png" width="300" alt="Flashcard review stats"></p>
 
-<p align="center"><img src="./assets/screenshots/batch-flashcards.png" width="640" alt="AI batch flashcard generation (Full Edition)"></p>
+<p align="center"><img src="./assets/screenshots/batch-generate.png" width="640" alt="AI batch flashcard generation (Full Edition)"></p>
+<p align="center"><img src="./assets/screenshots/one-click-cards.png" width="640" alt="One-click card creation process"></p>
 
 ### 🎬 Video Shadowing Workshop — learn from real videos
 - **YouTube, Bilibili, and local video/audio** files in one workspace
@@ -63,6 +64,7 @@ Paste a YouTube / Bilibili link and the plugin fetches the title, channel, and c
 <p align="center"><em>Shadowing mode (left) and dictation mode (right)</em></p>
 
 <p align="center"><img src="./assets/screenshots/listening-mode-2.png" width="640" alt="Listening mode"></p>
+<p align="center"><img src="./assets/screenshots/record-pronunciation.png" width="640" alt="Record and get AI pronunciation scoring"></p>
 <p align="center"><img src="./assets/screenshots/focus-mode.png" width="640" alt="Focus mode"></p>
 <p align="center"><em>Focus mode</em></p>
 
@@ -74,7 +76,7 @@ Paste a YouTube / Bilibili link and the plugin fetches the title, channel, and c
 - **One-click flashcard auto-fill**: let AI complete missing fields on your cards
 - Works with **OpenAI, DeepSeek, Google Gemini, Kimi, GLM, Qwen, OpenRouter, or any OpenAI-compatible endpoint** — your key, your choice, your data
 
-<p align="center"><img src="./assets/screenshots/ai-analysis.png" width="640" alt="AI-powered analysis report"></p>
+<p align="center"><img src="./assets/screenshots/ai-analysis-2.png" width="640" alt="AI-powered analysis report"></p>
 
 ### 📺 YouTube Channel Subscriptions
 - Subscribe to channels with **categories, RSS polling, and new-video notifications**

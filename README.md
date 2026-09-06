@@ -4,7 +4,7 @@
 
 **Language Made Easy (LME)** 把你的 Obsidian 仓库变成一个完整的沉浸式英语学习工作台：阅读时即时查词、FSRS 间隔重复闪卡、字幕同步的视频跟读、AI 智能解析——全部在同一个地方完成，所有学习成果都以普通笔记的形式留在你的仓库里。
 
-<p align="center"><img src="./assets/screenshots/navigation-2.png" width="640" alt="LME 导航页"></p>
+<p align="center"><img src="./assets/screenshots/hero-overview.png" width="640" alt="一站式外语学习解决方案"></p>
 
 
 > ### 💡 免费增值说明
@@ -22,7 +22,7 @@
 - **跟读工坊**：点击左侧 Ribbon 的工坊图标进入，在链接输入框中快速解析
 - **YouTube 频道订阅页**：浏览订阅时对任意视频一键生成，**支持多选批量下载**（高级版功能）
 
-<p align="center"><img src="./assets/screenshots/navigation.png" width="640" alt="导航页——搜索框旁的「生成视频笔记」按钮"></p>
+<p align="center"><img src="./assets/screenshots/video-note.png" width="640" alt="生成的视频笔记"></p>
 
 <p align="center"><img src="./assets/screenshots/nav-video-note.gif" width="640" alt="导航页输入视频链接，一键生成视频笔记"></p>
 
@@ -49,7 +49,8 @@
 
 <p align="center"><img src="./assets/screenshots/flashcard-review.png" width="300" alt="闪卡复习"> <img src="./assets/screenshots/flashcard-review-2.png" width="300" alt="闪卡复习统计"></p>
 
-<p align="center"><img src="./assets/screenshots/batch-flashcards.png" width="640" alt="AI 批量闪卡生成（高级版功能）"></p>
+<p align="center"><img src="./assets/screenshots/batch-generate.png" width="640" alt="AI 批量生成闪卡（高级版功能）"></p>
+<p align="center"><img src="./assets/screenshots/one-click-cards.png" width="640" alt="一键制卡过程"></p>
 
 ### 🎬 视频跟读工坊 —— 用真实视频学英语
 - **YouTube、Bilibili、本地音视频**统一在一个工坊里
@@ -63,6 +64,7 @@
 <p align="center"><em>跟读模式（左）与听写模式（右）</em></p>
 
 <p align="center"><img src="./assets/screenshots/listening-mode-2.png" width="640" alt="听力模式"></p>
+<p align="center"><img src="./assets/screenshots/record-pronunciation.png" width="640" alt="录音跟读，AI 发音评分"></p>
 <p align="center"><img src="./assets/screenshots/focus-mode.png" width="640" alt="专注模式"></p>
 <p align="center"><em>专注模式</em></p>
 
@@ -74,7 +76,7 @@
 - **一键补齐闪卡**：让 AI 补全卡片缺失字段
 - 支持 **OpenAI、DeepSeek、Google Gemini、Kimi、智谱 GLM、通义 Qwen、OpenRouter 及任意 OpenAI 兼容接口**——你的 Key 你做主
 
-<p align="center"><img src="./assets/screenshots/ai-analysis.png" width="640" alt="AI 智能解析报告"></p>
+<p align="center"><img src="./assets/screenshots/ai-analysis-2.png" width="640" alt="AI 智能解析报告"></p>
 
 ### 📺 YouTube 频道订阅
 - 频道订阅 + **分类管理 + RSS 轮询 + 新视频通知**
