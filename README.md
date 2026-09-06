@@ -49,8 +49,8 @@
 
 <p align="center"><img src="./assets/screenshots/flashcard-review.png" width="300" alt="闪卡复习"> <img src="./assets/screenshots/flashcard-review-2.png" width="300" alt="闪卡复习统计"></p>
 
-<p align="center"><img src="./assets/screenshots/batch-generate.png" width="640" alt="AI 批量生成闪卡（高级版功能）"></p>
 <p align="center"><img src="./assets/screenshots/one-click-cards.png" width="640" alt="一键制卡过程"></p>
+<p align="center"><img src="./assets/screenshots/batch-generate.png" width="640" alt="AI 批量生成闪卡（高级版功能）"></p>
 
 ### 🎬 视频跟读工坊 —— 用真实视频学英语
 - **YouTube、Bilibili、本地音视频**统一在一个工坊里
