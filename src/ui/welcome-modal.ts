@@ -14,7 +14,7 @@ import wechatQrUrl from '../../assets/wechat-qr.jpg';
 const COMPARE_ROWS: Array<{ labelKey: string; basicFree: boolean; basicLabel?: string }> = [
 	{ labelKey: 'welcome.rowEnglish', basicFree: true },
 	{ labelKey: 'welcome.rowMdx', basicFree: true, basicLabel: '1 部' },
-	{ labelKey: 'welcome.rowSubtitles', basicFree: true, basicLabel: '5 次/天' },
+	{ labelKey: 'welcome.rowSubtitles', basicFree: true, basicLabel: '2 次/天' },
 	{ labelKey: 'welcome.rowFlashcards', basicFree: true, basicLabel: '250 张' },
 	{ labelKey: 'welcome.rowLanguages', basicFree: false },
 	{ labelKey: 'welcome.rowThemes', basicFree: false },

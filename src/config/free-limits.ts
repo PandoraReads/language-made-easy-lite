@@ -11,4 +11,4 @@ export const FREE_FLASHCARD_LIMIT = 250;
 export const FREE_MDX_DICT_LIMIT = 1;
 
 /** 免费版每天可用的字幕下载次数(生成视频笔记/工坊下载字幕;高级版无限)。 */
-export const FREE_SUBTITLE_DAILY_LIMIT = 5;
+export const FREE_SUBTITLE_DAILY_LIMIT = 2;
