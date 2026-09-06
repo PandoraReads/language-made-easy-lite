@@ -9,7 +9,7 @@
 > ### 💡 Freemium notice
 > The basic features of this plugin are free to install and use; advanced features are fully unlocked with the Full Edition — a one-time purchase, with lifetime access to all future updates. The in-plugin upgrade dialog shows the purchase links. See the [feature comparison](#-free-basic-vs-full-edition) below for the differences.
 >
-> The Basic Edition is for trying out and light learning; for heavy long-term use, batch processing, or multiple languages, upgrade to the Full Edition.
+> **The Basic Edition is for trying out and light learning; for heavy long-term use, batch processing, or multiple languages, upgrade to the Full Edition.**
 
 ---
 
