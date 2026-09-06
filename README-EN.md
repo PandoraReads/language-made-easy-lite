@@ -57,6 +57,8 @@ Paste a YouTube / Bilibili link and the plugin fetches the title, channel, and c
 
 <p align="center"><img src="./assets/screenshots/shadowing-mode.png" width="315" alt="Shadowing mode"> <img src="./assets/screenshots/dictation-mode.png" width="315" alt="Dictation mode"></p>
 <p align="center"><em>Shadowing mode (left) and dictation mode (right)</em></p>
+
+<p align="center"><img src="./assets/screenshots/listening-mode-2.png" width="640" alt="Listening mode"></p>
 <p align="center"><img src="./assets/screenshots/focus-mode.png" width="640" alt="Focus mode"></p>
 <p align="center"><em>Focus mode</em></p>
 
