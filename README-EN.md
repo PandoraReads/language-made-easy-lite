@@ -22,6 +22,8 @@ Paste a YouTube / Bilibili link and the plugin fetches the title, channel, and c
 
 <p align="center"><img src="./assets/screenshots/navigation.png" width="640" alt="Navigation panel — the generate-video-note button next to the search box"></p>
 
+<p align="center"><img src="./assets/screenshots/nav-video-note.gif" width="640" alt="Enter a video link on the navigation panel to generate a video note in one click"></p>
+
 **Unified note management**: all video notes live in the workshop catalog page with sorting, filtering, and grouping; click a card to start shadowing, Shift+click to preview the note.
 
 <p align="center"><img src="./assets/screenshots/workshop-catalog.png" width="640" alt="Workshop catalog page"></p>

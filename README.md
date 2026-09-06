@@ -22,6 +22,8 @@
 
 <p align="center"><img src="./assets/screenshots/navigation.png" width="640" alt="导航页——搜索框旁的「生成视频笔记」按钮"></p>
 
+<p align="center"><img src="./assets/screenshots/nav-video-note.gif" width="640" alt="导航页输入视频链接，一键生成视频笔记"></p>
+
 **视频笔记统一管理**：所有笔记集中在跟读工坊目录页，支持排序 / 筛选 / 分组；点击卡片直接进入跟读练习，Shift + 点击预览笔记内容。
 
 <p align="center"><img src="./assets/screenshots/workshop-catalog.png" width="640" alt="跟读工坊目录页"></p>
