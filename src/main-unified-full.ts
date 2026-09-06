@@ -25,8 +25,6 @@ import { LMESettingTab, DEFAULT_SETTINGS } from './Settings';
 import type { LMESettings, PromptTemplate, MdxDictionary } from './models';
 import { BUILTIN_PROMPTS, BUILTIN_PROVIDERS } from './models';
 import { AIService } from './core/AIService';
-import { mobileDict, reconcileStoreDicts } from './core/dictStore/MobileDictService';
-import { migrateStoreEntriesFromSettings } from './core/dictStore/storeRegistry';
 import { DictView, DICT_VIEW_TYPE } from './views/dict-view';
 import { FlashcardView, FLASHCARD_VIEW_TYPE, AddFlashcardModal } from './views/flashcard-view';
 import { ShadowingView, SHADOWING_VIEW_TYPE, PromptSelectModal, FileSelectModal } from './views/shadowing-view';
@@ -59,7 +57,6 @@ import { FlashcardManagerModal } from './ui/flashcard-manager-modal';
 import { UpgradeModal } from './ui/upgrade-modal';
 import { checkSubtitleWeeklyQuota } from './core/free-quota';
 import { WelcomeModal } from './ui/welcome-modal';
-import { SyncManager } from './core/SyncManager';
 import { randomUUID } from './mocks/crypto';
 import { initI18n, t } from './i18n';
 
@@ -72,12 +69,6 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 	private reminderTimer: number | null = null;
 	private featuresInitialized = false;
 	private lastKnownObsidianDarkMode = false;
-		/**
-		 * Per-physical-device id used ONLY to name this device's own sync file. Stored
-		 * in localStorage (NOT data.json) so it does not travel with the vault — every
-		 * device sharing one vault must get a different id, or they would all write the same {id}.json and skip each other's files.
-		 */
-	syncDeviceId: string = '';
 	/**
 	 * 工坊目录文件夹的内存态:主存储在插件目录 sidecar workshop-catalog.json
 	 * (data.json 的 workshopCatalogFolder 字段会被同 vault 另一端的旧快照覆写,
@@ -97,12 +88,6 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 		initI18n('zh-CN');
 		this.applyUiTheme();
 		this.watchObsidianThemeChanges();
-
-		// Sync device id — per physical machine, kept in localStorage so it is
-		// NOT synced with the vault; every device sharing one vault must get a
-		// different id, or they would all write the same {id}.json and treat
-		// each other's data as "own" → silently skipped.
-		this.syncDeviceId = this.getOrCreateSyncDeviceId();
 
 		// 1. Register Views
 		this.registerView(DICT_VIEW_TYPE, (leaf) => new DictView(leaf, this));
@@ -134,24 +119,6 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 			// Fall back below.
 		}
 		return this.app.vault.getName();
-	}
-
-	/**
-	 * Per-physical-device id for sync, persisted in localStorage (never in data.json,
-	 * which is synced with the vault and would collide across devices). Falls back to
-	 * a fresh random id if localStorage is unavailable.
-	 */
-	private getOrCreateSyncDeviceId(): string {
-		const KEY = 'lme.syncDeviceId';
-		try {
-			const existing = window.localStorage.getItem(KEY);
-			if (existing) return existing;
-			const id = randomUUID();
-			window.localStorage.setItem(KEY, id);
-			return id;
-		} catch {
-			return randomUUID(); // graceful degradation (per-session id)
-		}
 	}
 
 	/**
@@ -242,21 +209,13 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 				new UpgradeModal(this.app, t('commands.bakeGradedVocab')).open();
 			},
 		});
+		// 社区免费版:闪卡多端同步为完整版功能,弹付费引导(命令保留)
 		this.addCommand({
 			id: 'sync-flashcards',
 			name: t('commands.syncFlashcard'),
-			callback: async () => {
-				try {
-					if (!this.settings.flashcardSyncEnabled) {
-						new Notice(t('sync.pathNotSet'));
-						return;
-					}
-					const result = await SyncManager.runSync(this as any);
-					new Notice(t('sync.syncDone', { added: result.added, updated: result.updated, logs: result.totalLogs }));
-				} catch (error) {
-					new Notice(t('sync.syncFailed', { error: error instanceof Error ? error.message : t('errors.unknown') }));
-				}
-			},
+			callback: () => {
+				new UpgradeModal(this.app, t('commands.syncFlashcard')).open();
+			}
 		});
 
 		// AI Analyze Current Document Command
@@ -487,23 +446,6 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 			this.app.workspace.onLayoutReady(() => this.runAutoCleanup());
 		}
 
-		// Bidirectional flashcard sync: silently import peer files on load,
-		// then keep every device in sync on a periodic timer (export own +
-		// import peers). Runs on all platforms; merge is last-write-wins.
-		if (this.settings.flashcardSyncEnabled) {
-			this.app.workspace.onLayoutReady(async () => {
-				try {
-					await SyncManager.importAllPeers(this);
-				} catch (e) {
-					console.error('[LME] Sync import on load failed:', e);
-				}
-			});
-			this.registerInterval(
-				window.setInterval(() => {
-					SyncManager.runSync(this).catch((e: unknown) => console.error('[LME] Periodic sync failed:', e));
-				}, 3 * 60 * 1000)
-			);
-		}
 
 		// Feed polling runs only while Obsidian is loaded; startup refresh catches up.
 		this.app.workspace.onLayoutReady(() => {
@@ -1217,14 +1159,6 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 			this.reminderTimer = null;
 		}
 
-		// Terminate mobile dict worker and release engines (all platforms, no-op when unused)
-		mobileDict.shutdown();
-
-		// Auto-export this device's sync file on unload (all platforms, bidirectional)
-		if (this.settings.flashcardSyncEnabled) {
-			await SyncManager.exportOwn(this);
-		}
-
 		// Remove status bar item
 		if (this.languageStatusBar) {
 			this.languageStatusBar.remove();
@@ -1899,37 +1833,9 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 		this.migrateAiProviders();
 		this.migrateSyncWatermark();
 		await this.checkAiPromptsBackup();
-		await this.migrateStoreDicts();
 		await this.loadWorkshopFolderStore();
 	}
 
-	/**
-	 * 移动端导入式词典条目迁移:source==='store' 条目从 data.json(随 vault
-	 * 同步,会被同 vault 桌面端的 saveSettings 用旧快照覆写 → 手机重启后词典
-	 * "消失")迁到每设备 localStorage 注册表,与 syncDeviceId 同一原则
-	 * (见 storeRegistry.ts 头注)。桌面端抽出的条目直接丢弃——那是手机 OPFS
-	 * 的数据,在桌面不可用,留存只会让桌面词典列表渲染崩溃。
-	 * 移动端随后与 OPFS 对账,自动恢复被覆写掉的条目(数据仍在时)。
-	 */
-	private async migrateStoreDicts(): Promise<void> {
-		const changed = migrateStoreEntriesFromSettings(this.settings as any, {
-			toRegistry: Platform.isMobile,
-		});
-		if (changed) {
-			await this.saveSettings();
-		}
-		if (Platform.isMobile) {
-			void reconcileStoreDicts()
-				.then((r) => {
-					if (r.restored > 0) {
-						new Notice(t('settings.mobileDictRestored', { n: String(r.restored) }), 8000);
-					}
-				})
-				.catch(() => {
-					// 对账失败不影响启动;设置页打开时会重试
-				});
-		}
-	}
 
 	/**
 	 * Sync watermark migration: the old schema stored a single number

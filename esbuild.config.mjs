@@ -14,22 +14,6 @@ if you want to view the source, please visit the github repository of this plugi
 //   (默认)     dev watch 模式(inline sourcemap,便于本地开发)
 const mode = process.argv[2] === '--release' ? 'release' : 'dev';
 
-// ── Pass 1: 移动端词典 Worker(dictWorker)编译为 IIFE 字符串 ──
-// 分发只有三件套,Worker 源以 __LME_DICT_WORKER_SOURCE__ 常量内联进 main.js,
-// 运行时 Blob URL 创建 classic Worker(见 MobileDictService)。
-// 注意:dev watch 只监听主入口;改 dictWorker.ts 需重启 dev 构建。
-const workerBuild = await esbuild.build({
-    entryPoints: ['src/core/dictStore/dictWorker.ts'],
-    bundle: true,
-    format: 'iife',
-    target: 'es2018',
-    minify: false,
-    write: false,
-    logLevel: 'warning',
-    legalComments: 'none',
-});
-const dictWorkerSource = workerBuild.outputFiles[0].text;
-
 const context = await esbuild.context({
     banner: {
         js: banner,
@@ -71,7 +55,6 @@ const context = await esbuild.context({
         '.png': 'dataurl',
     },
     define: {
-        '__LME_DICT_WORKER_SOURCE__': JSON.stringify(dictWorkerSource),
     },
 });
 

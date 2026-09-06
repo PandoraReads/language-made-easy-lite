@@ -96,15 +96,6 @@ export default {
 		openFlashcardManager: '打开闪卡管理',
 
 		// Flashcard Sync
-		flashcardSync: '闪卡跨设备同步',
-		flashcardSyncDesc: '桌面端关闭 Obsidian 时自动导出闪卡数据到 Vault 文件，移动端打开时可选择导入同步。',
-		enableSync: '启用闪卡同步',
-		enableSyncDesc: '开启后，桌面端关闭时自动导出闪卡数据，移动端打开时提示同步',
-		syncPath: '同步文件路径',
-		syncPathDesc: '闪卡同步数据在 Vault 中的存储路径',
-		syncOnMobile: '打开时自动提示同步',
-		syncOnMobileDesc: '移动端打开插件时，如果检测到更新的同步文件，自动弹窗提示导入',
-		lastSyncTime: '上次同步时间: {time}',
 
 		// Batch Flashcard
 		batchCount: '默认提取数量',
@@ -214,27 +205,15 @@ export default {
 		localMdxNone: '暂未配置本地词典，将使用网络词典查词。',
 		localMdxDrag: '拖拽调整顺序',
 		// 移动端导入式词典(欧路模式)
-		mobileDictDesc: '导入 .mdx 词典文件(可同时选择同名 .mdd 资源卷与 .css 样式)到本机，离线查词。词典数据仅保存在本设备，不进入笔记库。',
-		mobileDictNone: '尚未导入本地词典，将使用网络词典查词。',
 		mobileDictImport: '导入词典文件',
-		mobileDictImporting: '正在导入 {name}… {pct}%',
-		mobileDictImportDone: '已导入 {name}（{size}）',
+		mobileDictPremium: '在手机/平板上导入 .mdx 词典离线查词。移动端本地词典为高级版功能。',
 		mobileDictImportNoMdx: '所选文件中没有 .mdx 词典文件，请把 .mdx 与同名 .mdd/.css 一起选中',
 		mobileDictImportFailed: '导入失败：{msg}',
 		mobileDictMemoryMode: '当前环境不支持持久存储，词典仅本次会话有效（单本上限 100MB），重启后需重新导入。',
 		mobileDictMemoryLimit: '词典体积超过内存模式上限（100MB），请在系统版本较新的设备上使用。',
-		mobileDictStorage: '词典存储：已用 {usage}',
-		mobileDictLegacyHint: '另有 {n} 套按路径配置的词典在本机不可用（仅桌面端生效）。',
-		mobileDictUp: '上移',
-		mobileDictDown: '下移',
 		mobileDictImportBusy: '已有词典正在导入，请等待当前导入完成。',
 		mobileDictFileHint: '若选择器中 .mdx/.mdd 文件呈灰色无法点选：多为 iCloud 云盘占位文件（未完整下载）。请先在系统「文件」App 中点开这些文件完成下载，或转存到「我的 iPhone」本地目录后再导入。',
-		mobileDictDataMissing: '词典数据已丢失（系统清理了私有存储），请删除该词条后重新导入。',
-		mobileDictDeleteConfirm: '删除词典「{name}」及其本机数据？',
-		mobileDictMissing: '数据丢失',
-		mobileDictEphemeral: '仅本次会话',
 		mobileDictPersistDenied: '已导入，但系统未授予持久存储：设备存储紧张时词典可能被系统清理，届时需重新导入。',
-		mobileDictRestored: '已自动恢复 {n} 本本地词典的配置（此前设置被同步覆盖或丢失）。',
 		addLocalDict: '添加本地词典',
 		selectMdx: '选择 .mdx 文件',
 		youdaoDict: '有道词典 (仅英语)',
@@ -731,20 +710,6 @@ export default {
 	},
 
 	// ── Sync Confirm Modal ─────────────────────────────────
-	sync: {
-		title: '闪卡数据同步',
-		detected: '检测到来自桌面端的闪卡同步数据（导出时间: {time}）',
-		totalCards: '共 {count} 张闪卡待同步：',
-		importDesc: '导入时会智能合并：保留本地更新的闪卡进度，仅导入桌面端新增或更新的数据。',
-		syncButton: '同步',
-		skipButton: '跳过',
-		syncing: '同步中...',
-		syncDone: '同步完成: 新增 {added} 张, 更新 {updated} 张, {logs} 条复习记录',
-		syncFailed: '同步失败: {error}',
-		pathNotSet: '同步文件路径未配置，请在设置中检查',
-		fileNotFound: '同步文件不存在，请先从桌面端导出',
-		dataUpToDate: '同步数据已是最新，无需更新',
-	},
 
 	// ── Errors ─────────────────────────────────────────────
 	errors: {
@@ -1190,7 +1155,7 @@ export default {
 	upgrade: {
 		title: '解锁完整版',
 		subtitle: 'Language Made Easy 完整版',
-		desc: '✅ 一次购买，永久解锁全部高级功能\n💎 支持多语种学习、10 套界面主题、批量闪卡制作、无上限闪卡数量、多套本地词典、批量视频笔记一键下载、分级词汇标注、数据导入导出、AI 学习报告导出、视频讲解卡、多题型闪卡复习模式等全套能力。',
+		desc: '✅ 一次购买，永久解锁全部高级功能\n💎 支持多语种学习、10 套界面主题、批量闪卡制作、无上限闪卡数量、多套本地词典、闪卡多端同步、移动端本地词典、批量视频笔记一键下载、分级词汇标注、数据导入导出、AI 学习报告导出、视频讲解卡、多题型闪卡复习模式等全套能力。',
 		featureLine: '「{feature}」包含在完整版中',
 		storesTitle: '前往官方店铺购买完整版：',
 		storeXhs: '小红书店铺',
@@ -1209,6 +1174,7 @@ export default {
 		flashcardFeature: '无限量闪卡',
 		mdxLocked: '已达免费版词典上限（{count}/{limit} 部），升级解锁 5 部',
 		mdxFeature: '5 部本地词典',
+		mdictFeature: '移动端本地词典',
 		subtitleFull: '本周视频笔记生成额度已用完（{used}/{limit} 篇），升级解锁无限次',
 		subtitleFeature: '无限次字幕下载',
 	},
@@ -1222,7 +1188,9 @@ export default {
 		colBasic: '基础版',
 		colFull: '高级版',
 		rowEnglish: '英语学习（查词 / 闪卡 / 跟读 / AI 解析）',
-		rowMdx: '本地 MDX 词典',
+		rowMdx: '本地 MDX 词典（桌面端）',
+		rowMdict: '移动端本地词典（导入离线查词）',
+		rowSync: '闪卡数据多端同步',
 		rowSubtitles: '视频笔记字幕下载（高级版无限次）',
 		rowFlashcards: 'FSRS 闪卡复习（高级版无限量）',
 		rowLanguages: '英语以外语种（德 / 法 / 西 / 韩 / 俄 / 日）',

@@ -33,7 +33,7 @@ Paste a YouTube / Bilibili link and the plugin fetches the title, channel, and c
 ### 📖 Dictionary Assistant — read anything, look up instantly
 - **Instant lookup**: `Ctrl/Cmd + double-click` any word (or select text) — definitions appear in the sidebar instantly
 - **Context capture**: the full sentence containing the word is automatically saved as its example sentence
-- **Offline MDX dictionaries**: load up to 5 local `.mdx`/`.mdd` dictionaries per language (desktop path-based, or import on mobile)
+- **Offline MDX dictionaries**: load local `.mdx`/`.mdd` dictionaries on desktop (1 in the free Basic Edition, 5 in the Full Edition; mobile import is Full Edition)
 - **Online fallback chain**: Youdao → Google Translate → MyMemory, all free public APIs, no key needed
 - **Pronunciation**: audio playback with smart preloading
 - **One-click add** to your vocabulary notebook (IndexedDB + auto-maintained markdown file)
@@ -99,8 +99,10 @@ The Basic Edition is free forever. The **Full Edition** unlocks every advanced m
 | Feature module | Basic (free) | Full Edition |
 |---|:---:|:---:|
 | Dictionary lookup (double-click / context capture / pronunciation / notebook) | ✅ | ✅ |
-| Local MDX dictionaries | **1** | **5** |
-| FSRS flashcards (flip mode / stats / sync / pet companion) | **250-card cap** | **Unlimited** |
+| Local MDX dictionaries (desktop) | **1** | **5** |
+| Mobile dictionaries (import for offline lookup) | — | ✅ |
+| Cross-device flashcard sync | — | ✅ |
+| FSRS flashcards (flip mode / stats / pet companion) | **250-card cap** | **Unlimited** |
 | AI analysis (6 templates / scoring / flashcard auto-fill) | **Partial** | **Full** |
 | Shadowing workshop (shadowing / dictation / speed control) | ✅ | ✅ |
 | Video note generation (incl. subtitle download) | **10 per week** | **Unlimited** |
@@ -155,7 +157,6 @@ The plugin works fully offline except for the following optional, user-initiated
 ## 🔒 Privacy
 
 - **No telemetry, no analytics, no accounts**
-- Flashcard sync travels through **your own** vault-sync mechanism, never our servers
 - The only data leaving your device is the lookups/translations you initiate and the AI providers **you** configure
 
 **Files outside the vault**: dictionary settings may point at MDX files stored elsewhere on your device; the plugin only reads files you explicitly select.

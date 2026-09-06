@@ -321,10 +321,6 @@ export interface LMESettings {
 
 
     // Flashcard Sync (bidirectional via per-device vault files)
-    flashcardSyncEnabled: boolean;
-    flashcardSyncFilePath: string;
-    flashcardSyncOnMobileLoad: boolean;
-    flashcardSyncLastTime: Record<string, number>; // per-sourceDevice watermark (exportTime last ingested)
 
     // Video Bookmarks (Shadowing Workshop) — keyed by sourceNotePath
 
@@ -432,10 +428,6 @@ export const DEFAULT_SETTINGS: LMESettings = {
     ribbonShadowingIcon: true,
 
     // Flashcard Sync
-    flashcardSyncEnabled: true,
-    flashcardSyncFilePath: '.obsidian/plugins/language-made-easy/flashcard-sync.json',
-    flashcardSyncOnMobileLoad: true,
-    flashcardSyncLastTime: {},
 
     // UI Theme
     uiStyle: 'paper-ink',

@@ -5,7 +5,6 @@
 import { App, Modal, Notice, FuzzySuggestModal, setIcon } from 'obsidian';
 import type LanguageMadeEasyPlugin from '../main-unified-full';
 import { db } from '../core/Database';
-import { SyncManager } from '../core/SyncManager';
 import type { VocabularyEntry, FSRSData } from '../models';
 import { randomUUID } from '../mocks/crypto';
 import { t } from '../i18n';
@@ -257,7 +256,8 @@ export class FlashcardManagerModal extends Modal {
 		const syncBtn = toolbar.createEl('button', { cls: 'lme-fmm-btn', attr: { 'aria-label': t('flashcardManager.syncData') } });
 		setIcon(syncBtn, 'refresh-cw');
 		syncBtn.style.cssText = 'display:inline-flex;align-items:center;justify-content:center;padding:6px 10px;';
-		syncBtn.onclick = () => this.handleSync();
+		// 社区免费版:闪卡多端同步为完整版功能,弹付费引导
+		syncBtn.onclick = () => new UpgradeModal(this.app, t('flashcardManager.syncData')).open();
 	}
 
 	private buildTableWrapper(root: HTMLElement) {

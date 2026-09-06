@@ -9,8 +9,6 @@
 import { Platform, requestUrl, Notice } from 'obsidian';
 import type { DictResult, LMESettings, MdxDictionary } from '../models';
 import { MDXEngine } from '../core/MDXEngine';
-import { mobileDict } from '../core/dictStore/MobileDictService';
-import { getStoreDicts } from '../core/dictStore/storeRegistry';
 import { t } from '../i18n';
 
 const ONLINE_DICT_TIMEOUT_MS = 8000;
@@ -48,11 +46,8 @@ function getLanguageMDXPaths(language: string, settings: LMESettings): MdxDictio
     // data.json 里偶发的 store 条目(3.2.0 遗留/同步时差)一并纳入,启动迁移会清掉。
     const pathDicts = (settings.localDictionaries?.[language] || [])
         .filter(d => d.mdxPath || d.source === 'store');
-    const storeDicts = getStoreDicts(language)
-        .filter(e => !e.missing)
-        .map(e => ({ id: e.id, name: e.name, source: 'store', storeId: e.storeId, sizeBytes: e.sizeBytes }));
-    if (pathDicts.length > 0 || storeDicts.length > 0) {
-        return [...pathDicts, ...storeDicts];
+    if (pathDicts.length > 0) {
+        return pathDicts;
     }
 
     // Fallback: read legacy flat fields
@@ -109,37 +104,6 @@ async function queryMDX(word: string, language: string, settings: LMESettings): 
  * Query a single MDX dictionary
  */
 async function querySingleMDX(word: string, language: string, dict: MdxDictionary): Promise<DictResult> {
-    // ── 移动端/导入式词典(source==='store'):走 Worker/内存引擎 ──
-    if (dict.source === 'store' && dict.storeId) {
-        const ref = { id: dict.id, name: dict.name, storeId: dict.storeId };
-        let html: string | null = null;
-        try {
-            html = await mobileDict.lookup(ref, word);
-        } catch (e: any) {
-            // 数据被系统清掉时显式提醒,而不是静默落入网络词典
-            if (String((e && e.message) || '').includes('DICT_DATA_MISSING')) {
-                new Notice(t('settings.mobileDictDataMissing'), 8000);
-            }
-            throw e;
-        }
-        if (!html) {
-            throw new Error(`Word "${word}" not found`);
-        }
-        const css = await mobileDict.getCss(ref);
-        return {
-            word,
-            phonetic: '',
-            definition: html,
-            srcMdx: dict.name,
-            style: css ?? '',
-            explains: [],
-            partOfSpeech: '',
-            dictionaryIndex: 0,
-            dictId: dict.id,
-            dictName: dict.name,
-        };
-    }
-
     if (!dict.mdxPath) {
         throw new Error(`Dictionary not configured`);
     }
@@ -194,12 +158,6 @@ async function querySingleMDX(word: string, language: string, dict: MdxDictionar
  * Fallback: try all loaded engines.
  */
 export async function getMDXResource(path: string, language: string = 'english', dictId?: string): Promise<any | null> {
-    // ── 移动端/导入式词典优先:store 引擎已加载时先走 Worker/内存引擎 ──
-    if (mobileDict.hasEngines()) {
-        const mobileBuf = await mobileDict.getResource(path, dictId);
-        if (mobileBuf) return mobileBuf;
-    }
-
     // ── 桌面路径:精确 dictId 优先,再遍历全部已加载引擎 ──
     if (dictId && mdxEngines[dictId]?.engine) {
         const buffer = await mdxEngines[dictId].engine.getResource(path);

@@ -15,15 +15,6 @@ import { randomUUID } from './mocks/crypto';
 import { t } from './i18n';
 import { showNativeOpenDialog } from './utils/electron-remote';
 import { FREE_MDX_DICT_LIMIT } from './config/free-limits';
-import { DictStore, classifyDictFiles, formatBytes } from './core/dictStore/DictStore';
-import { mobileDict, reconcileStoreDicts } from './core/dictStore/MobileDictService';
-import {
-	getStoreDicts,
-	addStoreDict,
-	removeStoreDict,
-	moveStoreDict,
-	type StoreDictEntry,
-} from './core/dictStore/storeRegistry';
 
 export { DEFAULT_SETTINGS };
 export type { LMESettings };
@@ -352,57 +343,6 @@ export class LMESettingTab extends PluginSettingTab {
 				.onClick(() => {
 					new FlashcardManagerModal(this.app, this.plugin).open();
 				}));
-
-		// ── Flashcard Sync ─────────────────────────────────────────
-		containerEl.createEl('h4', { text: t('settings.flashcardSync') });
-		containerEl.createEl('p', {
-			text: t('settings.flashcardSyncDesc'),
-			cls: 'lme-settings-hint'
-		});
-
-		this.addToggleWithStatus(
-			containerEl,
-			t('settings.enableSync'),
-			t('settings.enableSyncDesc'),
-			() => this.plugin.settings.flashcardSyncEnabled,
-			async (v) => { this.plugin.settings.flashcardSyncEnabled = v; await this.plugin.saveSettings(); },
-		);
-
-		new Setting(containerEl)
-			.setName(t('settings.syncPath'))
-			.setDesc(t('settings.syncPathDesc'))
-			.addText(t => {
-				t.setPlaceholder('.obsidian/plugins/language-made-easy/flashcard-sync.json')
-					.setValue(this.plugin.settings.flashcardSyncFilePath || '')
-					.onChange(async (v) => {
-						this.plugin.settings.flashcardSyncFilePath = v.trim();
-						await this.plugin.saveSettings();
-					});
-				t.inputEl.style.width = '100%';
-			});
-
-		if (Platform.isMobile) {
-			this.addToggleWithStatus(
-				containerEl,
-				t('settings.syncOnMobile'),
-				t('settings.syncOnMobileDesc'),
-				() => this.plugin.settings.flashcardSyncOnMobileLoad,
-				async (v) => { this.plugin.settings.flashcardSyncOnMobileLoad = v; await this.plugin.saveSettings(); },
-			);
-		}
-
-		// flashcardSyncLastTime is Record<sourceDevice, exportTime>; show the most recent peer ingestion.
-		const watermarks = this.plugin.settings.flashcardSyncLastTime;
-		const lastSync = (watermarks && typeof watermarks === 'object')
-			? Math.max(0, ...Object.values(watermarks).map(Number))
-			: 0;
-		if (lastSync > 0) {
-			const lastSyncDate = new Date(lastSync).toLocaleString();
-			containerEl.createEl('p', {
-				text: t('settings.lastSyncTime', { time: lastSyncDate }),
-				cls: 'lme-settings-hint'
-			});
-		}
 
 		// ── Video Download Path ──────────────────────────────────
 		containerEl.createEl('h3', { text: t('settings.videoDownload') });
@@ -870,7 +810,7 @@ export class LMESettingTab extends PluginSettingTab {
 
 			// 社区免费版:本地词典上限(路径式+移动端导入合计),触顶加锁并弹付费引导
 			{
-				const dictCount = (this.plugin.settings.localDictionaries?.[language] || []).length + getStoreDicts(language).length;
+				const dictCount = (this.plugin.settings.localDictionaries?.[language] || []).length;
 				const atLimit = dictCount >= FREE_MDX_DICT_LIMIT;
 				const addSetting = new Setting(containerEl)
 					.setName(t('settings.addLocalDict'));
@@ -923,232 +863,27 @@ export class LMESettingTab extends PluginSettingTab {
 			});
 	}
 
-	private mobileDictProgressUnsub: (() => void) | null = null;
 
 	// ── 移动端本地词典(导入式,欧路模式)──────────────────────
 	// 桌面走「绝对路径 + fs」;移动端无文件系统权限,改为文件选择器导入到
 	// 应用私有存储(OPFS)/内存降级,查词走 Worker。见 PLAN-mobile-mdx.md。
-	private renderMobileDictSection(containerEl: HTMLElement, language: string): void {
+	// ── 移动端本地词典(导入式)——社区免费版:高级版功能,仅展示入口并弹付费引导 ──
+	private renderMobileDictSection(containerEl: HTMLElement, _language: string): void {
 		containerEl.createEl('p', {
-			text: t('settings.mobileDictDesc'),
+			text: t('settings.mobileDictPremium'),
 			cls: 'lme-settings-hint'
 		});
-
-		const storageEl = containerEl.createEl('p', { cls: 'lme-settings-hint lme-mdx-storage-hint' });
-		const refreshStorage = async () => {
-			try {
-				const usage = await DictStore.usage();
-				storageEl.setText(usage ? t('settings.mobileDictStorage', { usage: formatBytes(usage.usage) }) : '');
-			} catch {
-				storageEl.setText('');
-			}
-		};
-		refreshStorage();
-
-		const statusEl = containerEl.createEl('p', { cls: 'lme-settings-hint lme-mdx-import-status' });
-		const listEl = containerEl.createDiv('lme-mdx-dict-list');
-
-		const renderList = () => {
-			listEl.empty();
-			// 桌面路径条目在本机不可用,仅计数提示(条目本体留在 data.json)
-			const legacyCount = (this.plugin.settings.localDictionaries?.[language] || [])
-				.filter(d => d && d.source !== 'store').length;
-			// 导入式词典在每设备注册表(localStorage)而非 data.json —— 后者随 vault
-			// 同步会被桌面端覆写,导致"重启后词典消失"(见 storeRegistry.ts 头注)
-			const storeDicts = getStoreDicts(language);
-
-			if (legacyCount > 0) {
-				listEl.createEl('p', {
-					text: t('settings.mobileDictLegacyHint', { n: legacyCount }),
-					cls: 'lme-settings-hint'
-				});
-			}
-			if (storeDicts.length === 0 && legacyCount === 0) {
-				listEl.createEl('p', {
-					text: t('settings.mobileDictNone'),
-					cls: 'lme-settings-hint'
-				});
-			}
-
-			storeDicts.forEach((dict) => {
-				const item = listEl.createDiv('lme-mdx-dict-item lme-mdx-dict-item-mobile');
-
-				const info = item.createDiv();
-				info.addClass('lme-mdx-dict-info');
-				info.createEl('span', { text: dict.name || dict.storeId });
-				if (dict.missing) {
-					info.createEl('span', {
-						text: t('settings.mobileDictMissing'),
-						cls: 'lme-mdx-dict-badge is-missing'
-					});
-				} else if (dict.ephemeral) {
-					info.createEl('span', {
-						text: t('settings.mobileDictEphemeral'),
-						cls: 'lme-mdx-dict-badge is-ephemeral'
-					});
-				}
-				if (dict.sizeBytes) {
-					const sizeHint = info.createEl('div');
-					sizeHint.addClass('lme-mdx-dict-path');
-					sizeHint.textContent = formatBytes(dict.sizeBytes);
-				}
-
-				const actions = item.createDiv();
-				actions.addClass('lme-mdx-dict-actions');
-
-				const idx = storeDicts.indexOf(dict);
-
-				const upBtn = actions.createEl('button', {
-					text: '↑ ' + t('settings.mobileDictUp'),
-					cls: 'lme-mdx-dict-move'
-				});
-				upBtn.disabled = idx === 0;
-				upBtn.onclick = () => {
-					if (moveStoreDict(language, dict.id, -1)) renderList();
-				};
-
-				const downBtn = actions.createEl('button', {
-					text: '↓ ' + t('settings.mobileDictDown'),
-					cls: 'lme-mdx-dict-move'
-				});
-				downBtn.disabled = idx === storeDicts.length - 1;
-				downBtn.onclick = () => {
-					if (moveStoreDict(language, dict.id, 1)) renderList();
-				};
-
-				const delBtn = actions.createEl('button', { text: t('common.delete') });
-				delBtn.addClass('lme-mdx-dict-delete');
-				delBtn.onclick = async () => {
-					if (!window.confirm(t('settings.mobileDictDeleteConfirm', { name: dict.name }))) return;
-					await mobileDict.unload(dict.id);
-					await DictStore.delete(dict.storeId);
-					removeStoreDict(dict.id);
-					renderList();
-					refreshStorage();
-				};
-			});
-		};
-
-		renderList();
-		// 打开设置页时与 OPFS 对账:恢复被同步覆写的条目 / 标记被系统驱逐的数据
-		void reconcileStoreDicts().then(() => renderList()).catch(() => { /* OPFS 不可用忽略 */ });
-
-		const storeCount = getStoreDicts(language).length;
-		// 社区免费版:与桌面路径式词典合计上限,触顶加锁并弹付费引导
-		const mdxTotal = storeCount + (this.plugin.settings.localDictionaries?.[language] || []).length;
-		const mdxAtLimit = mdxTotal >= FREE_MDX_DICT_LIMIT;
 		const importSetting = new Setting(containerEl)
 			.setName(t('settings.addLocalDict'));
-		if (mdxAtLimit) {
-			importSetting.setDesc(t('freeLimit.mdxLocked', { count: String(mdxTotal), limit: String(FREE_MDX_DICT_LIMIT) }));
-		}
 		importSetting.addButton(btn => {
-			if (mdxAtLimit) setIcon(btn.buttonEl, 'lock');
-			btn.setButtonText(mdxAtLimit ? '' : t('settings.mobileDictImport'))
-				.setDisabled(!!mobileDict.currentImport)
+			setIcon(btn.buttonEl, 'lock');
+			btn.setButtonText(t('settings.mobileDictImport'))
 				.onClick(() => {
-					if (mdxAtLimit) {
-						new UpgradeModal(this.app, t('freeLimit.mdxFeature')).open();
-						return;
-				}
-					this.pickAndImportDict(language, statusEl, () => {
-						renderList();
-						refreshStorage();
-					});
+					new UpgradeModal(this.app, t('freeLimit.mdictFeature')).open();
 				});
-		});
-		// 进行中的导入:重渲染后恢复进度显示,并订阅 live 进度(设置页往返/重进不丢状态)
-		if (this.mobileDictProgressUnsub) {
-			this.mobileDictProgressUnsub();
-			this.mobileDictProgressUnsub = null;
-		}
-		this.mobileDictProgressUnsub = mobileDict.onImportProgress((info) => {
-			if (info) {
-				statusEl.setText(t('settings.mobileDictImporting', { name: info.name, pct: String(info.pct) }));
-			} else {
-				statusEl.setText('');
-			}
-		});
-		if (mobileDict.currentImport) {
-			statusEl.setText(t('settings.mobileDictImporting', {
-				name: mobileDict.currentImport.name,
-				pct: String(mobileDict.currentImport.pct)
-			}));
-		}
-		containerEl.createEl('p', {
-			text: t('settings.mobileDictFileHint'),
-			cls: 'lme-settings-hint'
 		});
 	}
 
-	/** 文件选择器 → mobileDict.import → 写入 settings 条目(source='store') */
-	private pickAndImportDict(
-		language: string,
-		statusEl: HTMLElement,
-		onDone: () => void
-	): void {
-		if (mobileDict.currentImport) {
-			new Notice(t('settings.mobileDictImportBusy'));
-			return;
-		}
-		// 不设 accept:iOS 对未知扩展名(.mdx/.mdd)会灰显,全放行后按扩展名分类
-		const input = document.createElement('input');
-		input.type = 'file';
-		input.multiple = true;
-		input.onchange = async () => {
-			const files = Array.from(input.files || []);
-			if (files.length === 0) return;
-			const classified = classifyDictFiles(files);
-			if (!classified.mdx) {
-				new Notice(t('settings.mobileDictImportNoMdx'));
-				return;
-			}
-			const name = classified.mdx.name.replace(/\.mdx$/i, '');
-			try {
-				const persisted = await DictStore.requestPersist();
-				let lastPct = -1;
-				const result = await mobileDict.import(files, { language }, (done, total) => {
-					const pct = total > 0 ? Math.floor((done / total) * 100) : 100;
-					if (pct !== lastPct) {
-						lastPct = pct;
-						statusEl.setText(t('settings.mobileDictImporting', { name, pct: String(pct) }));
-					}
-				});
-
-				// 写每设备注册表(localStorage);不写 data.json —— 其随 vault 同步
-				// 会被桌面端覆写,导致重启后词典"消失"。内存降级档标 ephemeral,
-				// 只存本会话,不落盘。
-				const entry: StoreDictEntry = {
-					id: randomUUID(),
-					name: result.meta.name,
-					storeId: result.meta.id,
-					sizeBytes: result.meta.totalSize,
-				};
-				addStoreDict(language, result.kind === 'memory' ? { ...entry, ephemeral: true } : entry);
-
-				statusEl.setText(result.kind === 'memory'
-					? t('settings.mobileDictMemoryMode')
-					: (persisted ? '' : t('settings.mobileDictPersistDenied')));
-				new Notice(t('settings.mobileDictImportDone', {
-					name: result.meta.name,
-					size: formatBytes(result.meta.totalSize)
-				}));
-				onDone();
-			} catch (e: any) {
-				statusEl.setText('');
-				const raw = String((e && e.message) || e);
-				const msg = raw === 'NO_MDX_FILE'
-					? t('settings.mobileDictImportNoMdx')
-					: raw === 'MEMORY_LIMIT_EXCEEDED'
-						? t('settings.mobileDictMemoryLimit')
-						: raw === 'IMPORT_BUSY'
-							? t('settings.mobileDictImportBusy')
-							: raw;
-				new Notice(t('settings.mobileDictImportFailed', { msg }));
-			}
-		};
-		input.click();
-	}
 
 	private getAllFolders(): string[] {
 		const folders = new Set<string>();
