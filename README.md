@@ -57,6 +57,7 @@
 <p align="center"><img src="./assets/screenshots/shadowing-mode.png" width="315" alt="跟读模式"> <img src="./assets/screenshots/dictation-mode.png" width="315" alt="听写模式"></p>
 <p align="center"><em>跟读模式（左）与听写模式（右）</em></p>
 <p align="center"><img src="./assets/screenshots/focus-mode.png" width="640" alt="专注模式"></p>
+<p align="center"><em>专注模式</em></p>
 
 ### ✨ AI 智能解析 —— 自备 API Key，数据归你
 - **6 套内置解析模板**：综合解析、词汇难度分析、文化背景解析、双语对照精读、泛读随堂测验、盲记填空挑战
