@@ -2,8 +2,8 @@
 import { Platform } from 'obsidian';
 
 // Dynamic requires for Node-only modules to prevent load failures on mobile
-let fs: any = null;
-let jsMdict: any = null;
+let fs: unknown = null;
+let jsMdict: unknown = null;
 
 try {
     if (Platform.isDesktop) {
@@ -15,8 +15,8 @@ try {
 }
 
 export class MDXEngine {
-    private mdx: any = null;
-    private mdd: any = null;
+    private mdx: unknown = null;
+    private mdd: unknown = null;
     private mdxPath: string;
     private mddPath: string;
     private cssPath: string;
@@ -30,7 +30,7 @@ export class MDXEngine {
 
     public async load(): Promise<void> {
         if (Platform.isMobile || !fs || !jsMdict) {
-            console.log('[EME] MDX is disabled on mobile or Node environment missing.');
+            console.debug('[EME] MDX is disabled on mobile or Node environment missing.');
             return;
         }
 
@@ -45,20 +45,20 @@ export class MDXEngine {
             // Try loading MDD if it exists
             if (fs.existsSync(this.mddPath)) {
                 this.mdd = new jsMdict.MDD(this.mddPath);
-                console.log(`[EME] MDD loaded: ${this.mddPath}`);
+                console.debug(`[EME] MDD loaded: ${this.mddPath}`);
             }
 
             // Try loading CSS
             if (fs.existsSync(this.cssPath)) {
                 try {
                     this.cssContent = fs.readFileSync(this.cssPath, 'utf-8');
-                    console.log(`[EME] MDX CSS loaded: ${this.cssPath}`);
+                    console.debug(`[EME] MDX CSS loaded: ${this.cssPath}`);
                 } catch (e) {
                     console.error(`[EME] Failed to read MDX CSS: ${this.cssPath}`, e);
                 }
             }
 
-            console.log(`[EME] MDX loaded: ${this.mdxPath}`);
+            console.debug(`[EME] MDX loaded: ${this.mdxPath}`);
         } catch (err) {
             console.error('[EME] MDX Loading failed:', err);
             throw err;

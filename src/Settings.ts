@@ -4,7 +4,7 @@
 
 import { App, PluginSettingTab, Setting, Platform, Notice, FuzzySuggestModal, Modal, setIcon } from 'obsidian';
 import type LanguageMadeEasyPlugin from './main-unified-full';
-import { DEFAULT_SETTINGS, type LMESettings, BUILTIN_PROMPTS, type PromptTemplate, type MdxDictionary, type AIProviderConfig, BUILTIN_PROVIDERS } from './models';
+import { DEFAULT_SETTINGS, type LMESettings, BUILTIN_PROMPTS, type PromptTemplate, type MdxDictionary, type AIProviderConfig, type LanguageId, BUILTIN_PROVIDERS } from './models';
 import { DICT_VIEW_TYPE } from './views/dict-view';
 import { FLASHCARD_VIEW_TYPE } from './views/flashcard-view';
 import { SHADOWING_VIEW_TYPE } from './views/shadowing-view';
@@ -33,7 +33,7 @@ export class LMESettingTab extends PluginSettingTab {
 		containerEl.empty();
 		containerEl.addClass('lme-settings');
 
-		containerEl.createEl('h2', { text: t('settings.title') });
+		new Setting(containerEl).setName("").setHeading();
 
 		// ── Tab Navigation ─────────────────────────────────────
 		const tabNav = containerEl.createDiv('lme-settings-tabnav');
@@ -61,7 +61,7 @@ export class LMESettingTab extends PluginSettingTab {
 					new UpgradeModal(this.app, tab.name.replace(/^\S+\s/, '')).open();
 					return;
 				}
-				this.currentSettingsTab = tab.id as any;
+				this.currentSettingsTab = tab.id;
 				this.display();
 			};
 		});
@@ -111,8 +111,8 @@ export class LMESettingTab extends PluginSettingTab {
 		const nodes = Array.from(contentEl.childNodes);
 		let section: HTMLElement | null = null;
 		for (const node of nodes) {
-			if (node instanceof HTMLElement && node.tagName === 'H3') {
-				section = document.createElement('div');
+			if (node.instanceOf(HTMLElement) && node.tagName === 'H3') {
+				section = createDiv();
 				section.className = 'lme-settings-section';
 				contentEl.insertBefore(section, node);
 				section.appendChild(node);
@@ -156,7 +156,7 @@ export class LMESettingTab extends PluginSettingTab {
 				const cur = (this.plugin.settings[field] as string) || '';
 				drop.setValue(providers.some(p => p.id === cur) ? cur : '');
 				drop.onChange(async (v) => {
-					(this.plugin.settings[field] as any) = v;
+					(this.plugin.settings[field] as unknown) = v;
 					await this.plugin.saveSettings();
 				});
 			});
@@ -164,7 +164,7 @@ export class LMESettingTab extends PluginSettingTab {
 
 	private renderGeneralSettings(containerEl: HTMLElement) {
 		// ── Current Language Selection ─────────────────────────
-		containerEl.createEl('h3', { text: t('settings.currentLanguage') });
+		new Setting(containerEl).setName("").setHeading();
 
 		new Setting(containerEl)
 			.setName(t('settings.currentLanguageName'))
@@ -195,7 +195,7 @@ export class LMESettingTab extends PluginSettingTab {
 
 
 		// ── UI Style Theme ─────────────────────────────────────
-		containerEl.createEl('h3', { text: t('settings.uiStyle') });
+		new Setting(containerEl).setName("").setHeading();
 
 		new Setting(containerEl)
 			.setName(t('settings.uiStyleName'))
@@ -227,7 +227,7 @@ export class LMESettingTab extends PluginSettingTab {
 			});
 
 		// ── Double-click Lookup ───────────────────────────────
-		containerEl.createEl('h3', { text: t('settings.lookupSection') });
+		new Setting(containerEl).setName("").setHeading();
 
 		this.addToggleWithStatus(
 			containerEl,
@@ -238,7 +238,7 @@ export class LMESettingTab extends PluginSettingTab {
 		);
 
 		// ── Flashcard Settings ─────────────────────────────────
-		containerEl.createEl('h3', { text: t('settings.flashcardSection') });
+		new Setting(containerEl).setName("").setHeading();
 
 		new Setting(containerEl)
 			.setName(t('settings.dailyLimit'))
@@ -278,7 +278,7 @@ export class LMESettingTab extends PluginSettingTab {
 			});
 
 		// ── Auto Cleanup ───────────────────────
-		containerEl.createEl('h4', { text: t('settings.autoCleanup') });
+		new Setting(containerEl).setName("").setHeading();
 
 		this.addToggleWithStatus(
 			containerEl,
@@ -333,7 +333,7 @@ export class LMESettingTab extends PluginSettingTab {
 				}));
 
 		// ── Flashcard Manager Button ─────────────────────
-		containerEl.createEl('h4', { text: t('settings.flashcardData') });
+		new Setting(containerEl).setName("").setHeading();
 
 		new Setting(containerEl)
 			.setName(t('settings.flashcardManageAll'))
@@ -345,7 +345,7 @@ export class LMESettingTab extends PluginSettingTab {
 				}));
 
 		// ── Video Download Path ──────────────────────────────────
-		containerEl.createEl('h3', { text: t('settings.videoDownload') });
+		new Setting(containerEl).setName("").setHeading();
 		containerEl.createEl('p', {
 			text: t('settings.videoDownloadDesc'),
 			cls: 'lme-settings-hint'
@@ -370,7 +370,7 @@ export class LMESettingTab extends PluginSettingTab {
 
 						const contentEl = btn.buttonEl.closest('.setting-item')?.querySelector('input');
 						if (contentEl && suggestions.length > 0) {
-							this.showFolderSuggest(contentEl as HTMLInputElement, suggestions);
+							this.showFolderSuggest(contentEl, suggestions);
 						}
 					}));
 
@@ -402,7 +402,7 @@ export class LMESettingTab extends PluginSettingTab {
 					text.inputEl.style.width = '100%';
 				});
 
-			containerEl.createEl('h3', { text: t('settings.youtubeRssSection') });
+			new Setting(containerEl).setName("").setHeading();
 			new Setting(containerEl)
 				.setName(t('settings.youtubeRssInterval'))
 				.setDesc(t('settings.youtubeRssIntervalDesc'))
@@ -424,14 +424,14 @@ export class LMESettingTab extends PluginSettingTab {
 		// Login/cookie is no longer required.
 
 		// ── AI Analysis ────────────────────────────────────────
-		containerEl.createEl('h3', { text: t('settings.aiSection') });
+		new Setting(containerEl).setName("").setHeading();
 		containerEl.createEl('p', {
 			text: t('settings.aiSectionDesc'),
 			cls: 'lme-settings-hint'
 		});
 
 		// -- AI Analysis Prompt Management --
-			containerEl.createEl('h3', { text: t('settings.aiPrompts') });
+			new Setting(containerEl).setName("").setHeading();
 			containerEl.createEl('p', {
 				text: t('settings.aiPromptsDesc'),
 				cls: 'setting-item-description'
@@ -449,9 +449,9 @@ export class LMESettingTab extends PluginSettingTab {
 
 					const info = item.createDiv();
 					info.style.cssText = 'flex:1;';
-					info.createEl('span', { text: p.isBuiltIn ? t('prompts.' + p.name) : p.name });
+					info.createSpan({ text: p.isBuiltIn ? t('prompts.' + p.name) : p.name });
 					if (p.isBuiltIn) {
-						const badge = info.createEl('span', { text: ' ' + t('settings.builtin') });
+						const badge = info.createSpan({ text: ' ' + t('settings.builtin') });
 						badge.style.cssText = 'margin-left:8px;font-size:0.75em;background:var(--interactive-accent);color:var(--text-on-accent);padding:1px 6px;border-radius:3px;';
 					}
 
@@ -522,7 +522,7 @@ export class LMESettingTab extends PluginSettingTab {
 		this.addFeatureProviderDropdown(adv, 'settings.aiFeatureAiScoring', 'aiScoringProvider');
 
 		// ── Audio Transcription (Whisper) ─────────────────────
-		containerEl.createEl('h4', { text: t('settings.transcriptionSection') });
+		new Setting(containerEl).setName("").setHeading();
 		containerEl.createEl('p', {
 			text: t('settings.transcriptionSectionDesc'),
 			cls: 'lme-settings-hint'
@@ -629,10 +629,10 @@ export class LMESettingTab extends PluginSettingTab {
 		const langNameEn = langNamesEn[language];
 
 		// Title
-		containerEl.createEl('h3', { text: t('settings.langSettings', { flag: langFlag, name: langName }) });
+		new Setting(containerEl).setName("").setHeading();
 
 		// ── Vocabulary Notebook ────────────────────────────────
-		containerEl.createEl('h4', { text: t('settings.vocabNotebook') });
+		new Setting(containerEl).setName("").setHeading();
 
 		const vocabFolderKey = `${language}VocabNoteFolder` as keyof LMESettings;
 		const vocabFileNameKey = `${language}VocabNoteFileName` as keyof LMESettings;
@@ -659,7 +659,7 @@ export class LMESettingTab extends PluginSettingTab {
 				}));
 
 		// ── Online Dictionary ─────────────────────────────────
-		containerEl.createEl('h4', { text: t('settings.onlineDict') });
+		new Setting(containerEl).setName("").setHeading();
 
 		const onlineDictKey = `${language}OnlineDict` as keyof LMESettings;
 		const youdaoLanguages = new Set(['english', 'french', 'korean', 'japanese', 'spanish', 'russian', 'german']);
@@ -677,7 +677,7 @@ export class LMESettingTab extends PluginSettingTab {
 			t('settings.onlineDictEnabledDesc'),
 			() => this.plugin.settings[onlineDictEnabledKey] !== false,
 			async (v) => {
-				(this.plugin.settings[onlineDictEnabledKey] as any) = v;
+				(this.plugin.settings[onlineDictEnabledKey] as unknown) = v;
 				await this.plugin.saveSettings();
 			},
 		);
@@ -697,13 +697,13 @@ export class LMESettingTab extends PluginSettingTab {
 
 				drop.setValue((this.plugin.settings[onlineDictKey] as string) || defaultOnlineDict)
 					.onChange(async (v) => {
-						(this.plugin.settings[onlineDictKey] as any) = v;
+						(this.plugin.settings[onlineDictKey] as unknown) = v;
 						await this.plugin.saveSettings();
 					});
 			});
 
 		// ── Local MDX Dictionary ───────────────────────────────
-		containerEl.createEl('h4', { text: t('settings.localMdx') });
+		new Setting(containerEl).setName("").setHeading();
 
 		if (!Platform.isMobile) {
 			containerEl.createEl('p', {
@@ -754,8 +754,8 @@ export class LMESettingTab extends PluginSettingTab {
 
 					const info = item.createDiv();
 					info.addClass('lme-mdx-dict-info');
-					info.createEl('span', { text: dict.name || t('mdxEdit.unnamedDict') });
-					const pathHint = info.createEl('div');
+					info.createSpan({ text: dict.name || t('mdxEdit.unnamedDict') });
+					const pathHint = info.createDiv();
 					pathHint.addClass('lme-mdx-dict-path');
 					// store 条目(移动端导入,经同步流过来)无 mdxPath,退显名称防渲染崩溃
 					pathHint.textContent = dict.mdxPath?.split('/').pop() || dict.name || '';
@@ -835,7 +835,7 @@ export class LMESettingTab extends PluginSettingTab {
 		}
 
 		// ── Flashcard Review Reminder ─────────────────────────
-		containerEl.createEl('h4', { text: t('settings.flashcardReminderSection') });
+		new Setting(containerEl).setName("").setHeading();
 		const reminderEnabledKey = `${language}FlashcardReminderEnabled` as keyof LMESettings;
 		const reminderTimeKey = `${language}FlashcardReminderTime` as keyof LMESettings;
 
@@ -844,7 +844,7 @@ export class LMESettingTab extends PluginSettingTab {
 			t('settings.flashcardReminder'),
 			t('settings.flashcardReminderDesc'),
 			() => this.plugin.settings[reminderEnabledKey] as boolean,
-			async (v) => { (this.plugin.settings[reminderEnabledKey] as any) = v; await this.plugin.saveSettings(); },
+			async (v) => { (this.plugin.settings[reminderEnabledKey] as unknown) = v; await this.plugin.saveSettings(); },
 		);
 
 		new Setting(containerEl)
@@ -855,7 +855,7 @@ export class LMESettingTab extends PluginSettingTab {
 				text.setValue((this.plugin.settings[reminderTimeKey] as string) || '09:00');
 				text.onChange(async (v) => {
 					if (/^\d{2}:\d{2}$/.test(v.trim())) {
-						(this.plugin.settings[reminderTimeKey] as any) = v.trim();
+						(this.plugin.settings[reminderTimeKey] as unknown) = v.trim();
 						await this.plugin.saveSettings();
 					}
 				});
@@ -935,7 +935,7 @@ export class LMESettingTab extends PluginSettingTab {
 			// and managed right on the row (set-as-default button) so models aren't shown twice.
 			// Every model is editable + deletable, including built-ins (deleted ones return to
 			// the catalog and can be re-added).
-			containerEl.createEl('h4', { text: t('settings.providerList') });
+			new Setting(containerEl).setName("").setHeading();
 			if (providers.length === 0) {
 				containerEl.createEl('p', { text: t('settings.providerListEmpty'), cls: 'lme-settings-hint' });
 			}
@@ -1171,7 +1171,7 @@ class CatalogPickerModal extends FuzzySuggestModal<AIProviderConfig> {
 // ============================================================
 
 class PromptViewModal extends Modal {
-    constructor(app: any, private prompt: PromptTemplate) {
+    constructor(app: unknown, private prompt: PromptTemplate) {
         super(app);
     }
 
@@ -1388,7 +1388,7 @@ class MdxDictEditModal extends Modal {
     }
 
     private pickFileViaInput(accept: string, applyPath: (filePath: string) => void): void {
-        const input = document.createElement('input');
+        const input = createEl('input');
         input.type = 'file';
         input.accept = accept;
         // Position off-screen instead of display:none. A display:none file input's
@@ -1414,16 +1414,16 @@ class MdxDictEditModal extends Modal {
             // real file paths from File objects in the renderer process.
             if (Platform.isDesktop) {
                 try {
-                    const electron = (window as any).require('electron');
+                    const electron = (window as unknown).require('electron');
                     if (electron?.webUtils?.getPathForFile) {
                         filePath = electron.webUtils.getPathForFile(file);
                     }
-                } catch {}
+                } catch { /* fs unavailable on this platform */ }
             }
 
             // Legacy fallback: file.path (removed in Electron 28+ but kept for older versions)
             if (!filePath) {
-                filePath = (file as any).path || (file as any).filepath || '';
+                filePath = (file as unknown).path || (file as unknown).filepath || '';
             }
 
             cleanup();
@@ -1454,22 +1454,22 @@ class MdxDictEditModal extends Modal {
 
         if (!this.mddPathInput.value.trim()) {
             try {
-                const fs = (window as any).require('fs');
+                const fs = (window as unknown).require('fs');
                 const mddCandidate = `${dir}/${stem}.mdd`;
                 if (fs.existsSync(mddCandidate)) {
                     this.mddPathInput.value = mddCandidate;
                 }
-            } catch {}
+            } catch { /* fs unavailable on this platform */ }
         }
 
         if (!this.cssPathInput.value.trim()) {
             try {
-                const fs = (window as any).require('fs');
+                const fs = (window as unknown).require('fs');
                 const cssCandidate = `${dir}/${stem}.css`;
                 if (fs.existsSync(cssCandidate)) {
                     this.cssPathInput.value = cssCandidate;
                 }
-            } catch {}
+            } catch { /* fs unavailable on this platform */ }
         }
     }
 

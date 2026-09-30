@@ -99,7 +99,7 @@ export class NavigationPanelView extends ItemView {
 		badge.setText(LANGUAGE_NAMES[this.plugin.settings.activeLanguage || 'english'] || this.plugin.settings.activeLanguage || 'English');
 		badge.onclick = () => {
 			badge.removeClass('is-pulling');
-			requestAnimationFrame(() => badge.addClass('is-pulling'));
+			window.requestAnimationFrame(() => badge.addClass('is-pulling'));
 			window.setTimeout(() => badge.removeClass('is-pulling'), 680);
 			this.openLanguageSwitcher();
 		};
@@ -161,7 +161,7 @@ export class NavigationPanelView extends ItemView {
 			dueCount = due;
 			todayReviews = today;
 			const weekStart = Date.now() - 7 * 24 * 60 * 60 * 1000;
-			weekReviews = logs.filter((log: any) => log.reviewTime >= weekStart).length;
+			weekReviews = logs.filter((log: unknown) => log.reviewTime >= weekStart).length;
 			if (hasTest && currentSize > 0) {
 				estimatedSize = currentSize.toLocaleString();
 			}
@@ -177,7 +177,7 @@ export class NavigationPanelView extends ItemView {
 
 	private createStat(parent: HTMLElement, label: string, value: string, hint: string): void {
 		const item = parent.createDiv('lme-nav-stat');
-		item.createEl('span', { text: label });
+		item.createSpan({ text: label });
 		item.createEl('strong', { text: value });
 		item.createEl('small', { text: hint });
 	}
@@ -338,7 +338,7 @@ class LanguageSelectModal extends FuzzySuggestModal<{ id: string; name: string }
 	private plugin: LanguageMadeEasyPlugin;
 	private onSelect: (language: string) => Promise<void>;
 
-	constructor(app: any, plugin: LanguageMadeEasyPlugin, onSelect: (language: string) => Promise<void>) {
+	constructor(app: unknown, plugin: LanguageMadeEasyPlugin, onSelect: (language: string) => Promise<void>) {
 		super(app);
 		this.plugin = plugin;
 		this.onSelect = onSelect;
@@ -363,7 +363,7 @@ class ThemeSelectModal extends FuzzySuggestModal<{ id: string; name: string }> {
 	private plugin: LanguageMadeEasyPlugin;
 	private onSelect: (theme: string) => Promise<void>;
 
-	constructor(app: any, plugin: LanguageMadeEasyPlugin, onSelect: (theme: string) => Promise<void>) {
+	constructor(app: unknown, plugin: LanguageMadeEasyPlugin, onSelect: (theme: string) => Promise<void>) {
 		super(app);
 		this.plugin = plugin;
 		this.onSelect = onSelect;

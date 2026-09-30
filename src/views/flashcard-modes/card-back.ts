@@ -16,11 +16,11 @@ import type { ModeContext } from './types';
  * 与原 renderCard 背面逐行等价。
  */
 export function fillCardBack(back: HTMLElement, entry: VocabularyEntry, ctx: ModeContext): void {
-    back.createEl('div', { cls: 'lme-card-word lme-card-word-sm', text: entry.word });
+    back.createDiv({ cls: 'lme-card-word lme-card-word-sm', text: entry.word });
 
     const phonRow = back.createDiv('lme-card-phonetic-row');
     if (entry.phonetic) {
-        phonRow.createEl('div', { cls: 'lme-card-phonetic', text: entry.phonetic });
+        phonRow.createDiv({ cls: 'lme-card-phonetic', text: entry.phonetic });
     }
     const audioBtn = phonRow.createEl('button', {
         cls: 'lme-icon-btn lme-audio-btn',
@@ -42,7 +42,7 @@ export function fillCardBack(back: HTMLElement, entry: VocabularyEntry, ctx: Mod
 
         if (entry.contextTranslation) {
             const transEl = ctxWrap.createDiv('lme-card-context-translation');
-            transEl.createEl('span', { text: entry.contextTranslation });
+            transEl.createSpan({ text: entry.contextTranslation });
         }
     }
 }

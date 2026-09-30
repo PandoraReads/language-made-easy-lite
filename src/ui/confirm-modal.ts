@@ -50,7 +50,7 @@ export class ConfirmModal extends Modal {
         };
 
         // 焦点落在确认按钮上:Enter 原生触发 click;Esc 走 Modal 默认关闭(=取消)。
-        setTimeout(() => confirm.focus(), 50);
+        window.setTimeout(() => confirm.focus(), 50);
     }
 
     onClose(): void {

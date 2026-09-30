@@ -55,6 +55,9 @@ export interface CustomAIProvider {
 // 'gemini' = native Gemini API, 'openai' = OpenAI-compatible /chat/completions.
 export type AIProviderKind = 'openai' | 'gemini';
 
+// Learning languages supported by flashcard decks and AI features
+export type LanguageId = 'english' | 'german' | 'french' | 'spanish' | 'korean' | 'russian' | 'japanese' | 'chinese';
+
 export interface AIProviderConfig {
     id: string;          // preset ids are stable ('openai'/'deepseek'/...); custom = 'custom-<ts>'
     name: string;        // display name
@@ -308,7 +311,6 @@ export interface LMESettings {
     transcriptionBaseUrl: string;       // e.g. 'https://api.openai.com/v1'
     transcriptionApiKey: string;
     transcriptionModel: string;         // e.g. 'whisper-1', 'whisper-large-v3'
-    aiScoringProvider: string;          // AI scoring
 
     // SRT → subtitle note conversion
     subtitleNoteFolder: string;         // default output folder for generated subtitle notes ('' = ask each run)

@@ -32,7 +32,7 @@ export class LMEDatabase extends Dexie {
     vocabTests!: Table<VocabTestResult, string>;
     vocabSizeState!: Table<VocabSizeState, string>;
     petState!: Table<PetState, string>;
-    meta!: Table<{ key: string; value: any }, string>;
+    meta!: Table<{ key: string; value: unknown }, string>;
     deletedCardTombstones!: Table<DeletedCardTombstone, string>;
 
     private static readonly LEGACY_DB_NAME = 'LanguageMadeEasyDB';
@@ -147,7 +147,7 @@ export class LMEDatabase extends Dexie {
                 if (petState.length > 0) await this.petState.bulkPut(petState);
                 await this.meta.put({ key: migrationKey, value: true });
             });
-            console.log(`[LME] Migrated legacy flashcard IndexedDB into vault database: ${this.configuredDbName}`);
+            console.debug(`[LME] Migrated legacy flashcard IndexedDB into vault database: ${this.configuredDbName}`);
         } catch (error) {
             console.warn('[LME] Legacy flashcard IndexedDB migration skipped:', error);
             await this.meta.put({ key: migrationKey, value: true });
@@ -219,7 +219,7 @@ export class LMEDatabase extends Dexie {
         if (changes.word !== undefined) {
             const card = await this.vocabulary.get(id);
             if (card) {
-                const word = (changes.word as string).toLowerCase();
+                const word = (changes.word).toLowerCase();
                 const stale = await this.deletedCardTombstones
                     .where('language').equals(card.language)
                     .and(t => t.word === word)
@@ -411,7 +411,7 @@ export class LMEDatabase extends Dexie {
     async getMasteredVocabulary(language: string): Promise<VocabularyEntry[]> {
         return this.vocabulary
             .where('language').equals(language)
-            .filter(entry => (entry as any).masteredAt != null)
+            .filter(entry => (entry as unknown).masteredAt != null)
             .toArray();
     }
 
@@ -423,7 +423,7 @@ export class LMEDatabase extends Dexie {
         return this.vocabulary
             .where('language').equals(language)
             .filter(entry => {
-                const ma = (entry as any).masteredAt;
+                const ma = (entry as unknown).masteredAt;
                 return ma != null && ma < beforeTime;
             })
             .limit(50)
@@ -516,7 +516,7 @@ export class LMEDatabase extends Dexie {
      * Mark a vocabulary entry as mastered with the current timestamp.
      */
     async markAsMastered(id: string): Promise<void> {
-        await this.vocabulary.update(id, { masteredAt: Date.now() } as any);
+        await this.vocabulary.update(id, { masteredAt: Date.now() });
     }
 
     /**
@@ -528,13 +528,13 @@ export class LMEDatabase extends Dexie {
         let marked = 0;
 
         for (const entry of entriesWithMastery) {
-            const alreadyMarked = (entry as any).masteredAt != null;
+            const alreadyMarked = (entry as unknown).masteredAt != null;
             if (entry._mastered && !alreadyMarked) {
-                await this.vocabulary.update(entry.id, { masteredAt: Date.now() } as any);
+                await this.vocabulary.update(entry.id, { masteredAt: Date.now() });
                 marked++;
             } else if (!entry._mastered && alreadyMarked) {
                 // No longer mastered (user had a bad review), remove the mark
-                await this.vocabulary.update(entry.id, { masteredAt: null } as any);
+                await this.vocabulary.update(entry.id, { masteredAt: null } as unknown);
             }
         }
 

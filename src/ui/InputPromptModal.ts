@@ -68,7 +68,7 @@ export class InputPromptModal extends Modal {
 		input.addEventListener('keypress', (e) => { if (e.key === 'Enter') doSubmit(); });
 		input.addEventListener('input', () => { this.value = input.value.trim(); });
 
-		setTimeout(() => input.focus(), 50);
+		window.setTimeout(() => input.focus(), 50);
 	}
 
 	onClose() {

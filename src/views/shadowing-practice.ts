@@ -25,7 +25,7 @@ export interface PracticeCallbacks {
     playMedia: () => void;
     getMediaCurrentTime: () => number;
     getCurrentMedia: () => HTMLVideoElement | HTMLAudioElement | null;
-    getYtPlayer: () => any;
+    getYtPlayer: () => unknown;
     getMediaType: () => 'video' | 'audio' | 'youtube' | null;
     getCurrentMediaSrc: () => string | null;
     startRecordingForPractice: () => Promise<boolean>;
@@ -190,7 +190,7 @@ export class ShadowingPractice {
     // ── UI Rendering ──
 
     renderPanel(): HTMLElement {
-        const panel = document.createElement('div');
+        const panel = createDiv();
         panel.className = 'lme-recorder-panel';
 
         switch (this.state) {
@@ -285,7 +285,7 @@ export class ShadowingPractice {
 
     private stopOriginalPoll(): void {
         if (this.originalPollTimer) {
-            clearInterval(this.originalPollTimer);
+            window.clearInterval(this.originalPollTimer);
             this.originalPollTimer = null;
         }
     }
@@ -303,9 +303,9 @@ export class ShadowingPractice {
             const elapsed = current - block.startSec;
             const pct = Math.min(100, Math.max(0, (elapsed / duration) * 100));
             bar.style.width = `${pct}%`;
-            requestAnimationFrame(tick);
+            window.requestAnimationFrame(tick);
         };
-        requestAnimationFrame(tick);
+        window.requestAnimationFrame(tick);
     }
 
     // ── State: countdown ──
@@ -375,7 +375,7 @@ export class ShadowingPractice {
 
     private stopCountdownTimer(): void {
         if (this.countdownTimer) {
-            clearInterval(this.countdownTimer);
+            window.clearInterval(this.countdownTimer);
             this.countdownTimer = null;
         }
     }
@@ -453,7 +453,7 @@ export class ShadowingPractice {
 
     private stopAutoStopTimer(): void {
         if (this.autoStopTimer) {
-            clearTimeout(this.autoStopTimer);
+            window.clearTimeout(this.autoStopTimer);
             this.autoStopTimer = null;
         }
     }
@@ -473,9 +473,9 @@ export class ShadowingPractice {
             const s = String(Math.floor(elapsed % 60)).padStart(2, '0');
             timerEl.textContent = `${m}:${s}`;
 
-            requestAnimationFrame(tick);
+            window.requestAnimationFrame(tick);
         };
-        requestAnimationFrame(tick);
+        window.requestAnimationFrame(tick);
     }
 
     // ── State: comparing ──
@@ -526,7 +526,7 @@ export class ShadowingPractice {
             const canvas = origTrack.createEl('canvas', { cls: 'lme-practice-waveform' });
             this.originalCanvas = canvas;
             // Defer render to next frame so canvas has dimensions
-            requestAnimationFrame(() => this.renderOriginalWaveform());
+            window.requestAnimationFrame(() => this.renderOriginalWaveform());
         } else {
             const placeholder = origTrack.createDiv({
                 text: t('shadowing.practiceNoAudio'),
@@ -542,7 +542,7 @@ export class ShadowingPractice {
         });
         const userCanvas = userTrack.createEl('canvas', { cls: 'lme-practice-waveform' });
         this.userCanvas = userCanvas;
-        requestAnimationFrame(() => this.renderUserWaveform());
+        window.requestAnimationFrame(() => this.renderUserWaveform());
 
         // Playback buttons
         const btnRow = panel.createDiv('lme-practice-playback-row');
@@ -706,7 +706,7 @@ export class ShadowingPractice {
                 this.scoringState = 'error';
                 this.scoringError = t('shadowing.practiceScoreConfigure');
             }
-        } catch (err: any) {
+        } catch (err: unknown) {
             if (this.generation !== gen) return;
             this.scoringState = 'error';
             this.scoringError = err.message || t('shadowing.practiceScoreError');
@@ -825,9 +825,9 @@ export class ShadowingPractice {
                 this.isPlayingOriginal = false;
                 return;
             }
-            requestAnimationFrame(check);
+            window.requestAnimationFrame(check);
         };
-        requestAnimationFrame(check);
+        window.requestAnimationFrame(check);
     }
 
     playUserRecording(): void {
@@ -896,7 +896,7 @@ export class ShadowingPractice {
 
         // Phase 2: Brief gap
         this.alternatePhase = 'gap';
-        await new Promise<void>(r => setTimeout(r, 500));
+        await new Promise<void>(r => window.setTimeout(r, 500));
 
         if (this.state !== 'comparing' || this.generation !== gen) {
             this.alternatePhase = 'idle';
@@ -915,12 +915,12 @@ export class ShadowingPractice {
                 return;
             }
             if (this.isPlayingOriginal) {
-                requestAnimationFrame(waitForOriginal);
+                window.requestAnimationFrame(waitForOriginal);
             } else {
                 this.alternatePhase = 'idle';
             }
         };
-        requestAnimationFrame(waitForOriginal);
+        window.requestAnimationFrame(waitForOriginal);
     }
 
     private stopUserPlaybackAudio(): void {

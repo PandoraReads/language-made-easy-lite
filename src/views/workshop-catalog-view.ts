@@ -256,7 +256,7 @@ export class WorkshopCatalogView extends ItemView {
 
         // ── 排序(微标签 + select+方向 融合成一个控件) ──
         const sortZone = tb.createDiv('lme-catalog-zone');
-        sortZone.createEl('span', { cls: 'lme-catalog-zone-label', text: t('nav.workshopCatalogSortLabel') });
+        sortZone.createSpan({ cls: 'lme-catalog-zone-label', text: t('nav.workshopCatalogSortLabel') });
         const sortPair = sortZone.createDiv('lme-catalog-sortpair');
         const sortOpts: Opt[] = [
             { value: 'dateAdded', label: t('nav.workshopCatalogSortDateAdded') },
@@ -276,7 +276,7 @@ export class WorkshopCatalogView extends ItemView {
 
         // ── 分组 ──
         const groupZone = tb.createDiv('lme-catalog-zone');
-        groupZone.createEl('span', { cls: 'lme-catalog-zone-label', text: t('nav.workshopCatalogGroupLabel') });
+        groupZone.createSpan({ cls: 'lme-catalog-zone-label', text: t('nav.workshopCatalogGroupLabel') });
         const groupOpts: Opt[] = [
             { value: 'none', label: t('nav.workshopCatalogGroupNone') },
             { value: 'channel', label: t('nav.workshopCatalogGroupChannel') },
@@ -316,7 +316,7 @@ export class WorkshopCatalogView extends ItemView {
 
         // ── 筛选(zone 标签 + 练习/来源/主题 + 清除) ──
         const filterZone = tb.createDiv('lme-catalog-zone');
-        filterZone.createEl('span', { cls: 'lme-catalog-zone-label', text: t('nav.workshopCatalogFilterZone') });
+        filterZone.createSpan({ cls: 'lme-catalog-zone-label', text: t('nav.workshopCatalogFilterZone') });
 
         this.filterPracticeSelect = this.buildSelect(
             [
@@ -394,15 +394,15 @@ export class WorkshopCatalogView extends ItemView {
 
     private field(parent: HTMLElement, label: string): HTMLElement {
         const f = parent.createDiv('lme-catalog-field');
-        f.createEl('span', { cls: 'lme-catalog-field-label', text: label });
+        f.createSpan({ cls: 'lme-catalog-field-label', text: label });
         return f;
     }
 
     private buildSelect(opts: Opt[], current: string, onPick: (v: string) => void): HTMLSelectElement {
-        const sel = document.createElement('select');
+        const sel = createEl('select');
         sel.className = 'lme-catalog-select';
         for (const o of opts) {
-            const opt = document.createElement('option');
+            const opt = createEl('option');
             opt.value = o.value;
             opt.textContent = o.label;
             if (o.value === current) opt.selected = true;
@@ -608,7 +608,7 @@ export class WorkshopCatalogView extends ItemView {
         }
 
         // 左:标题
-        row.createEl('span', { cls: 'lme-catalog-row-title', text: p.title });
+        row.createSpan({ cls: 'lme-catalog-row-title', text: p.title });
 
         // 右:属性(来源 · 时长 · 段数 · 练习态),纯文本、紧凑
         const attrs: string[] = [sourceLabel(p.source)];
@@ -620,7 +620,7 @@ export class WorkshopCatalogView extends ItemView {
                 ? t('nav.workshopCatalogPracticedTimes', { n: String(p.practiceCount) })
                 : t('nav.workshopCatalogFilterPracticed'));
         }
-        row.createEl('span', { cls: 'lme-catalog-row-attrs', text: attrs.join(' · ') });
+        row.createSpan({ cls: 'lme-catalog-row-attrs', text: attrs.join(' · ') });
 
         // 末尾:删除(stopPropagation 避免触发行打开)
         const del = row.createEl('button', { cls: 'lme-catalog-row-delete' });
@@ -860,7 +860,7 @@ export class WorkshopCatalogView extends ItemView {
         if (this.eventsBound) return; // onOpen 可能被 refreshGatedViews 重调,防重复
         this.eventsBound = true;
         const inFolder = (p: string): boolean => p === this.getFolder() || p.startsWith(this.folderPrefix());
-        const isTFile = (f: any): f is TFile => f instanceof TFile;
+        const isTFile = (f: unknown): f is TFile => f instanceof TFile;
         this.registerEvent(this.app.vault.on('create', (f) => { if (isTFile(f) && inFolder(f.path)) this.scheduleRefresh(); }));
         this.registerEvent(this.app.vault.on('delete', (f) => { if (isTFile(f) && inFolder(f.path)) this.scheduleRefresh(); }));
         this.registerEvent(this.app.vault.on('rename', (f, old) => {
@@ -897,7 +897,7 @@ export class WorkshopCatalogView extends ItemView {
     }
 
     private async listMarkdownFiles(folder: string): Promise<TFile[]> {
-        const adapter = this.app.vault.adapter as any;
+        const adapter = this.app.vault.adapter as unknown;
         try {
             if (!(await adapter.exists(folder))) return [];
         } catch { return []; }
@@ -911,7 +911,7 @@ export class WorkshopCatalogView extends ItemView {
         const empty = parent.createDiv('lme-catalog-empty');
         let missing = false;
         try {
-            missing = !(await (this.app.vault.adapter as any).exists(folder));
+            missing = !(await (this.app.vault.adapter as unknown).exists(folder));
         } catch { /* 检查失败按"没有笔记"文案展示 */ }
         setIcon(empty.createDiv('lme-catalog-empty-icon'), missing ? 'folder-off' : 'folder-open');
         empty.createEl('p', {
@@ -954,7 +954,7 @@ export class WorkshopCatalogView extends ItemView {
 
     private openSettings(): void {
         try {
-            const setting = (this.app as any).setting;
+            const setting = (this.app as unknown).setting;
             if (setting?.openTabById) {
                 setting.openTabById('language-made-easy');
             } else if (setting?.openTab) {

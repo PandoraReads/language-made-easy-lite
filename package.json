@@ -5,7 +5,7 @@
   "main": "main.js",
   "scripts": {
     "dev": "node esbuild.config.mjs --dev",
-    "build": "node esbuild.config.mjs",
+    "build": "node esbuild.config.mjs --release",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
     "test:srt": "node scripts/verify-srt-parser.mjs",
@@ -14,7 +14,8 @@
     "test": "npm run test:srt && npm run test:youtube-rss && npm run test:youtube-store && npm run test:workshop-folder",
     "version": "node version-bump.mjs && npm run build:release",
     "test:workshop-folder": "node scripts/verify-workshop-folder.mjs",
-    "build:release": "node esbuild.config.mjs --release"
+    "build:release": "node esbuild.config.mjs --release",
+    "validate": "obsidian-plugin-validator"
   },
   "keywords": [
     "obsidian",
@@ -28,7 +29,6 @@
   "dependencies": {
     "dexie": "^4.3.0",
     "js-mdict": "^6.0.8",
-    "obsidian": "latest",
     "pako": "^2.2.0",
     "qrcode-generator": "^2.0.4",
     "ts-fsrs": "^5.2.3"
@@ -40,8 +40,13 @@
     "esbuild": "^0.19.0",
     "eslint": "^9.39.4",
     "fake-indexeddb": "^6.2.5",
+    "obsidian": "latest",
+    "obsidian-plugin-validator": "^1.0.6",
     "tslib": "^2.6.0",
     "typescript": "^5.0.0",
     "typescript-eslint": "^8.62.0"
+  },
+  "overrides": {
+    "moment": "^2.31.0"
   }
 }

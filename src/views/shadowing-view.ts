@@ -23,7 +23,7 @@ export const SHADOWING_VIEW_TYPE = 'lme-shadowing-view';
 declare global {
     interface Window {
         onYouTubeIframeAPIReady: () => void;
-        YT: any;
+        YT: unknown;
     }
 }
 
@@ -31,17 +31,17 @@ declare global {
  * Fetch with automatic retry on 429 (Too Many Requests).
  * Uses exponential backoff: 3s, 6s, 12s (max 3 retries).
  */
-async function fetchWithRetry(fn: () => Promise<any>, retries = 3, baseDelay = 3000): Promise<any> {
+async function fetchWithRetry(fn: () => Promise<unknown>, retries = 3, baseDelay = 3000): Promise<unknown> {
     for (let attempt = 0; attempt <= retries; attempt++) {
         try {
             return await fn();
-        } catch (e: any) {
+        } catch (e: unknown) {
             const is429 = e?.status === 429 || (e?.message && e.message.includes('429'));
             if (!is429 || attempt === retries) throw e;
             const delay = baseDelay * Math.pow(2, attempt);
-            console.log(`[EME] 429 rate limited, retrying in ${delay / 1000}s (attempt ${attempt + 1}/${retries})`);
+            console.debug(`[EME] 429 rate limited, retrying in ${delay / 1000}s (attempt ${attempt + 1}/${retries})`);
             new Notice(t('shadowing.rateLimitedRetry', { seconds: delay / 1000 }));
-            await new Promise(resolve => setTimeout(resolve, delay));
+            await new Promise(resolve => window.setTimeout(resolve, delay));
         }
     }
 }
@@ -51,7 +51,7 @@ export class ShadowingView extends ItemView {
     private plugin: LanguageMadeEasyPlugin;
     private videoEl: HTMLVideoElement | null = null;
     private audioEl: HTMLAudioElement | null = null;
-    private ytPlayer: any = null;
+    private ytPlayer: unknown = null;
     private ytMobileHandler: ((event: MessageEvent) => void) | null = null;
     private ytMobileTime: number = 0;
     private ytMobileState: number = -1;
@@ -61,7 +61,7 @@ export class ShadowingView extends ItemView {
     private ytTimer: number | null = null;
     /** 视图已关闭/清理 —— 阻止异步回调(YouTube initPlayer 轮询、onReady)在 close 后挂载。 */
     private destroyed = false;
-    private editorListener: any = null;
+    private editorListener: unknown = null;
     private blocksContainer: HTMLElement | null = null;
     private dictationResults: Map<number, string> = new Map(); // lineIndex -> user typed text
     private dictationSubmittedResults: Map<number, string> = new Map(); // lineIndex -> last submitted text
@@ -139,7 +139,7 @@ export class ShadowingView extends ItemView {
     getIcon(): string { return 'play-circle'; }
 
     async onOpen(): Promise<void> {
-        console.log('[EME] ShadowingView.onOpen() triggered');
+        console.debug('[EME] ShadowingView.onOpen() triggered');
         this.renderInitial();
         this.loadYouTubeIframeAPI();
         // Delay detection slightly to ensure Workspace is ready and avoid initial jitter
@@ -173,7 +173,7 @@ export class ShadowingView extends ItemView {
         this.detachDictationPlaySync();
         this.teachingShown.clear();
         this.unregisterBookmarkShortcut();
-        if (this.ytTimer) clearInterval(this.ytTimer);
+        if (this.ytTimer) window.clearInterval(this.ytTimer);
         if (this.ytMobileHandler) {
             window.removeEventListener('message', this.ytMobileHandler);
             this.ytMobileHandler = null;
@@ -278,7 +278,7 @@ export class ShadowingView extends ItemView {
         const openNote = options?.openNote !== false;
         const normalizedUrl = url.startsWith('http') ? url : `https://${url}`;
         const metadata = await this.fetchVideoMetadata(normalizedUrl);
-        const title = (metadata.title || this.buildVideoNoteTitle(normalizedUrl)).replace(/[\\\/:*?"<>|]/g, '_').trim() || this.buildVideoNoteTitle(normalizedUrl);
+        const title = (metadata.title || this.buildVideoNoteTitle(normalizedUrl)).replace(/[\\/:*?"<>|]/g, '_').trim() || this.buildVideoNoteTitle(normalizedUrl);
         const folder = (this.plugin.settings.videoNoteFolder || '').trim();
         const path = await this.getAvailableVideoNotePath(folder, title);
         const content = `${buildSubtitleNoteFrontmatter({ ...metadata, title: metadata.title || '', link: metadata.link || normalizedUrl })}\n\n# ${title}\n\n${normalizedUrl}\n\n## Subtitles\n\n`;
@@ -351,10 +351,10 @@ export class ShadowingView extends ItemView {
     }
 
     public async autoDetectVideo() {
-        console.log('[EME] autoDetectVideo() scanning...');
+        console.debug('[EME] autoDetectVideo() scanning...');
         this.detectedMediaFileName = null;
 
-        let view = this.app.workspace.getActiveViewOfType(MarkdownView);
+        const view = this.app.workspace.getActiveViewOfType(MarkdownView);
         let file = view ? view.file : this.app.workspace.getActiveFile();
 
         // If still no file, try getting the most recent markdown file
@@ -367,22 +367,22 @@ export class ShadowingView extends ItemView {
         }
 
         if (!file || file.extension !== 'md') {
-            console.log('[EME] No active Markdown file for video detection');
+            console.debug('[EME] No active Markdown file for video detection');
             return;
         }
 
         this.file = file;
         const content = await this.app.vault.read(file);
-        console.log(`[EME] Scanning file: ${file.path}`);
+        console.debug(`[EME] Scanning file: ${file.path}`);
 
         // 1. Bilibili Regex (check first for Chinese users)
         const bilibiliRegex = /(?:https?:\/\/)?(?:www\.)?bilibili\.com\/video\/((?:BV[a-zA-Z0-9]{10})|(?:av[0-9]+))/i;
         const biliShortRegex = /(?:https?:\/\/)?b23\.tv\/([a-zA-Z0-9]+)/i;
 
-        let bvidMatch = content.match(bilibiliRegex);
+        const bvidMatch = content.match(bilibiliRegex);
         if (bvidMatch) {
             const bvid = bvidMatch[1];
-            console.log(`[EME] Detected Bilibili video: ${bvid}`);
+            console.debug(`[EME] Detected Bilibili video: ${bvid}`);
             const bilibiliKey = `bilibili:${bvid}`;
             if (bilibiliKey !== this.currentMediaSrc) {
                 // Extract full URL for multi-page parsing (?p=N)
@@ -401,7 +401,7 @@ export class ShadowingView extends ItemView {
             const originalText = shortMatch[0];
             const shortUrl = originalText.startsWith('http') ? originalText : `https://${originalText}`;
 
-            console.log(`[EME] Detected b23.tv short link: ${shortUrl}, resolving...`);
+            console.debug(`[EME] Detected b23.tv short link: ${shortUrl}, resolving...`);
             new Notice(t('shadowing.parsingBilibili'));
 
             const resolved = await this.resolveBilibiliShortLink(shortCode);
@@ -423,7 +423,7 @@ export class ShadowingView extends ItemView {
                 }
             }
             new Notice(t('shadowing.shortLinkFailed'));
-            console.log('[EME] Failed to resolve b23.tv short link');
+            console.debug('[EME] Failed to resolve b23.tv short link');
         }
 
         // 2. YouTube Regex
@@ -431,7 +431,7 @@ export class ShadowingView extends ItemView {
         const ytMatch = content.match(ytRegex);
         if (ytMatch) {
             const videoId = ytMatch[1];
-            console.log(`[EME] Detected YouTube video: ${videoId}`);
+            console.debug(`[EME] Detected YouTube video: ${videoId}`);
             const src = `https://www.youtube.com/embed/${videoId}`;
             if (src !== this.currentMediaSrc) {
                 this.loadMedia(src, 'youtube', true);
@@ -446,10 +446,10 @@ export class ShadowingView extends ItemView {
             const mediaFile = this.app.metadataCache.getFirstLinkpathDest(fileName, file.path);
             if (mediaFile) {
                 this.detectedMediaFileName = mediaFile.basename;
-                this.detectedMediaFile = mediaFile as TFile;
+                this.detectedMediaFile = mediaFile;
                 const src = this.app.vault.getResourcePath(mediaFile);
                 const isAudio = /\.(?:mp3|wav|m4a|ogg|flac|aac)$/i.test(fileName);
-                console.log(`[EME] Detected Internal media: ${fileName}, resourcePath: ${src}, isAudio: ${isAudio}`);
+                console.debug(`[EME] Detected Internal media: ${fileName}, resourcePath: ${src}, isAudio: ${isAudio}`);
                 if (src !== this.currentMediaSrc) {
                     this.loadMedia(src, isAudio ? 'audio' : 'video', false);
                 }
@@ -479,14 +479,14 @@ export class ShadowingView extends ItemView {
                 const mediaFile = this.app.metadataCache.getFirstLinkpathDest(src, file.path);
                 if (mediaFile) {
                     this.detectedMediaFileName = mediaFile.basename;
-                    this.detectedMediaFile = mediaFile as TFile;
+                    this.detectedMediaFile = mediaFile;
                     src = this.app.vault.getResourcePath(mediaFile);
-                    console.log(`[EME] Resolved ![](...) to local resource: ${src}, type: ${isAudio ? 'audio' : 'video'}`);
+                    console.debug(`[EME] Resolved ![](...) to local resource: ${src}, type: ${isAudio ? 'audio' : 'video'}`);
                 }
             }
 
             if (isAudio || isVideo) {
-                console.log(`[EME] Detected HTML5/Link media: ${src}, type: ${isAudio ? 'audio' : 'video'}`);
+                console.debug(`[EME] Detected HTML5/Link media: ${src}, type: ${isAudio ? 'audio' : 'video'}`);
                 if (src !== this.currentMediaSrc) {
                     this.loadMedia(src, isAudio ? 'audio' : 'video', false);
                 }
@@ -494,7 +494,7 @@ export class ShadowingView extends ItemView {
             }
         }
 
-        console.log('[EME] No media source found in current note');
+        console.debug('[EME] No media source found in current note');
         new Notice(t('shadowing.noMediaSource') + t('errors.contactAuthor'));
     }
 
@@ -526,7 +526,7 @@ export class ShadowingView extends ItemView {
             try {
                 const https = require('https');
                 const redirectUrl = await new Promise<string | null>((resolve) => {
-                    const req = https.get(targetUrl, { headers: { 'User-Agent': ua } }, (res: any) => {
+                    const req = https.get(targetUrl, { headers: { 'User-Agent': ua } }, (res: unknown) => {
                         const location = res.headers.location as string | undefined;
                         res.destroy();
                         if (location && [301, 302, 303, 307, 308].includes(res.statusCode)) {
@@ -541,7 +541,7 @@ export class ShadowingView extends ItemView {
                 if (redirectUrl) {
                     const id = this.extractBilibiliVideoId(redirectUrl);
                     if (id) {
-                        console.log(`[EME] Node https resolved: ${redirectUrl}`);
+                        console.debug(`[EME] Node https resolved: ${redirectUrl}`);
                         return `https://www.bilibili.com/video/${id}`;
                     }
                 }
@@ -560,7 +560,7 @@ export class ShadowingView extends ItemView {
             const body = resp.text || '';
             const id = this.extractBilibiliVideoId(body);
             if (id) {
-                console.log(`[EME] requestUrl resolved: ${id}`);
+                console.debug(`[EME] requestUrl resolved: ${id}`);
                 return `https://www.bilibili.com/video/${id}`;
             }
         } catch (e) {
@@ -570,7 +570,7 @@ export class ShadowingView extends ItemView {
         // Attempt 3: fetch with redirect:'manual' to read Location header
         try {
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 10000);
+            const timeoutId = window.setTimeout(() => controller.abort(), 10000);
             try {
                 const resp = await fetch(targetUrl, {
                     method: 'GET',
@@ -589,7 +589,7 @@ export class ShadowingView extends ItemView {
                     if (id) return `https://www.bilibili.com/video/${id}`;
                 }
             } finally {
-                clearTimeout(timeoutId);
+                window.clearTimeout(timeoutId);
             }
         } catch (e) {
             console.error('[EME] fetch redirect attempt failed:', e);
@@ -628,12 +628,12 @@ export class ShadowingView extends ItemView {
         const newContent = currentContent.replace(new RegExp(escaped, 'g'), longUrl);
         if (newContent !== currentContent) {
             await this.app.vault.modify(file, newContent);
-            console.log(`[EME] Replaced short link in note: ${originalText} → ${longUrl}`);
+            console.debug(`[EME] Replaced short link in note: ${originalText} → ${longUrl}`);
         }
     }
 
     public async loadMedia(src: string, type: 'video' | 'audio' | 'youtube' = 'video', isYouTube = false): Promise<void> {
-        console.log(`[EME] loadMedia triggered with src: ${src}, type: ${type}`);
+        console.debug(`[EME] loadMedia triggered with src: ${src}, type: ${type}`);
         this.currentMediaSrc = src;
         this.mediaType = type;
         this.exitFocusMode();
@@ -689,7 +689,7 @@ export class ShadowingView extends ItemView {
 
         if (this.videoEl) {
             this.videoEl.playbackRate = this.plugin.settings.defaultPlaybackRate;
-            this.videoEl.onloadedmetadata = () => console.log('[EME] Local video metadata loaded');
+            this.videoEl.onloadedmetadata = () => console.debug('[EME] Local video metadata loaded');
             this.videoEl.onerror = () => {
                 console.error('[EME] Local video playback error:', this.videoEl?.error);
                 new Notice(t('shadowing.localVideoFailed') + t('errors.contactAuthor'));
@@ -710,13 +710,13 @@ export class ShadowingView extends ItemView {
         // Hide the 16:9 video container for audio mode
         container.addClass('is-hidden');
 
-        this.audioEl = document.createElement('audio');
+        this.audioEl = createEl('audio');
         this.audioEl.src = src;
         this.audioEl.preload = 'metadata';
         this.audioEl.playbackRate = this.plugin.settings.defaultPlaybackRate;
 
         const audioPlayer = outer.createDiv('lme-audio-player');
-        audioPlayer.createEl('div', { cls: 'lme-audio-player-icon' });
+        audioPlayer.createDiv({ cls: 'lme-audio-player-icon' });
 
         const infoRow = audioPlayer.createDiv('lme-audio-player-info');
         const titleEl = infoRow.createDiv({ cls: 'lme-audio-player-title', text: this.detectedMediaFileName || 'Audio' });
@@ -827,19 +827,88 @@ export class ShadowingView extends ItemView {
         if (media) media.playbackRate = rate;
     }
 
-    private loadYouTubeIframeAPI(): void {
-        if (window.YT && window.YT.Player) return;
-        if (!window.onYouTubeIframeAPIReady) {
-            window.onYouTubeIframeAPIReady = () => console.log('[EME] YouTube Iframe API Ready');
+    /**
+     * Desktop YouTube playback control without loading the external
+     * iframe_api script (community plugins must not execute remote code):
+     * the embedded player's built-in postMessage API (enablejsapi=1)
+     * receives commands and streams player state back over 'message' events.
+     */
+    private attachYouTubeIframeController(iframe: HTMLIFrameElement): void {
+        this.detachYouTubeIframeController();
+        const state = { time: 0, playerState: -1, duration: 0 };
+        let ready = false;
+
+        const send = (payload: Record<string, unknown>): void => {
+            try {
+                iframe.contentWindow?.postMessage(JSON.stringify(payload), '*');
+            } catch (err) {
+                console.error('[EME] YT postMessage send failed:', err);
+            }
+        };
+
+        const handler = (event: MessageEvent) => {
+            if (this.destroyed) return;
+            if (event.source !== iframe.contentWindow) return;
+            if (typeof event.data !== 'string' || !event.data.startsWith('{')) return;
+            let msg: { event?: string; info?: Record<string, unknown> };
+            try {
+                msg = JSON.parse(event.data);
+            } catch {
+                return;
+            }
+            if (msg?.event !== 'initialDelivery' && msg?.event !== 'infoDelivery') return;
+            const info = msg.info || {};
+            if (typeof info.currentTime === 'number') state.time = info.currentTime;
+            if (typeof info.playerState === 'number') state.playerState = info.playerState;
+            if (typeof info.duration === 'number') state.duration = info.duration;
+            if (!ready) {
+                ready = true;
+                console.debug('[EME] YouTube player connected via iframe postMessage API');
+                this.ytPlayer?.setPlaybackRate(this.plugin.settings.defaultPlaybackRate);
+                this.startYouTubeTick();
+            }
+        };
+        window.addEventListener('message', handler);
+        this.ytIframeHandler = handler;
+
+        // The player only starts streaming state after a 'listening' handshake;
+        // retry until the first state delivery arrives (iframe may still be booting).
+        this.ytListenTimer = window.setInterval(() => {
+            if (this.destroyed || ready) {
+                if (this.ytListenTimer) window.clearInterval(this.ytListenTimer);
+                this.ytListenTimer = null;
+                return;
+            }
+            send({ event: 'listening' });
+        }, 500);
+
+        this.ytPlayer = {
+            getCurrentTime: () => state.time,
+            getPlayerState: () => state.playerState,
+            getDuration: () => state.duration,
+            playVideo: () => send({ event: 'command', func: 'playVideo', args: [] }),
+            pauseVideo: () => send({ event: 'command', func: 'pauseVideo', args: [] }),
+            seekTo: (seconds: number, allowSeekAhead: boolean) =>
+                send({ event: 'command', func: 'seekTo', args: [seconds, allowSeekAhead] }),
+            setPlaybackRate: (rate: number) =>
+                send({ event: 'command', func: 'setPlaybackRate', args: [rate] }),
+        };
+    }
+
+    private detachYouTubeIframeController(): void {
+        if (this.ytIframeHandler) {
+            window.removeEventListener('message', this.ytIframeHandler);
+            this.ytIframeHandler = null;
         }
-        const tag = document.createElement('script');
-        tag.src = "https://www.youtube.com/iframe_api";
-        document.head.appendChild(tag);
+        if (this.ytListenTimer) {
+            window.clearInterval(this.ytListenTimer);
+            this.ytListenTimer = null;
+        }
     }
 
     private async renderYouTube(parent: HTMLElement, url: string): Promise<void> {
         let videoId = '';
-        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
         const match = url.match(regExp);
         if (match && match[2].length == 11) videoId = match[2];
 
@@ -853,7 +922,6 @@ export class ShadowingView extends ItemView {
     }
 
     private renderYouTubeDesktop(parent: HTMLElement, videoId: string, ytId: string): void {
-        this.loadYouTubeIframeAPI();
         const iframe = parent.createEl('iframe', {
             attr: {
                 id: ytId,
@@ -868,29 +936,7 @@ export class ShadowingView extends ItemView {
         iframe.style.width = '100%';
         iframe.style.height = '100%';
 
-        const initPlayer = () => {
-            if (this.destroyed) return;
-            if (!window.YT || !window.YT.Player) {
-                setTimeout(initPlayer, 500);
-                return;
-            }
-            try {
-                this.ytPlayer = new window.YT.Player(ytId, {
-                    events: {
-                        'onReady': () => {
-                            if (this.destroyed) return;
-                            console.log('[EME] YouTube Player API Connected');
-                            this.ytPlayer.setPlaybackRate(this.plugin.settings.defaultPlaybackRate);
-                            this.startYouTubeTick();
-                        },
-                        'onError': (e: any) => console.error('[EME] YouTube API Error:', e.data)
-                    }
-                });
-            } catch (err) {
-                console.error('[EME] YT API Hooking failed:', err);
-            }
-        };
-        initPlayer();
+        this.attachYouTubeIframeController(iframe);
     }
 
     private async renderYouTubeMobile(parent: HTMLElement, videoId: string, ytId: string): Promise<void> {
@@ -906,7 +952,7 @@ export class ShadowingView extends ItemView {
             const streamUrl = await this.fetchYouTubeStreamUrl(videoId);
 
             if (streamUrl) {
-                console.log('[EME] Mobile YouTube: got stream URL, using HTML5 video');
+                console.debug('[EME] Mobile YouTube: got stream URL, using HTML5 video');
                 this.mediaType = 'video';
                 this.detectedMediaFileName = `YouTube_${videoId}`;
                 this.renderLocalVideo(parent, streamUrl);
@@ -917,7 +963,7 @@ export class ShadowingView extends ItemView {
         }
 
         // Fallback: Obsidian proxy (video plays but no learning feature control)
-        console.log('[EME] Mobile YouTube: falling back to Obsidian proxy');
+        console.debug('[EME] Mobile YouTube: falling back to Obsidian proxy');
         this.ytMobileTime = 0;
         this.ytMobileState = -1;
 
@@ -988,11 +1034,11 @@ export class ShadowingView extends ItemView {
         if (!formats || !Array.isArray(formats)) return null;
 
         // Prefer itag 18 (360p MP4 with audio) — ideal for mobile
-        const itag18 = formats.find((f: any) => f.itag === 18 && f.url);
+        const itag18 = formats.find((f: unknown) => f.itag === 18 && f.url);
         if (itag18) return itag18.url;
 
         // Fallback: any MP4 format with direct URL
-        const mp4 = formats.find((f: any) => f.url && f.mimeType?.startsWith('video/mp4'));
+        const mp4 = formats.find((f: unknown) => f.url && f.mimeType?.startsWith('video/mp4'));
         if (mp4) return mp4.url;
 
         return null;
@@ -1051,7 +1097,7 @@ export class ShadowingView extends ItemView {
             const cached = await this.readBilibiliCache(cacheKey);
             if (cached) {
                 const sizeMB = (cached.byteLength / 1024 / 1024).toFixed(1);
-                console.log(`[EME] Loaded Bilibili video from cache: ${cacheKey} (${sizeMB}MB)`);
+                console.debug(`[EME] Loaded Bilibili video from cache: ${cacheKey} (${sizeMB}MB)`);
 
                 const blob = new Blob([cached], { type: 'video/mp4' });
                 const blobUrl = URL.createObjectURL(blob);
@@ -1086,7 +1132,7 @@ export class ShadowingView extends ItemView {
             const pages = infoData.data.pages || [];
             if (pageNum > 1 && pages.length >= pageNum) {
                 cid = pages[pageNum - 1].cid;
-                console.log(`[EME] Multi-part video: using page ${pageNum}, cid=${cid}`);
+                console.debug(`[EME] Multi-part video: using page ${pageNum}, cid=${cid}`);
             }
 
             // Step 2: Get video stream URL (low quality MP4 for fast loading)
@@ -1110,8 +1156,8 @@ export class ShadowingView extends ItemView {
                 throw new Error(t('shadowing.noStreamUrl'));
             }
 
-            const totalSize = durls.reduce((sum: number, d: any) => sum + (d.size || 0), 0);
-            console.log(`[EME] Bilibili video: ${durls.length} segment(s), total ~${(totalSize / 1024 / 1024).toFixed(1)}MB`);
+            const totalSize = durls.reduce((sum: number, d: unknown) => sum + (d.size || 0), 0);
+            console.debug(`[EME] Bilibili video: ${durls.length} segment(s), total ~${(totalSize / 1024 / 1024).toFixed(1)}MB`);
 
             // Step 3: Download all video segments
             const buffers: ArrayBuffer[] = [];
@@ -1186,7 +1232,7 @@ export class ShadowingView extends ItemView {
             if (this.bilibiliBlobUrl) URL.revokeObjectURL(this.bilibiliBlobUrl);
             this.bilibiliBlobUrl = blobUrl;
 
-            console.log(`[EME] Bilibili video loaded: ${(blob.size / 1024 / 1024).toFixed(1)}MB`);
+            console.debug(`[EME] Bilibili video loaded: ${(blob.size / 1024 / 1024).toFixed(1)}MB`);
             this.loadMedia(blobUrl, 'video', false);
             new Notice(t('shadowing.downloaded', { title }));
 
@@ -1252,7 +1298,7 @@ export class ShadowingView extends ItemView {
                 }
             }
             await this.app.vault.adapter.writeBinary(cachePath, data.buffer as ArrayBuffer);
-            console.log(`[EME] Cached: ${cachePath} (${(data.length / 1024 / 1024).toFixed(1)}MB)`);
+            console.debug(`[EME] Cached: ${cachePath} (${(data.length / 1024 / 1024).toFixed(1)}MB)`);
         } catch (e) {
             console.warn('[EME] Cache write failed:', e);
         }
@@ -1292,7 +1338,7 @@ export class ShadowingView extends ItemView {
 
             if (newContent !== content) {
                 await this.app.vault.modify(file, newContent);
-                console.log(`[EME] Replaced Bilibili URL with local: ${localPath}`);
+                console.debug(`[EME] Replaced Bilibili URL with local: ${localPath}`);
                 new Notice(t('shadowing.replacedLocal', { path: localPath }));
             }
         } catch (e) {
@@ -1368,7 +1414,7 @@ export class ShadowingView extends ItemView {
 
     private startYouTubeTick(): void {
         if (this.destroyed) return;
-        if (this.ytTimer) clearInterval(this.ytTimer);
+        if (this.ytTimer) window.clearInterval(this.ytTimer);
         this.ytTimer = window.setInterval(() => {
             if (this.ytPlayer && this.ytPlayer.getCurrentTime) {
                 this.onTimeUpdate(this.ytPlayer.getCurrentTime());
@@ -1391,11 +1437,11 @@ export class ShadowingView extends ItemView {
             e.stopPropagation();
             subtitleBtn.addClass('is-pressed');
             this.fetchAndInsertSubtitles();
-            setTimeout(() => subtitleBtn.removeClass('is-pressed'), 300);
+            window.setTimeout(() => subtitleBtn.removeClass('is-pressed'), 300);
         };
         const subtitleSetPressed = () => subtitleBtn.addClass('is-pressed');
         const subtitleClearPressed = () => {
-            setTimeout(() => {
+            window.setTimeout(() => {
                 if (!subtitleBtn.hasClass('is-animating')) {
                     subtitleBtn.removeClass('is-pressed');
                 }
@@ -1417,11 +1463,11 @@ export class ShadowingView extends ItemView {
             e.stopPropagation();
             aiBtn.addClass('is-pressed');
             this.runAIAnalysis();
-            setTimeout(() => aiBtn.removeClass('is-pressed'), 300);
+            window.setTimeout(() => aiBtn.removeClass('is-pressed'), 300);
         };
         const aiSetPressed = () => aiBtn.addClass('is-pressed');
         const aiClearPressed = () => {
-            setTimeout(() => {
+            window.setTimeout(() => {
                 if (!aiBtn.hasClass('is-animating')) aiBtn.removeClass('is-pressed');
             }, 150);
         };
@@ -1469,13 +1515,13 @@ export class ShadowingView extends ItemView {
                 btn.addClass('is-animating');
 
                 // --- Step 2: Graceful Retraction ---
-                setTimeout(() => {
+                window.setTimeout(() => {
                     btn.removeClass('is-animating');
                     btn.removeClass('is-pressed');
 
                     // --- Step 3: Final State Sync ---
                     // Sync the new DOM nodes only after the retraction is nearly done (0.5s transition)
-                    setTimeout(() => {
+                    window.setTimeout(() => {
                         this.renderLearningToggles(parent);
                     }, 400);
                 }, 600);
@@ -1485,7 +1531,7 @@ export class ShadowingView extends ItemView {
             const setPressed = () => btn.addClass('is-pressed');
             const clearPressed = () => {
                 // Add 150ms buffer to bridge the gap between touchend and click
-                setTimeout(() => {
+                window.setTimeout(() => {
                     // Only remove if we're not in the middle of the "Elegant Flow" animation
                     if (!btn.hasClass('is-animating')) {
                         btn.removeClass('is-pressed');
@@ -1511,11 +1557,11 @@ export class ShadowingView extends ItemView {
             batchBtn.addClass('is-pressed');
             // 社区免费版:批量闪卡为完整版功能,弹付费引导。
             new UpgradeModal(this.app, t('shadowing.btnBatchFlashcard')).open();
-            setTimeout(() => batchBtn.removeClass('is-pressed'), 300);
+            window.setTimeout(() => batchBtn.removeClass('is-pressed'), 300);
         };
         const batchSetPressed = () => batchBtn.addClass('is-pressed');
         const batchClearPressed = () => {
-            setTimeout(() => {
+            window.setTimeout(() => {
                 if (!batchBtn.hasClass('is-animating')) batchBtn.removeClass('is-pressed');
             }, 150);
         };
@@ -1535,7 +1581,7 @@ export class ShadowingView extends ItemView {
                 e.stopPropagation();
                 focusBtn.addClass('is-pressed');
                 this.toggleFocusMode();
-                setTimeout(() => focusBtn.removeClass('is-pressed'), 300);
+                window.setTimeout(() => focusBtn.removeClass('is-pressed'), 300);
             };
         }
     }
@@ -1546,7 +1592,7 @@ export class ShadowingView extends ItemView {
 
     private applySavedPlayerHeight(playerContainer: HTMLElement): void {
         if (this.isPhoneLayout()) return;
-        const saved = Number((this.plugin.settings as any).shadowingPlayerHeight || 0);
+        const saved = Number((this.plugin.settings as unknown).shadowingPlayerHeight || 0);
         if (!Number.isFinite(saved) || saved <= 0) return;
         const height = this.clampPlayerHeight(saved);
         playerContainer.style.height = `${height}px`;
@@ -1570,7 +1616,7 @@ export class ShadowingView extends ItemView {
             return;
         }
 
-        const saved = Number((this.plugin.settings as any).shadowingPlayerHeight || 0);
+        const saved = Number((this.plugin.settings as unknown).shadowingPlayerHeight || 0);
         if (Number.isFinite(saved) && saved > 0) {
             this.applySavedPlayerHeight(this.playerContainerEl);
         } else {
@@ -1633,7 +1679,7 @@ export class ShadowingView extends ItemView {
             dragging = false;
             document.body.removeClass('lme-player-resizing');
             const finalHeight = Math.round(playerContainer.getBoundingClientRect().height);
-            (this.plugin.settings as any).shadowingPlayerHeight = this.clampPlayerHeight(finalHeight);
+            (this.plugin.settings as unknown).shadowingPlayerHeight = this.clampPlayerHeight(finalHeight);
             this.plugin.saveSettings();
         };
 
@@ -1724,7 +1770,7 @@ export class ShadowingView extends ItemView {
     }
 
     private collapseWorkspaceSidebarsForFocus(): void {
-        const workspace = this.app.workspace as any;
+        const workspace = this.app.workspace as unknown;
         const leftSplit = workspace.leftSplit;
         const rightSplit = workspace.rightSplit;
         this.focusLeftSplitWasCollapsed = !!leftSplit?.collapsed;
@@ -1738,7 +1784,7 @@ export class ShadowingView extends ItemView {
     }
 
     private restoreWorkspaceSidebarsAfterFocus(): void {
-        const workspace = this.app.workspace as any;
+        const workspace = this.app.workspace as unknown;
         const leftSplit = workspace.leftSplit;
         const rightSplit = workspace.rightSplit;
         if (this.focusLeftSplitWasCollapsed === false && leftSplit && typeof leftSplit.expand === 'function') {
@@ -1752,7 +1798,7 @@ export class ShadowingView extends ItemView {
     }
 
     private switchObsidianToDarkForFocus(): void {
-        const obsidianApp = this.app as any;
+        const obsidianApp = this.app as unknown;
         const vaultConfig = obsidianApp.vault?.config;
         const current = vaultConfig?.theme || vaultConfig?.baseTheme || (document.body.hasClass('theme-dark') ? 'dark' : 'light');
         this.focusPreviousBaseTheme = current || null;
@@ -1780,7 +1826,7 @@ export class ShadowingView extends ItemView {
             return;
         }
 
-        const obsidianApp = this.app as any;
+        const obsidianApp = this.app as unknown;
         const vaultConfig = obsidianApp.vault?.config;
         try {
             if (typeof obsidianApp.setConfig === 'function') {
@@ -1992,7 +2038,7 @@ export class ShadowingView extends ItemView {
 
     private attachDictationPlaySync(): void {
         this.detachDictationPlaySync();
-        const media = this.getCurrentMedia() as HTMLMediaElement | null;
+        const media = this.getCurrentMedia();
         if (!media) return;
         this.dictationPlayMedia = media;
         this.dictationPlaySync = () => this.syncDictationPlayIcon();
@@ -2266,7 +2312,7 @@ export class ShadowingView extends ItemView {
 
     private stopRecorderTimer(): void {
         if (this.recorderTimer) {
-            clearInterval(this.recorderTimer);
+            window.clearInterval(this.recorderTimer);
             this.recorderTimer = null;
         }
     }
@@ -2348,7 +2394,7 @@ export class ShadowingView extends ItemView {
         const dataArray = new Uint8Array(bufferLength);
 
         const draw = () => {
-            this.waveformAnimFrame = requestAnimationFrame(draw);
+            this.waveformAnimFrame = window.requestAnimationFrame(draw);
             analyser.getByteFrequencyData(dataArray);
 
             const w = canvas.width;
@@ -2679,11 +2725,11 @@ export class ShadowingView extends ItemView {
     }
 
     private async scoreRecording(blob: Blob, originalText: string): Promise<PronunciationScore | null> {
-        const settings = this.plugin.settings as any;
+        const settings = this.plugin.settings as unknown;
         const r = AIService.resolveProvider(settings, 'aiScoring');
         const model = r.model || AIService.DEFAULT_GEMINI_MODEL;
         const locale: 'en' | 'zh' = 'zh';
-        const geminiRec = (settings.aiProviders || []).find((p: any) => p.id === 'gemini');
+        const geminiRec = (settings.aiProviders || []).find((p: unknown) => p.id === 'gemini');
         const geminiKey = (geminiRec && geminiRec.apiKey) || settings.geminiApiKey || '';
         const isGemini = r.kind === 'gemini' || r.baseUrl.includes('generativelanguage.googleapis.com');
 
@@ -2828,7 +2874,7 @@ export class ShadowingView extends ItemView {
     // 三个讲解卡浮层方法已随完整版移除;触发点改为上方付费引导。
 
     private async parseActiveNoteTimestamps(): Promise<void> {
-        console.log('[EME] parseActiveNoteTimestamps() started');
+        console.debug('[EME] parseActiveNoteTimestamps() started');
 
         // 切换/重载笔记时清空教学点状态
         this.teachingShown.clear();
@@ -2849,7 +2895,7 @@ export class ShadowingView extends ItemView {
         }
 
         if (!file || file.extension !== 'md') {
-            console.log('[EME] No Markdown file for subtitle parsing');
+            console.debug('[EME] No Markdown file for subtitle parsing');
             return;
         }
 
@@ -2967,7 +3013,7 @@ export class ShadowingView extends ItemView {
                         endSec: nextBlock ? nextBlock.startSec : (duration || block.startSec + 10)
                     };
                 });
-                console.log(`[EME] Loaded ${this.blocks.length} blocks from SRT`);
+                console.debug(`[EME] Loaded ${this.blocks.length} blocks from SRT`);
                 this.renderBlocks();
                 return;
             }
@@ -2981,7 +3027,7 @@ export class ShadowingView extends ItemView {
             };
         });
 
-        console.log(`[EME] Parsed ${this.blocks.length} subtitle blocks`);
+        console.debug(`[EME] Parsed ${this.blocks.length} subtitle blocks`);
         this.renderBlocks();
     }
 
@@ -3015,12 +3061,12 @@ export class ShadowingView extends ItemView {
             const timeSpan = item.createSpan({ text: timeStr, cls: 'time' });
             const textContainer = item.createDiv('text');
             const sourcePath = this.file ? this.file.path : '';
-            const rawText = block.text.replace(/^[\[{(]?\d{1,2}:\d{2}(?::\d{2})?(?:-\d{1,2}:\d{2}(?::\d{2})?)?[\]})]?\s*/, '').trim();
+            const rawText = block.text.replace(/^[[{(]?\d{1,2}:\d{2}(?::\d{2})?(?:-\d{1,2}:\d{2}(?::\d{2})?)?[\]})]?\s*/, '').trim();
 
             MarkdownRenderer.renderMarkdown(rawText, textContainer, sourcePath, this);
 
             const seekHandler = (e: Event) => {
-                console.log(`[EME] Seek to ${block.startSec}s requested via ${e.type}`);
+                console.debug(`[EME] Seek to ${block.startSec}s requested via ${e.type}`);
 
                 e.stopPropagation();
 
@@ -3095,7 +3141,7 @@ export class ShadowingView extends ItemView {
             }
 
             const delay = Platform.isMobile ? 300 : 0;
-            setTimeout(() => {
+            window.setTimeout(() => {
                 try {
                     const selection = window.getSelection()?.toString().trim();
                     if (!selection) return;
@@ -3188,7 +3234,7 @@ export class ShadowingView extends ItemView {
             input.style.height = 'auto';
             input.style.height = `${Math.max(input.scrollHeight, minFloor)}px`;
         };
-        setTimeout(() => {
+        window.setTimeout(() => {
             resize();
             input.focus();
         }, 0);
@@ -3270,7 +3316,7 @@ export class ShadowingView extends ItemView {
             e.stopPropagation();
             this.showDictationSummary = true;
             this.renderBlocks();
-            requestAnimationFrame(() => {
+            window.requestAnimationFrame(() => {
                 const report = this.blocksContainer.querySelector('.lme-dictation-summary');
                 if (report) report.scrollIntoView({ behavior: 'smooth', block: 'start' });
             });
@@ -3369,7 +3415,7 @@ export class ShadowingView extends ItemView {
     }
 
     private getCleanBlockText(block: TimestampBlock): string {
-        return block.text.replace(/^[\[{(]?\d{1,2}:\d{2}(?::\d{2})?(?:-\d{1,2}:\d{2}(?::\d{2})?)?[\]})]?\s*/, '').trim();
+        return block.text.replace(/^[[{(]?\d{1,2}:\d{2}(?::\d{2})?(?:-\d{1,2}:\d{2}(?::\d{2})?)?[\]})]?\s*/, '').trim();
     }
 
     private renderDictationSummaryReport(parent: HTMLElement): void {
@@ -3510,7 +3556,7 @@ export class ShadowingView extends ItemView {
     } {
         // Strip Markdown / HTML / timestamp formatting from the original
         const stripMarkdown = (s: string) => s
-            .replace(/^[\[{(]?\d{1,2}:\d{2}(?::\d{2})?(?:-\d{1,2}:\d{2}(?::\d{2})?)?[\]})]?\s*/, '')  // timestamps at line start only
+            .replace(/^[[{(]?\d{1,2}:\d{2}(?::\d{2})?(?:-\d{1,2}:\d{2}(?::\d{2})?)?[\]})]?\s*/, '')  // timestamps at line start only
             .replace(/!\[.*?\]\(.*?\)/g, '')       // images
             .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // [text](url) → text
             .replace(/<[^>]+>/g, '')               // HTML tags
@@ -3572,7 +3618,7 @@ export class ShadowingView extends ItemView {
         }
         const items = this.blocksContainer.querySelectorAll('.lme-shadowing-item');
         items.forEach(item => item.removeClass('active'));
-        const activeIndex = this.blocks.indexOf(this.activeBlock!);
+        const activeIndex = this.blocks.indexOf(this.activeBlock);
         if (activeIndex !== -1) {
             const activeEl = items[activeIndex] as HTMLElement;
             if (activeEl) {
@@ -3581,7 +3627,7 @@ export class ShadowingView extends ItemView {
                     this.scrollActiveBlockIntoPreferredPosition(activeEl, 0.24);
                     const textarea = activeEl.querySelector('.lme-dictation-input') as HTMLTextAreaElement;
                     if (textarea && !this.submittedLines.has(activeIndex)) {
-                        setTimeout(() => textarea.focus(), 300);
+                        window.setTimeout(() => textarea.focus(), 300);
                     }
                 } else {
                     this.scrollActiveBlockIntoPreferredPosition(activeEl, 0.10);
@@ -3738,7 +3784,7 @@ export class ShadowingView extends ItemView {
 
         // Merge short subtitle blocks into natural sentence chunks
         const merged = this.mergeSubtitleBlocks(subtitles);
-        console.log(`[EME] Subtitles: ${subtitles.length} raw → ${merged.length} merged`);
+        console.debug(`[EME] Subtitles: ${subtitles.length} raw → ${merged.length} merged`);
 
         // Format subtitles as [MM:SS] text lines
         const formatted = merged.map(s => {
@@ -3857,7 +3903,7 @@ export class ShadowingView extends ItemView {
                     'Accept': 'text/html,application/xhtml+xml',
                 },
             }));
-        } catch (e: any) {
+        } catch (e: unknown) {
             if (e?.status === 429) {
                 throw new Error(t('shadowing.youtubeRateLimit'));
             }
@@ -3872,7 +3918,7 @@ export class ShadowingView extends ItemView {
             throw new Error(t('shadowing.youtubeApiKeyFailed'));
         }
 
-        console.log(`[EME] YouTube API key extracted: ${apiKeyMatch[1].substring(0, 10)}...`);
+        console.debug(`[EME] YouTube API key extracted: ${apiKeyMatch[1].substring(0, 10)}...`);
 
         // Step 2: POST to InnerTube player endpoint with ANDROID client context
         let playerResp;
@@ -3893,7 +3939,7 @@ export class ShadowingView extends ItemView {
                     videoId,
                 }),
             }));
-        } catch (e: any) {
+        } catch (e: unknown) {
             if (e?.status === 429) {
                 throw new Error(t('shadowing.youtubeRateLimit'));
             }
@@ -3911,8 +3957,8 @@ export class ShadowingView extends ItemView {
             throw new Error(t('shadowing.youtubeNoSubtitles'));
         }
 
-        console.log(`[EME] YouTube: found ${captionsData.captionTracks.length} caption track(s): ${
-            captionsData.captionTracks.map((t: any) => `${t.name?.simpleText || t.languageCode}(${t.languageCode})`).join(', ')
+        console.debug(`[EME] YouTube: found ${captionsData.captionTracks.length} caption track(s): ${
+            captionsData.captionTracks.map((t: unknown) => `${t.name?.simpleText || t.languageCode}(${t.languageCode})`).join(', ')
         }`);
 
         // Select track by matching current active language, fallback to English, then first
@@ -3934,7 +3980,7 @@ export class ShadowingView extends ItemView {
                     'Accept-Language': 'en-US,en;q=0.9',
                 },
             }));
-        } catch (e: any) {
+        } catch (e: unknown) {
             if (e?.status === 429) {
                 throw new Error(t('shadowing.youtubeSubtitleRateLimit'));
             }
@@ -3950,7 +3996,7 @@ export class ShadowingView extends ItemView {
     }
 
     /** Check YouTube player response playability status. */
-    private checkYouTubePlayability(playerData: any): void {
+    private checkYouTubePlayability(playerData: unknown): void {
         const status = playerData?.playabilityStatus?.status;
         if (!status || status === 'OK') return;
 
@@ -3976,7 +4022,7 @@ export class ShadowingView extends ItemView {
         if (status === 'UNPLAYABLE') {
             const runs = playerData?.playabilityStatus?.errorScreen
                 ?.playerErrorMessageRenderer?.subreason?.runs || [];
-            const subreasons = runs.map((r: any) => r.text || '').join(' ');
+            const subreasons = runs.map((r: unknown) => r.text || '').join(' ');
             throw new Error(t('shadowing.youtubeUnplayable', { reason: subreasons || reason || t('common.unknownError') }));
         }
     }
@@ -4025,7 +4071,7 @@ export class ShadowingView extends ItemView {
                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
                 }
             }));
-        } catch (e: any) {
+        } catch (e: unknown) {
             if (e?.status === 429) {
                 throw new Error(t('shadowing.bilibiliRateLimit'));
             }
@@ -4051,7 +4097,7 @@ export class ShadowingView extends ItemView {
         const pages = infoData.data.pages || [];
         if (pageNum > 1 && pages.length >= pageNum) {
             cid = pages[pageNum - 1].cid;
-            console.log(`[EME] Multi-part video: using page ${pageNum}, cid=${cid}`);
+            console.debug(`[EME] Multi-part video: using page ${pageNum}, cid=${cid}`);
         }
 
         // Build common headers, include SESSDATA cookie if configured
@@ -4064,7 +4110,7 @@ export class ShadowingView extends ItemView {
         }
 
         // Step 2: Get subtitle list — try multiple approaches
-        let subtitles: any[] | null = null;
+        let subtitles: unknown[] | null = null;
 
         // Approach 1: /x/v2/dm/view (original, works on desktop with cookies)
         try {
@@ -4077,9 +4123,9 @@ export class ShadowingView extends ItemView {
             const subs = dmData?.data?.subtitle?.subtitles;
             if (subs && subs.length > 0) {
                 subtitles = subs;
-                console.log(`[EME] dm/view: found ${subs.length} subtitle track(s)`);
+                console.debug(`[EME] dm/view: found ${subs.length} subtitle track(s)`);
             }
-        } catch (e: any) {
+        } catch (e: unknown) {
             if (e?.status === 429) {
                 throw new Error(t('shadowing.bilibiliRateLimit'));
             }
@@ -4098,9 +4144,9 @@ export class ShadowingView extends ItemView {
                 const subs = playerData?.data?.subtitle?.subtitles;
                 if (subs && subs.length > 0) {
                     subtitles = subs;
-                    console.log(`[EME] player/v2: found ${subs.length} subtitle track(s)`);
+                    console.debug(`[EME] player/v2: found ${subs.length} subtitle track(s)`);
                 }
-            } catch (e: any) {
+            } catch (e: unknown) {
                 console.warn('[EME] player/v2 failed, trying page scrape...', e.message);
             }
         }
@@ -4108,7 +4154,7 @@ export class ShadowingView extends ItemView {
         // Approach 3: Scrape video page HTML for embedded subtitle data
         if (!subtitles) {
             try {
-                console.log('[EME] Trying page scrape for subtitle data...');
+                console.debug('[EME] Trying page scrape for subtitle data...');
                 const pageResp = await fetchWithRetry(() => requestUrl({
                     url: `https://www.bilibili.com/video/${bvid}${pageNum > 1 ? '?p=' + pageNum : ''}`,
                     method: 'GET',
@@ -4126,7 +4172,7 @@ export class ShadowingView extends ItemView {
                         const parsed = JSON.parse(subtitleMatch[1]);
                         if (Array.isArray(parsed) && parsed.length > 0) {
                             subtitles = parsed;
-                            console.log(`[EME] page scrape: found ${parsed.length} subtitle track(s)`);
+                            console.debug(`[EME] page scrape: found ${parsed.length} subtitle track(s)`);
                         }
                     } catch (parseErr) {
                         console.warn('[EME] Failed to parse scraped subtitle JSON');
@@ -4139,10 +4185,10 @@ export class ShadowingView extends ItemView {
                     if (urlMatch) {
                         const rawUrl = urlMatch[1].replace(/\\u002F/g, '/').replace(/\\u0026/g, '&');
                         subtitles = [{ lan: 'unknown', lan_doc: 'Scraped', subtitle_url: rawUrl }];
-                        console.log('[EME] page scrape: found subtitle_url directly');
+                        console.debug('[EME] page scrape: found subtitle_url directly');
                     }
                 }
-            } catch (e: any) {
+            } catch (e: unknown) {
                 console.warn('[EME] page scrape failed:', e.message);
             }
         }
@@ -4152,7 +4198,7 @@ export class ShadowingView extends ItemView {
             throw new Error(hint);
         }
 
-        console.log(`[EME] Found ${subtitles.length} subtitle track(s): ${subtitles.map((s: any) => `${s.lan_doc}(${s.lan})`).join(', ')}`);
+        console.debug(`[EME] Found ${subtitles.length} subtitle track(s): ${subtitles.map((s: unknown) => `${s.lan_doc}(${s.lan})`).join(', ')}`);
 
         // Select subtitle by matching current active language, fallback to English, then first
         const subtitle = this.selectBilibiliSubtitle(subtitles);
@@ -4195,7 +4241,7 @@ export class ShadowingView extends ItemView {
     }
 
     /** Select YouTube caption track matching current language, fallback to English, then first. */
-    private selectYouTubeTrack(tracks: any[]): any {
+    private selectYouTubeTrack(tracks: unknown[]): unknown {
         const target = this.getActiveLangCode();
         const exact = tracks.find(t => t.languageCode === target);
         if (exact) return exact;
@@ -4211,7 +4257,7 @@ export class ShadowingView extends ItemView {
     }
 
     /** Select Bilibili subtitle track matching current language, fallback to English, then first. */
-    private selectBilibiliSubtitle(subtitles: any[]): any {
+    private selectBilibiliSubtitle(subtitles: unknown[]): unknown {
         const target = this.getActiveLangCode();
         // Bilibili lan field: 'en', 'zh-CN', 'ja', 'ko', 'de', 'fr', etc.
         const exact = subtitles.find(s => s.lan === target);
@@ -4306,16 +4352,16 @@ export class ShadowingView extends ItemView {
     // ============================================================
 
     private async runAIAnalysis(): Promise<void> {
-        console.log('[EME] runAIAnalysis() called');
+        console.debug('[EME] runAIAnalysis() called');
         if (this.blocks.length === 0) {
-            console.log('[EME] No blocks available');
+            console.debug('[EME] No blocks available');
             new Notice(t('shadowing.downloadSubFirst'));
             return;
         }
 
         const settings = this.plugin.settings;
         if (!AIService.resolveProvider(settings, 'docAnalysis').apiKey) {
-            console.log('[EME] No API key configured');
+            console.debug('[EME] No API key configured');
             new Notice(t('shadowing.configureApiKey'));
             return;
         }
@@ -4337,11 +4383,11 @@ export class ShadowingView extends ItemView {
 
     private async executeAnalysis(promptContent: string, promptMeta?: { name: string; isBuiltIn: boolean }): Promise<void> {
         const settings = this.plugin.settings;
-        console.log('[EME] executeAnalysis called');
+        console.debug('[EME] executeAnalysis called');
         const notice = new Notice(t('shadowing.aiGenerating'), 0);
 
         try {
-            console.log('[EME] Calling AIService.analyzeSubtitles with', this.blocks.length, 'blocks');
+            console.debug('[EME] Calling AIService.analyzeSubtitles with', this.blocks.length, 'blocks');
             const ai = AIService.resolveProvider(settings, 'docAnalysis');
             let failedChunks = 0;
             const markdown = await AIService.analyzeSubtitles(
@@ -4360,17 +4406,17 @@ export class ShadowingView extends ItemView {
                 },
                 () => { failedChunks++; }
             );
-            console.log('[EME] Analysis completed, markdown length:', markdown.length);
+            console.debug('[EME] Analysis completed, markdown length:', markdown.length);
 
             // Open AI Analysis view in right sidebar
-            console.log('[EME] Activating AI analysis view');
+            console.debug('[EME] Activating AI analysis view');
             await this.plugin.activateView(AI_ANALYSIS_VIEW_TYPE, 'right');
 
             // Find the view and send the result
             const leaves = this.app.workspace.getLeavesOfType(AI_ANALYSIS_VIEW_TYPE);
-            console.log('[EME] Found leaves of type', AI_ANALYSIS_VIEW_TYPE, ':', leaves.length);
+            console.debug('[EME] Found leaves of type', AI_ANALYSIS_VIEW_TYPE, ':', leaves.length);
             if (leaves.length > 0) {
-                const aiView = leaves[0].view as any;
+                const aiView = leaves[0].view as unknown;
                 if (aiView.setResult) {
                     aiView.setResult(markdown, this.leaf, promptMeta);
                 }
@@ -4449,7 +4495,7 @@ export class ShadowingView extends ItemView {
                     if (!tsRegex.test(text)) continue;
                     tsRegex.lastIndex = 0;
 
-                    const fragment = document.createDocumentFragment();
+                    const fragment = createFragment();
                     let lastIndex = 0;
                     let match;
                     while ((match = tsRegex.exec(text)) !== null) {
@@ -4459,7 +4505,7 @@ export class ShadowingView extends ItemView {
                         }
                         // Clickable timestamp
                         const sec = parseInt(match[1]) * 60 + parseInt(match[2]);
-                        const span = document.createElement('span');
+                        const span = createSpan();
                         span.className = 'lme-ai-timestamp';
                         span.textContent = match[0];
                         span.onclick = () => this.seekTo(sec);
@@ -4471,7 +4517,7 @@ export class ShadowingView extends ItemView {
                         fragment.appendChild(document.createTextNode(text.slice(lastIndex)));
                     }
                     el.replaceChild(fragment, child);
-                } else if (child instanceof HTMLElement) {
+                } else if (child.instanceOf(HTMLElement)) {
                     walk(child);
                 }
             }
@@ -4621,7 +4667,7 @@ export class PromptSelectModal extends FuzzySuggestModal<PromptTemplate> {
     private prompts: PromptTemplate[];
     private onSelect: (prompt: PromptTemplate) => void;
 
-    constructor(app: any, prompts: PromptTemplate[], onSelect: (prompt: PromptTemplate) => void) {
+    constructor(app: unknown, prompts: PromptTemplate[], onSelect: (prompt: PromptTemplate) => void) {
         super(app);
         this.prompts = prompts;
         this.onSelect = onSelect;

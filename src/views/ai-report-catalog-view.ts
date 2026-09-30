@@ -113,7 +113,7 @@ export class AIReportCatalogView extends ItemView {
 
 		// 排序方向(只按时间)
 		const sortZone = tb.createDiv('lme-catalog-zone');
-		sortZone.createEl('span', { cls: 'lme-catalog-zone-label', text: t('nav.aiReportCatalogSortDesc') });
+		sortZone.createSpan({ cls: 'lme-catalog-zone-label', text: t('nav.aiReportCatalogSortDesc') });
 		this.dirBtn = sortZone.createEl('button', { cls: 'lme-catalog-dir' });
 		this.applyDirIcon();
 		this.dirBtn.onclick = () => {
@@ -124,7 +124,7 @@ export class AIReportCatalogView extends ItemView {
 
 		// 分组
 		const groupZone = tb.createDiv('lme-catalog-zone');
-		groupZone.createEl('span', { cls: 'lme-catalog-zone-label', text: t('nav.aiReportCatalogGroupLabel') });
+		groupZone.createSpan({ cls: 'lme-catalog-zone-label', text: t('nav.aiReportCatalogGroupLabel') });
 		const groupOpts: Opt[] = [
 			{ value: 'none', label: t('nav.aiReportCatalogGroupNone') },
 			{ value: 'month', label: t('nav.aiReportCatalogGroupMonth') },
@@ -151,10 +151,10 @@ export class AIReportCatalogView extends ItemView {
 	}
 
 	private buildSelect(opts: Opt[], current: string, onPick: (v: string) => void): HTMLSelectElement {
-		const sel = document.createElement('select');
+		const sel = createEl('select');
 		sel.className = 'lme-catalog-select';
 		for (const o of opts) {
-			const opt = document.createElement('option');
+			const opt = createEl('option');
 			opt.value = o.value;
 			opt.textContent = o.label;
 			if (o.value === current) opt.selected = true;
@@ -252,7 +252,7 @@ export class AIReportCatalogView extends ItemView {
 		const acts = card.createDiv('lme-catalog-card-tagchips');
 		const typeName = resolvePromptName(e);
 		if (typeName) {
-			const tc = acts.createEl('span', { cls: 'lme-catalog-card-tagchip is-static' });
+			const tc = acts.createSpan({ cls: 'lme-catalog-card-tagchip is-static' });
 			tc.createSpan({ text: typeName });
 		}
 		this.appendActionBtns(acts, e);
@@ -268,12 +268,12 @@ export class AIReportCatalogView extends ItemView {
 			if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); this.preview(e); }
 		};
 
-		row.createEl('span', { cls: 'lme-catalog-row-title', text: e.title });
+		row.createSpan({ cls: 'lme-catalog-row-title', text: e.title });
 
 		const attrs: string[] = [this.formatTime(e.timestamp)];
 		const typeName = resolvePromptName(e);
 		if (typeName) attrs.push(typeName);
-		row.createEl('span', { cls: 'lme-catalog-row-attrs', text: attrs.join(' · ') });
+		row.createSpan({ cls: 'lme-catalog-row-attrs', text: attrs.join(' · ') });
 
 		this.appendActionBtns(row, e);
 	}

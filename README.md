@@ -1,181 +1,181 @@
-# Language Made Easy — 沉浸式 Obsidian 英语学习工作台
+# Language Made Easy — Immersive Obsidian English Learning Workspace
 
-> English documentation: see [README-EN.md](./README-EN.md)
+> 中文文档：见 [README-ZH.md](./README-ZH.md)
 
-**Language Made Easy (LME)** 把你的 Obsidian 仓库变成一个完整的沉浸式英语学习工作台：阅读时即时查词、FSRS 间隔重复闪卡、字幕同步的视频跟读、AI 智能解析——全部在同一个地方完成，所有学习成果都以普通笔记的形式留在你的仓库里。
+**Language Made Easy (LME)** turns your Obsidian vault into a complete immersive English-learning workspace: instant dictionary lookup while reading, FSRS spaced-repetition flashcards, video shadowing with synced subtitles, and AI-powered analysis — all in one place, all stored as plain notes in your vault.
 
-<p align="center"><img src="./assets/screenshots/hero-overview.png" width="640" alt="一站式外语学习解决方案"></p>
+<p align="center"><img src="./assets/screenshots/hero-overview.png" width="640" alt="One-stop language learning solution"></p>
 
 
-> ### 💡 免费版与高级版说明
-> 本插件基础功能免费安装、免费使用，进阶功能需升级为高级版后全部解锁，一次性买断，终身享受后续迭代版本。插件内的升级引导弹窗会展示购买链接。基础版与高级版区别见下方[功能对照表](#-基础版免费-vs-高级版)。
+> ### 💡 Freemium notice
+> The basic features of this plugin are free to install and use; advanced features are fully unlocked with the Full Edition — a one-time purchase, with lifetime access to all future updates. The in-plugin upgrade dialog shows the purchase links. See the [feature comparison](#-free-basic-vs-full-edition) below for the differences.
 >
-> **基础版覆盖查词、闪卡复习、视频跟读与笔记生成的完整日常学习流程；多语种、多端同步、批量处理等进阶能力请升级高级版**。
+> **The Basic Edition covers the full daily learning loop — lookup, flashcard review, shadowing, and video notes; advanced capabilities such as more languages, cross-device sync, and batch processing are in the Full Edition.**
 
 ---
 
-## ✨ 全部功能模块
+## ✨ All Feature Modules
 
-### 🎬 一键视频笔记 —— 从链接到可跟读的笔记，只要一步
-粘贴一个 YouTube / Bilibili 链接，自动抓取标题、频道与封面，生成结构化字幕笔记并下载字幕，随时进入跟读练习。三种入口，随用随取：
-- **导航页**：搜索框旁的「生成视频笔记」按钮，粘贴链接即刻生成
-- **跟读工坊**：点击左侧 Ribbon 的工坊图标进入，在链接输入框中快速解析
-- **YouTube 频道订阅页**：浏览订阅时对任意视频一键生成，**支持多选批量下载**（高级版功能）
+### 🎬 One-Click Video Notes — from link to shadowing-ready note in one step
+Paste a YouTube / Bilibili link and the plugin fetches the title, channel, and cover, creates a structured subtitle note, and downloads the subtitles — ready for shadowing anytime. Three entry points:
+- **Navigation panel**: the "Generate video note" button next to the search box
+- **Shadowing workshop**: click the workshop icon in the left ribbon and parse a link in the input box
+- **YouTube subscriptions page**: generate notes for any video while browsing your feed, **with multi-select batch download** (Full Edition)
 
-<p align="center"><img src="./assets/screenshots/video-note.png" width="640" alt="生成的视频笔记"></p>
+<p align="center"><img src="./assets/screenshots/video-note.png" width="640" alt="Generated video note"></p>
 
-<p align="center"><img src="./assets/screenshots/nav-video-note.gif" width="640" alt="导航页输入视频链接，一键生成视频笔记"></p>
+<p align="center"><img src="./assets/screenshots/nav-video-note.gif" width="640" alt="Enter a video link on the navigation panel to generate a video note in one click"></p>
 
-**视频笔记统一管理**：所有笔记集中在跟读工坊目录页，支持排序 / 筛选 / 分组；点击卡片直接进入跟读练习，Shift + 点击预览笔记内容。
+**Unified note management**: all video notes live in the workshop catalog page with sorting, filtering, and grouping; click a card to start shadowing, Shift+click to preview the note.
 
-<p align="center"><img src="./assets/screenshots/workshop-catalog.png" width="640" alt="跟读工坊目录页"></p>
+<p align="center"><img src="./assets/screenshots/workshop-catalog.png" width="640" alt="Workshop catalog page"></p>
 
-### 📖 沉浸式查词助手 —— 读到哪，查到哪
-- **即时查词**：`Ctrl/Cmd + 双击`任意单词（或拖拽选中），释义侧边栏即时呈现
-- **上下文抓取**：自动记录包含该词的完整句子作为例句，告别碎片化记忆
-- **本地 MDX 词典**：桌面端加载本地 `.mdx`/`.mdd` 专业词典，数量不限（移动端导入离线查词为高级版功能）
-- **在线词典链**：有道 → Google 翻译 → MyMemory 自动回退，全部免费公共接口，无需任何 Key
-- **发音播放**：智能预加载，点击即播
-- **一键入本**：加入生词本，数据同步保存至 IndexedDB 与自动维护的 Markdown 文件
+### 📖 Dictionary Assistant — read anything, look up instantly
+- **Instant lookup**: `Ctrl/Cmd + double-click` any word (or select text) — definitions appear in the sidebar instantly
+- **Context capture**: the full sentence containing the word is automatically saved as its example sentence
+- **Offline MDX dictionaries**: load local `.mdx`/`.mdd` dictionaries on desktop with no count limit (mobile import is Full Edition)
+- **Online fallback chain**: Youdao → Google Translate → MyMemory, all free public APIs, no key needed
+- **Pronunciation**: audio playback with smart preloading
+- **One-click add** to your vocabulary notebook (IndexedDB + auto-maintained markdown file)
 
-<p align="center"><img src="./assets/screenshots/dictionary-lookup.png" width="640" alt="双击查词：侧边栏即时显示释义"></p>
+<p align="center"><img src="./assets/screenshots/dictionary-lookup.png" width="640" alt="Double-click lookup with sidebar definitions"></p>
 
-### 🧠 FSRS 闪卡复习系统 —— 学过的都记住
-- 最先进的 **FSRS 调度算法**（`ts-fsrs`），为每张卡计算最优复习间隔
-- **翻卡模式**：丝滑翻卡动画 + 翻页音效
-- **成长看板**：全年学习热力图、复习统计、每日复习提醒
-- **闪卡管理器**：搜索 / 按语言与掌握度筛选 / 排序 / 行内编辑 / 批量删除
-- **学习宠物** 🐣：孵蛋、升级、随连击成长，复习也有陪伴感
+### 🧠 FSRS Flashcards — remember what you learn
+- State-of-the-art **FSRS scheduler** (`ts-fsrs`) computes optimal review intervals for every card
+- **Flip study mode** with smooth card animations and page-turn sound
+- **Growth dashboard**: year heatmap, review statistics, daily review reminder
+- **Flashcard manager**: search, filter by language/mastery, sort, inline edit, bulk delete
+- **Learning companion pet** 🐣: a small companion that hatches, levels up, and grows with your streaks
 
-<p align="center"><img src="./assets/screenshots/flashcard-review.png" width="300" alt="闪卡复习"> <img src="./assets/screenshots/flashcard-review-2.png" width="300" alt="闪卡复习统计"></p>
+<p align="center"><img src="./assets/screenshots/flashcard-review.png" width="300" alt="Flashcard review"> <img src="./assets/screenshots/flashcard-review-2.png" width="300" alt="Flashcard review stats"></p>
 
-<p align="center"><img src="./assets/screenshots/one-click-cards.png" width="640" alt="一键制卡过程"></p>
-<p align="center"><img src="./assets/screenshots/batch-generate.png" width="640" alt="AI 批量生成闪卡（高级版功能）"></p>
+<p align="center"><img src="./assets/screenshots/one-click-cards.png" width="640" alt="One-click card creation process"></p>
+<p align="center"><img src="./assets/screenshots/batch-generate.png" width="640" alt="AI batch flashcard generation (Full Edition)"></p>
 
-### 🎬 视频跟读工坊 —— 用真实视频学英语
-- **YouTube、Bilibili、本地音视频**统一在一个工坊里
-- **从链接生成视频笔记**，下载字幕写入笔记，离线随时练
-- **字幕实时同步**，播放自动滚动定位
-- **跟读模式 / 听写模式**一键切换
-- **精准播放控制**：0.8x / 1.0x / 1.25x 倍速，-5s / -10s 快速回跳
-- **工坊目录页**：全部字幕笔记统一管理，支持排序 / 筛选 / 分组
+### 🎬 Video Shadowing Workshop — learn from real videos
+- **YouTube, Bilibili, and local video/audio** files in one workspace
+- **Generate a video note from a URL**, download subtitles into it, and practice offline anytime
+- **Real-time subtitle sync** with auto-scroll during playback
+- **Shadowing mode & dictation mode** — one-click switch between repeat-after and write-what-you-hear
+- **Precise playback control**: 0.8x / 1.0x / 1.25x speed, quick -5s / -10s jumps
+- **Workshop catalog page**: all your subtitle notes organized with sorting, filtering, and grouping
 
-<p align="center"><img src="./assets/screenshots/shadowing-mode.png" width="315" alt="跟读模式"> <img src="./assets/screenshots/dictation-mode.png" width="315" alt="听写模式"></p>
-<p align="center"><em>跟读模式（左）与听写模式（右）</em></p>
+<p align="center"><img src="./assets/screenshots/shadowing-mode.png" width="315" alt="Shadowing mode"> <img src="./assets/screenshots/dictation-mode.png" width="315" alt="Dictation mode"></p>
+<p align="center"><em>Shadowing mode (left) and dictation mode (right)</em></p>
 
-<p align="center"><img src="./assets/screenshots/listening-mode-2.png" width="640" alt="听力模式"></p>
-<p align="center"><img src="./assets/screenshots/record-pronunciation.png" width="640" alt="录音跟读，AI 发音评分"></p>
-<p align="center"><img src="./assets/screenshots/focus-mode.png" width="640" alt="专注模式"></p>
-<p align="center"><em>专注模式</em></p>
+<p align="center"><img src="./assets/screenshots/listening-mode-2.png" width="640" alt="Listening mode"></p>
+<p align="center"><img src="./assets/screenshots/record-pronunciation.png" width="640" alt="Record and get AI pronunciation scoring"></p>
+<p align="center"><img src="./assets/screenshots/focus-mode.png" width="640" alt="Focus mode"></p>
+<p align="center"><em>Focus mode</em></p>
 
-### ✨ AI 智能解析 —— 自备 API Key，数据归你
-- **6 套内置解析模板**：综合解析、词汇难度分析、文化背景解析、双语对照精读、泛读随堂测验、盲记填空挑战
-- 报告中的**时间戳可点击**，直接跳回视频对应瞬间
-- **报告历史与目录页**：浏览、搜索、分组、随时重开历史报告
-- **AI 发音评分**：跟读录音多维点评
-- **一键补齐闪卡**：让 AI 补全卡片缺失字段
-- 支持 **OpenAI、DeepSeek、Google Gemini、Kimi、智谱 GLM、通义 Qwen、OpenRouter 及任意 OpenAI 兼容接口**——你的 Key 你做主
+### ✨ AI-Powered Analysis — bring your own API key
+- **6 built-in analysis templates**: comprehensive analysis, vocabulary difficulty, cultural background, bilingual close-reading, reading quiz, and blind-fill challenge
+- **Clickable timestamps** in every report — jump straight back to the moment in the video
+- **Report history & catalog**: browse, search, group, and re-open past reports
+- **AI pronunciation scoring** on shadowing recordings
+- **One-click flashcard auto-fill**: let AI complete missing fields on your cards
+- Works with **OpenAI, DeepSeek, Google Gemini, Kimi, GLM, Qwen, OpenRouter, or any OpenAI-compatible endpoint** — your key, your choice, your data
 
-<p align="center"><img src="./assets/screenshots/ai-analysis-2.png" width="640" alt="AI 智能解析报告"></p>
+<p align="center"><img src="./assets/screenshots/ai-analysis-2.png" width="640" alt="AI-powered analysis report"></p>
 
-### 📺 YouTube 频道订阅
-- 频道订阅 + **分类管理 + RSS 轮询 + 新视频通知**
-- 卡片/列表双视图浏览，**应用内预览播放**，不用离开 Obsidian
-- **一键下载生成字幕笔记**，支持多选批量下载
+### 📺 YouTube Channel Subscriptions
+- Subscribe to channels with **categories, RSS polling, and new-video notifications**
+- Browse your feed in card/list views and **preview videos in-app** without leaving Obsidian
+- **One-click video-note generation with subtitles**, including multi-select batch download
 
-<p align="center"><img src="./assets/screenshots/youtube-subscriptions.png" width="640" alt="YouTube 频道订阅"></p>
+<p align="center"><img src="./assets/screenshots/youtube-subscriptions.png" width="640" alt="YouTube channel subscriptions"></p>
 
-### 📝 更多功能
-- **SRT 转字幕笔记**（单个 + 批量）
-- **词汇量测试**：抽样估算你的词汇量
-- 内置 **HTML 新手指南**
-- **10 套主题**：经典纸墨、薄荷雅境、蔷薇柔粉、紫藤之梦、糖果派对、童心绿洲、珊瑚暖阳、海洋之心、极光棱镜、暗夜柠檬
-- 桌面端 + 移动端全平台支持
+### 📝 And more
+- **SRT to note** conversion (single & batch) for your own subtitle files
+- **Vocabulary size test** — estimate your vocabulary with sampling tests
+- Bundled **HTML newcomer guide**
+- **10 themes**: Paper & Ink, Mint Atelier, Rose Blush, Lavender Dream, Candy Pop, Mindful Oasis, Coral Warmth, Ocean Glass, Aurora Prism, and Dark Lemon
+- Full **desktop and mobile** support
 
 ---
 
-## 🆓 基础版（免费）vs 高级版
+## 🆓 Free (Basic) vs Full Edition
 
-基础版永久免费。**高级版**解锁以下全部高级模块——**一次买断、终身使用、永久免费更新**：
+The Basic Edition is free forever. The **Full Edition** unlocks every advanced module below — **one-time purchase, lifetime use, free updates**:
 
-| 功能模块 | 基础版（免费） | 高级版 |
+| Feature module | Basic (free) | Full Edition |
 |---|:---:|:---:|
-| 沉浸式查词（双击查词 / 例句抓取 / 发音 / 生词本） | ✅ | ✅ |
-| 本地 MDX 词典（桌面端） | ✅ | ✅ |
-| 移动端本地词典（导入离线查词） | — | ✅ |
-| 闪卡数据多端同步 | — | ✅ |
-| FSRS 闪卡复习（翻卡 / 统计 / 宠物） | ✅ | ✅ |
-| AI 解析（6 套模板 / 发音评分 / 闪卡补齐） | **部分功能** | **全部功能** |
-| 视频跟读工坊（跟读 / 听写 / 倍速） | ✅ | ✅ |
-| 视频笔记生成（含字幕下载） | ✅ | ✅ |
-| SRT 转笔记、词汇量测试、频道订阅与预览 | ✅ | ✅ |
-| **更多语种**：德语 / 法语 / 西班牙语 / 韩语 / 俄语 / 日语 | — | ✅ |
-| **9 款额外界面主题**（经典纸墨之外） | — | ✅ |
-| **订阅页视频字幕一键 / 批量下载** | — | ✅ |
-| **视频标注做笔记**（截图 + 定点跳回原处） | — | ✅ |
-| **AI 批量闪卡生成**（任意笔记一键出卡） | — | ✅ |
-| **分级词汇一键标注**（牛津 CEFR 3000/5000 + 国内考纲） | — | ✅ |
-| **闪卡数据导入 / 导出**（JSON / TXT / MD / CSV） | — | ✅ |
-| **AI 报告保存本地**（笔记 / HTML / 长图） | — | ✅ |
-| **视频讲解卡**（播放中弹窗答题互动） | — | ✅ |
-| **闪卡复习听力 / 填空复习模式** | — | ✅ |
-| **自定义 AI 提示词**（添加 / 编辑你自己的模板） | — | ✅ |
+| Dictionary lookup (double-click / context capture / pronunciation / notebook) | ✅ | ✅ |
+| Local MDX dictionaries (desktop) | ✅ | ✅ |
+| Mobile dictionaries (import for offline lookup) | — | ✅ |
+| Cross-device flashcard sync | — | ✅ |
+| FSRS flashcards (flip mode / stats / pet companion) | ✅ | ✅ |
+| AI analysis (6 templates / scoring / flashcard auto-fill) | **Partial** | **Full** |
+| Shadowing workshop (shadowing / dictation / speed control) | ✅ | ✅ |
+| Video note generation (incl. subtitle download) | ✅ | ✅ |
+| SRT to note, vocabulary test, YouTube subscriptions & preview | ✅ | ✅ |
+| **More languages**: German / French / Spanish / Korean / Russian / Japanese | — | ✅ |
+| **9 extra UI themes** (beyond Classic Paper & Ink) | — | ✅ |
+| **One-click / batch subtitle download** from the subscriptions page | — | ✅ |
+| **Video bookmark notes** (screenshot + jump back to the exact moment) | — | ✅ |
+| **AI batch flashcard generation** from any note | — | ✅ |
+| **One-click graded vocabulary annotation** (Oxford CEFR 3000/5000 + CN exam wordlists) | — | ✅ |
+| **Flashcard data import / export** (JSON / TXT / MD / CSV) | — | ✅ |
+| **Save AI reports locally** (note / HTML / long image) | — | ✅ |
+| **Video teaching cards** (quiz popups during playback) | — | ✅ |
+| **Listening / typing flashcard review modes** | — | ✅ |
+| **Custom AI prompt templates** (add / edit your own) | — | ✅ |
 
-## 🛒 解锁高级版
+## 🛒 Unlock the Full Edition
 
-高级版**一次买断**（非订阅）、**终身免费更新**。前往作者官方店铺购买：
+The Full Edition is a **one-time purchase** (no subscription) with **lifetime free updates**. Get it from the author's official stores:
 
-- **小红书店铺**：https://xhslink.com/m/4ke3sdw1uXp
-- **B站店铺**：https://b23.tv/QYtaP7T
-- **视频号小店**：https://store.weixin.qq.com/shop/a/T9WX95cCebFqe4F
+- **小红书 (Xiaohongshu)**: https://xhslink.com/m/4ke3sdw1uXp
+- **B站 (Bilibili)**: https://b23.tv/QYtaP7T
+- **视频号小店 (WeChat Channels store)**: https://store.weixin.qq.com/shop/a/T9WX95cCebFqe4F
 
-想咨询插件用法、了解高级版功能与优惠？扫码添加作者微信，作者亲自答疑：
+Questions about usage or the Full Edition? Scan the QR code to add the author on WeChat:
 
-<p align="center"><img src="./assets/wechat-qr.jpg" width="200" alt="添加作者微信" /></p>
+<p align="center"><img src="./assets/wechat-qr.jpg" width="200" alt="Add the author on WeChat" /></p>
 
 ---
 
-## 🚀 安装
+## 🚀 Installation
 
-**社区插件市场（推荐）**：设置 → 第三方插件 → 浏览 → 搜索 `Language Made Easy` → 安装 → 启用。
+**From the Obsidian Community directory (recommended)**: Settings → Community plugins → Browse → search "Language Made Easy" → Install → Enable.
 
-**手动安装**：从最新 [Release](https://github.com/PandoraReads/language-made-easy-lite/releases) 下载 `main.js`、`manifest.json`、`styles.css`，放入 `.obsidian/plugins/language-made-easy/`，然后在第三方插件中启用。
+**Manual**: download `main.js`, `manifest.json`, and `styles.css` from the latest [release](https://github.com/PandoraReads/language-made-easy-lite/releases) into `.obsidian/plugins/language-made-easy/`, then enable the plugin in Settings → Community plugins.
 
-### 快速上手
-1. **AI 功能（可选）**：在插件设置中添加大模型并填入你自己的 API Key（OpenAI / DeepSeek / Gemini / Kimi / GLM / Qwen / OpenRouter / 自定义兼容接口）
-2. **词典（可选）**：注册本地 MDX 词典，或直接使用免费在线词典链
-3. **生词本**：指定自动维护的生词文件所在文件夹
-4. 点击左侧ribbon 的学士帽图标打开**导航面板**，开始探索
+### Getting started
+1. **AI features (optional)** — add an LLM provider with your own API key in plugin settings (OpenAI / DeepSeek / Gemini / Kimi / GLM / Qwen / OpenRouter / custom OpenAI-compatible)
+2. **Dictionaries (optional)** — register local MDX dictionaries, or rely on the free online chain
+3. **Vocabulary notebook** — pick the folder for the auto-maintained vocabulary file
+4. Click the graduation-cap ribbon icon to open the **navigation panel** and explore
 
-## 🌐 网络使用说明
+## 🌐 Network usage
 
-插件完全可离线使用，以下请求均为可选、且由你主动触发：
+The plugin works fully offline except for the following optional, user-initiated requests:
 
-- **查词 / 翻译 / 发音**：`dict.youdao.com`、`translate.googleapis.com` / `translate.google.com`、`dict.iciba.com`、`api.mymemory.translated.net`
-- **视频与字幕**（打开/下载视频、刷新订阅时）：`www.youtube.com`、`i.ytimg.com` / `img.youtube.com`、`api.bilibili.com`、`www.bilibili.com`、`b23.tv`；移动端 YouTube 嵌入走 Obsidian 官方代理 `releases.obsidian.md`
-- **AI 功能**（仅当你配置了模型时）：调用你选择的服务商端点，使用**你自己的 API Key**
-- MDX 词典为本地文件，不下载任何内容
+- **Dictionary / translation / pronunciation**: `dict.youdao.com`, `translate.googleapis.com` / `translate.google.com`, `dict.iciba.com`, `api.mymemory.translated.net`
+- **Video & subtitles** (when you open/download a video or refresh subscriptions): `www.youtube.com`, `i.ytimg.com` / `img.youtube.com`, `api.bilibili.com`, `www.bilibili.com`, `b23.tv`; on mobile, YouTube embedding falls back to Obsidian's official proxy `releases.obsidian.md`
+- **AI features** (only if you configure a provider): the endpoint of your chosen provider, called with **your own API key**
+- MDX dictionaries are local files — nothing is downloaded
 
-## 🔒 隐私
+## 🔒 Privacy
 
-- **零遥测、零统计、零账号**
-- 离开你设备的数据只有：你主动发起的查词/翻译请求，以及**你自己配置的** AI 服务商调用
+- **No telemetry, no analytics, no accounts**
+- The only data leaving your device is the lookups/translations you initiate and the AI providers **you** configure
 
-**仓库外文件**：词典设置可指向存储在仓库外的 MDX 文件；插件只读取你明确选择的文件。
+**Files outside the vault**: dictionary settings may point at MDX files stored elsewhere on your device; the plugin only reads files you explicitly select.
 
-## 🛠 开发与构建
+## 🛠 Development
 
-- 环境要求：Node.js 18+
-- `npm install` 安装依赖 · `npm run dev` 开发监听 · `npm run build:release` 发布构建（非压缩可读产物，社区市场要求） · `npm test` 校验脚本
+- Requirements: Node.js 18+
+- `npm install` · `npm run dev` (watch) · `npm run build:release` (readable, non-minified bundle as required by the community directory) · `npm test`
 
-## 📄 许可证
+## 📄 License
 
 [GPL-3.0](./LICENSE)
 
-## ❤️ 支持与反馈
+## ❤️ Support
 
-发现问题或有想法？欢迎在仓库提 Issue。也可以在微博 / 小红书 / 视频号找到作者 **PandoraReads**（潘多拉的数字花园）。
+Found a bug or have an idea? Open an issue in this repository. You can also find the author as **PandoraReads** (潘多拉的数字花园) on Weibo / Xiaohongshu / WeChat Channels.
 
 ---
 
-*"让语言学习像呼吸一样自然。" — Language Made Easy*
+*"Making language learning as natural as breathing." — Language Made Easy*

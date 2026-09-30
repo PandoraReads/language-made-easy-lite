@@ -1,25 +1,25 @@
 import { Platform } from 'obsidian';
 
-let assert: any = null;
+let assert: unknown = null;
 try {
     if (Platform.isDesktop) {
-        assert = (window as any).require('assert');
+        assert = (window as unknown).require('assert');
     }
 } catch (e) {
     // Silent fail
 }
 
-const fallback = (condition: any, message?: string) => {
+const fallback = (condition: unknown, message?: string) => {
     if (!condition) {
         console.warn(`[EME] Assertion failed: ${message}`);
     }
 };
 
 // Add common assert methods to fallback
-(fallback as any).ok = fallback;
-(fallback as any).equal = (a: any, b: any, msg?: string) => fallback(a == b, msg || `${a} == ${b}`);
-(fallback as any).deepEqual = (a: any, b: any, msg?: string) => fallback(JSON.stringify(a) === JSON.stringify(b), msg || `deepEqual failed`);
-(fallback as any).strictEqual = (a: any, b: any, msg?: string) => fallback(a === b, msg || `${a} === ${b}`);
-(fallback as any).notStrictEqual = (a: any, b: any, msg?: string) => fallback(a !== b, msg || `${a} !== ${b}`);
+(fallback as unknown).ok = fallback;
+(fallback as unknown).equal = (a: any, b: any, msg?: string) => fallback(a == b, msg || `${a} == ${b}`);
+(fallback as unknown).deepEqual = (a: any, b: any, msg?: string) => fallback(JSON.stringify(a) === JSON.stringify(b), msg || `deepEqual failed`);
+(fallback as unknown).strictEqual = (a: any, b: any, msg?: string) => fallback(a === b, msg || `${a} === ${b}`);
+(fallback as unknown).notStrictEqual = (a: any, b: any, msg?: string) => fallback(a !== b, msg || `${a} !== ${b}`);
 
 export default assert || fallback;

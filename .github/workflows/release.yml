@@ -9,6 +9,8 @@ on:
 
 permissions:
   contents: write
+  # Artifact attestations 需要的 OIDC 权限(社区市场校验 release 资产来源)
+  id-token: write
 
 jobs:
   release:
@@ -21,6 +23,13 @@ jobs:
           cache: 'npm'
       - run: npm ci
       - run: npm run build:release
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: |
+            main.js
+            manifest.json
+            styles.css
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:

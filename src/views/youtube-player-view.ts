@@ -57,7 +57,7 @@ export class YouTubePlayerView extends ItemView {
         return this.playerState ? { ...this.playerState } : {};
     }
 
-    async setState(state: Record<string, unknown>, result: any): Promise<void> {
+    async setState(state: Record<string, unknown>, result: unknown): Promise<void> {
         await super.setState(state, result);
         const videoId = state?.videoId;
         if (typeof videoId !== 'string' || !/^[a-zA-Z0-9_-]{11}$/.test(videoId)) return;

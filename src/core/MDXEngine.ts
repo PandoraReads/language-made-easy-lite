@@ -2,8 +2,8 @@
 import { Platform } from 'obsidian';
 
 // Dynamic requires for Node-only modules to prevent load failures on mobile
-let fs: any = null;
-let jsMdict: any = null;
+let fs: unknown = null;
+let jsMdict: unknown = null;
 
 try {
     if (Platform.isDesktop) {
@@ -15,9 +15,9 @@ try {
 }
 
 export class MDXEngine {
-    private mdx: any = null;
+    private mdx: unknown = null;
     // Multiple MDD files: main + numbered (.1.mdd, .2.mdd, ...)
-    private mdds: any[] = [];
+    private mdds: unknown[] = [];
     private mdxPath: string;
     private mddPath: string;
     private cssPath: string;
@@ -32,7 +32,7 @@ export class MDXEngine {
 
     public async load(): Promise<void> {
         if (Platform.isMobile || !fs || !jsMdict) {
-            console.log('[EME] MDX is disabled on mobile or Node environment missing.');
+            console.debug('[EME] MDX is disabled on mobile or Node environment missing.');
             return;
         }
 
@@ -52,13 +52,13 @@ export class MDXEngine {
             if (fs.existsSync(this.cssPath)) {
                 try {
                     this.cssContent = fs.readFileSync(this.cssPath, 'utf-8');
-                    console.log(`[EME] MDX CSS loaded: ${this.cssPath}`);
+                    console.debug(`[EME] MDX CSS loaded: ${this.cssPath}`);
                 } catch (e) {
                     console.error(`[EME] Failed to read MDX CSS: ${this.cssPath}`, e);
                 }
             }
 
-            console.log(`[EME] MDX loaded: ${this.mdxPath}, MDD files: ${this.mdds.length}`);
+            console.debug(`[EME] MDX loaded: ${this.mdxPath}, MDD files: ${this.mdds.length}`);
         } catch (err) {
             console.error('[EME] MDX Loading failed:', err);
             throw err;
@@ -82,7 +82,7 @@ export class MDXEngine {
                 const mdd = new jsMdict.MDD(this.mddPath);
                 this.mdds.push(mdd);
                 loadedPaths.add(this.mddPath);
-                console.log(`[EME] MDD loaded: ${this.mddPath} (${mdd.keywordList?.length || 0} keys)`);
+                console.debug(`[EME] MDD loaded: ${this.mddPath} (${mdd.keywordList?.length || 0} keys)`);
             } catch (e) {
                 console.warn(`[EME] Failed to load MDD: ${this.mddPath}`, e.message);
             }
@@ -112,7 +112,7 @@ export class MDXEngine {
                     this.mdds.push(mdd);
                     loadedPaths.add(fullPath);
                     const audioCount = mdd.keywordList?.filter(k => /\.(mp3|wav|ogg|spx|aac|m4a)/i.test(k.keyText)).length || 0;
-                    console.log(`[EME] MDD auto-loaded: ${fullPath} (${mdd.keywordList?.length || 0} keys, ${audioCount} audio)`);
+                    console.debug(`[EME] MDD auto-loaded: ${fullPath} (${mdd.keywordList?.length || 0} keys, ${audioCount} audio)`);
                 } catch (e) {
                     console.warn(`[EME] Failed to load MDD: ${fullPath}`, e.message);
                 }
@@ -194,13 +194,13 @@ export class MDXEngine {
                         .slice(0, 3)
                         .map(k => k.keyText);
                     if (audioKeys.length > 0) {
-                        console.log('[EME] MDD audio key samples:', audioKeys);
+                        console.debug('[EME] MDD audio key samples:', audioKeys);
                     }
                 }
             }
         }
 
-        console.log('[EME] getResource:', resourcePath, '-> decoded:', decodedPath);
+        console.debug('[EME] getResource:', resourcePath, '-> decoded:', decodedPath);
 
         // Build multiple path variations to try
         const candidates = this.buildPathCandidates(decodedPath);
@@ -213,7 +213,7 @@ export class MDXEngine {
             for (const candidate of candidates) {
                 const result = this.locateInMdd(mdd, candidate);
                 if (result) {
-                    console.log(`[EME] Found in MDD #${mddIdx}: "${candidate}" (${result.length} bytes)`);
+                    console.debug(`[EME] Found in MDD #${mddIdx}: "${candidate}" (${result.length} bytes)`);
                     return result;
                 }
             }
@@ -221,7 +221,7 @@ export class MDXEngine {
             // Strategy 2: Linear case-insensitive scan (slow but reliable)
             const result = this.linearScanInMdd(mdd, decodedPath);
             if (result) {
-                console.log(`[EME] Found via linear scan in MDD #${mddIdx}: (${result.length} bytes)`);
+                console.debug(`[EME] Found via linear scan in MDD #${mddIdx}: (${result.length} bytes)`);
                 return result;
             }
         }
@@ -263,7 +263,7 @@ export class MDXEngine {
     /**
      * Try to locate a resource in a specific MDD using binary search.
      */
-    private locateInMdd(mdd: any, key: string): Buffer | null {
+    private locateInMdd(mdd: unknown, key: string): Buffer | null {
         try {
             const result = mdd.locate(key);
             if (result && result.definition) {
@@ -278,7 +278,7 @@ export class MDXEngine {
     /**
      * Linear scan through a specific MDD's keys (handles case/path mismatches).
      */
-    private linearScanInMdd(mdd: any, rawPath: string): Buffer | null {
+    private linearScanInMdd(mdd: unknown, rawPath: string): Buffer | null {
         const list = mdd.keywordList;
         if (!list || list.length === 0) return null;
 

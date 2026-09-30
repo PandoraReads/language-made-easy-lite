@@ -18,8 +18,8 @@ export const flipMode: ModeRenderer = {
         const back = inner.createDiv('lme-card-face lme-card-back');
 
         // 正面：单词
-        front.createEl('div', { cls: 'lme-card-word', text: entry.word });
-        const hint = front.createEl('div', { cls: 'lme-card-hint', text: t('flashcard.clickFlip') });
+        front.createDiv({ cls: 'lme-card-word', text: entry.word });
+        const hint = front.createDiv({ cls: 'lme-card-hint', text: t('flashcard.clickFlip') });
 
         // 背面（word + 音标 + 发音 + 释义 + 例句）
         fillCardBack(back, entry, ctx);

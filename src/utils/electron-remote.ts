@@ -24,9 +24,9 @@ export type NativePickResult =
 // app.js), which is why the first lookup wins on current desktop builds; the
 // direct require() calls cover older/other setups. Returns null when
 // unavailable (mobile, stripped-down Electron), letting callers fall back.
-export function getElectronRemote(): any | null {
+export function getElectronRemote(): unknown | null {
     if (!Platform.isDesktop) return null;
-    const w = window as any;
+    const w = window as unknown;
     try {
         const remote = w.electron?.remote
             ?? w.require?.('@electron/remote')

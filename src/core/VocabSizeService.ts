@@ -32,7 +32,7 @@ export class VocabSizeService {
         return this.generator.generateTest(language);
     }
 
-    calculateResults(items: any[], answers: Map<string, boolean>): TestResult {
+    calculateResults(items: unknown[], answers: Map<string, boolean>): TestResult {
         return this.generator.calculateResults(items, answers);
     }
 

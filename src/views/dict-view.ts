@@ -57,7 +57,7 @@ export class DictView extends ItemView {
         // 0. Hero: Morphing Orb + Typewriter
         const hero = container.createDiv('lme-dict-hero');
         hero.createDiv('lme-dict-hero-orb');
-        const typewriter = hero.createEl('div', { cls: 'lme-dict-typewriter' });
+        const typewriter = hero.createDiv({ cls: 'lme-dict-typewriter' });
         this.startTypewriter(typewriter);
 
         // 1. Title - show current language
@@ -70,7 +70,7 @@ export class DictView extends ItemView {
             russian: 'Ваш помощник в изучении русского'
         };
         const currentLang = this.plugin.settings.activeLanguage || 'english';
-        container.createEl('div', {
+        container.createDiv({
             cls: 'lme-dict-empty-title',
             text: langNames[currentLang] || langNames.english
         });
@@ -79,7 +79,7 @@ export class DictView extends ItemView {
         this.renderSearchBox(container, true);
 
         // 3. Muted Footer Desc
-        container.createEl('div', {
+        container.createDiv({
             cls: 'lme-dict-empty-desc',
             text: "powered by Pandora's Digital Garden"
         });
@@ -140,23 +140,23 @@ export class DictView extends ItemView {
                 charIndex++;
                 if (charIndex === phrase.length) {
                     deleting = true;
-                    setTimeout(tick, 1800);
+                    window.setTimeout(tick, 1800);
                     return;
                 }
-                setTimeout(tick, 75);
+                window.setTimeout(tick, 75);
             } else {
                 el.textContent = phrase.slice(0, charIndex - 1);
                 charIndex--;
                 if (charIndex === 0) {
                     deleting = false;
                     phraseIndex = (phraseIndex + 1) % phrases.length;
-                    setTimeout(tick, 350);
+                    window.setTimeout(tick, 350);
                     return;
                 }
-                setTimeout(tick, 35);
+                window.setTimeout(tick, 35);
             }
         };
-        setTimeout(tick, 600);
+        window.setTimeout(tick, 600);
     }
 
     private renderSearchBox(parent: HTMLElement, isInitial = false) {
@@ -210,8 +210,8 @@ export class DictView extends ItemView {
         const iconContainer = inner.createDiv('lme-no-results-icon');
         setIcon(iconContainer, 'search-x');
 
-        inner.createEl('div', { cls: 'lme-no-results-title', text: t('dict.noResult') });
-        inner.createEl('div', { cls: 'lme-no-results-desc', text: t('dict.noResultDesc') });
+        inner.createDiv({ cls: 'lme-no-results-title', text: t('dict.noResult') });
+        inner.createDiv({ cls: 'lme-no-results-desc', text: t('dict.noResultDesc') });
 
         // Context Snippet even on empty results
         if (this.lastContext) {
@@ -237,17 +237,17 @@ export class DictView extends ItemView {
         this.lastContext = '';
         this.lastSource = '';
 
-        console.log(`[EME] DictView.lookup("${word}") | source: ${sourcePath} | lineText len: ${lineText?.length}`);
+        console.debug(`[EME] DictView.lookup("${word}") | source: ${sourcePath} | lineText len: ${lineText?.length}`);
 
         if (lineText) {
             this.lastContext = extractSentence(lineText, word);
-            console.log(`[EME] DictView.lookup -> extracted sentence: "${this.lastContext.slice(0, 50)}..."`);
+            console.debug(`[EME] DictView.lookup -> extracted sentence: "${this.lastContext.slice(0, 50)}..."`);
         }
         if (sourcePath) {
             this.lastSource = sourcePath;
         }
 
-        console.log(`[EME] DictView.lookup("${word}") | Context: ${this.lastContext ? 'Captured' : 'None'} | Source: ${this.lastSource || 'None'} `);
+        console.debug(`[EME] DictView.lookup("${word}") | Context: ${this.lastContext ? 'Captured' : 'None'} | Source: ${this.lastSource || 'None'} `);
 
         const { contentEl } = this;
         contentEl.empty();
@@ -392,13 +392,13 @@ export class DictView extends ItemView {
         const audioBtn = header.createEl('button', { cls: 'lme-icon-btn lme-audio-btn', attr: { 'aria-label': t('dict.playAudio') } });
         setIcon(audioBtn, 'volume-2');
         audioBtn.onclick = () => {
-            console.log('[DictView] Audio button clicked');
+            console.debug('[DictView] Audio button clicked');
             playAudio(res.word, currentLanguage);
         };
 
         const meta = card.createDiv('lme-dict-meta');
-        if (res.phonetic) meta.createEl('span', { cls: 'lme-dict-phonetic', text: `[${res.phonetic}]` });
-        if (res.partOfSpeech) meta.createEl('span', { cls: 'lme-dict-pos', text: res.partOfSpeech });
+        if (res.phonetic) meta.createSpan({ cls: 'lme-dict-phonetic', text: `[${res.phonetic}]` });
+        if (res.partOfSpeech) meta.createSpan({ cls: 'lme-dict-pos', text: res.partOfSpeech });
 
         const defContainer = card.createDiv('lme-dict-definition-container');
 
@@ -407,33 +407,39 @@ export class DictView extends ItemView {
             const shadowHost = defContainer.createDiv('lme-mdx-shadow-host');
             const shadowRoot = shadowHost.attachShadow({ mode: 'open' });
 
-            if (res.style) {
-                const styleEl = document.createElement('style');
-                styleEl.textContent = res.style;
-                shadowRoot.appendChild(styleEl);
-            }
+            // Shadow-root CSS via adoptedStyleSheets (styles.css cannot cross
+            // the shadow boundary, and constructing <style> elements is
+            // disallowed by the community plugin guidelines).
+            const sheets: CSSStyleSheet[] = [];
+            const adoptSheet = (css: string) => {
+                const sheet = new CSSStyleSheet();
+                sheet.replaceSync(css);
+                sheets.push(sheet);
+            };
+            if (res.style) adoptSheet(res.style);
 
             // OALD-style collapsible boxes (.collapse .unbox: Extra Examples,
             // Word Origin, Collocations, ...) depend on the dictionary's own
             // jQuery script (oaldpe.js), which innerHTML never executes. Restore
             // them: CSS shows the hidden sibling when .unbox has .is-active, and
             // the click handler below toggles that class on .box_title clicks.
-            const foldStyle = document.createElement('style');
-            foldStyle.textContent = [
+            adoptSheet([
                 '.collapse .unbox .box_title { cursor: pointer; }',
                 '.collapse .unbox.is-active > .box_title + * { display: block; }',
                 '.idioms > .idioms_heading, .phrasal_verb_links > .unbox { cursor: pointer; }',
                 '.idioms.expanded > .idioms_heading ~ * { display: block; }',
                 '.phrasal_verb_links.expanded ul.pvrefs { display: block; }'
-            ].join('\n');
-            shadowRoot.appendChild(foldStyle);
+            ].join('\n'));
 
-            const themeStyle = document.createElement('style');
-            themeStyle.textContent = this.getMdxThemeStyle();
-            shadowRoot.appendChild(themeStyle);
+            adoptSheet(this.getMdxThemeStyle());
+            shadowRoot.adoptedStyleSheets = sheets;
 
-            const contentDiv = document.createElement('div');
+            const contentDiv = createDiv();
             contentDiv.className = 'lme-mdx-content';
+            // res.definition is the entry HTML from the user's own local .mdx
+            // dictionary file (desktop-only feature), rendered inside an
+            // isolated shadow root. It is trusted local content by design.
+            // eslint-disable-next-line no-unsanitized/property
             contentDiv.innerHTML = res.definition;
             contentDiv.style.userSelect = 'text';
             contentDiv.style.webkitUserSelect = 'text';
@@ -441,7 +447,7 @@ export class DictView extends ItemView {
 
             await this.processMdxResources(contentDiv, currentLanguage, res.dictId);
             this.applyMdxDarkThemeRuntimeFixes(contentDiv);
-            requestAnimationFrame(() => this.applyMdxDarkThemeRuntimeFixes(contentDiv));
+            window.requestAnimationFrame(() => this.applyMdxDarkThemeRuntimeFixes(contentDiv));
 
             // Double-click word lookup in MDX content
             contentDiv.ondblclick = (e) => {
@@ -518,7 +524,7 @@ export class DictView extends ItemView {
                         } else if (href.startsWith('sound://')) {
                             e.preventDefault();
                             const soundPath = href.replace('sound://', '');
-                            console.log('[DictView] MDX sound link clicked:', soundPath);
+                            console.debug('[DictView] MDX sound link clicked:', soundPath);
                             playAudio(soundPath, currentLanguage, true, res.dictId);
                         }
                     }
@@ -537,7 +543,7 @@ export class DictView extends ItemView {
         // ── Bilingual Example Sentences ──
         if (res.examples && res.examples.length > 0) {
             const exSection = card.createDiv('lme-dict-examples');
-            exSection.createEl('div', { cls: 'lme-dict-section-title', text: t('dict.examples') });
+            exSection.createDiv({ cls: 'lme-dict-section-title', text: t('dict.examples') });
             res.examples.forEach(({ en, zh }) => {
                 const pair = exSection.createDiv('lme-dict-example-pair');
                 const enEl = pair.createEl('p', { cls: 'lme-dict-example-en', text: en });
@@ -549,7 +555,7 @@ export class DictView extends ItemView {
         // ── Web Phrases / Collocations ──
         if (res.webPhrases && res.webPhrases.length > 0) {
             const webSection = card.createDiv('lme-dict-web-phrases');
-            webSection.createEl('div', { cls: 'lme-dict-section-title', text: t('dict.phrases') });
+            webSection.createDiv({ cls: 'lme-dict-section-title', text: t('dict.phrases') });
             res.webPhrases.forEach(phrase => {
                 const p = webSection.createEl('p', { cls: 'lme-dict-web-phrase', text: phrase });
                 this.addDoubleClickLookup(p);
@@ -732,7 +738,7 @@ export class DictView extends ItemView {
         const elements = [container, ...Array.from(container.querySelectorAll('*'))] as HTMLElement[];
 
         for (const el of elements) {
-            if (!(el instanceof HTMLElement)) continue;
+            if (!(el.instanceOf(HTMLElement))) continue;
             if (this.isMdxMediaElement(el)) continue;
 
             const style = window.getComputedStyle(el);
@@ -895,8 +901,8 @@ export class DictView extends ItemView {
                 `> ${t('vocabNote.source')}: [[${this.lastSource}]] | ${t('vocabNote.date')}: ${dateStr}\n\n`;
 
             if (file) {
-                const content = await this.app.vault.read(file as any);
-                await this.app.vault.modify(file as any, content + (content.endsWith('\n') ? '' : '\n') + cardContent);
+                const content = await this.app.vault.read(file as unknown);
+                await this.app.vault.modify(file as unknown, content + (content.endsWith('\n') ? '' : '\n') + cardContent);
             } else {
                 const header = t('vocabNote.header');
                 await this.app.vault.create(fullPath, header + cardContent);
@@ -906,8 +912,8 @@ export class DictView extends ItemView {
 
             // Refresh flashcard review view if open
             const flashcardLeaf = this.app.workspace.getLeavesOfType('lme-flashcard-view')[0];
-            if (flashcardLeaf && (flashcardLeaf.view as any).enqueueNewCard) {
-                await (flashcardLeaf.view as any).enqueueNewCard(entry);
+            if (flashcardLeaf && (flashcardLeaf.view as unknown).enqueueNewCard) {
+                await (flashcardLeaf.view as unknown).enqueueNewCard(entry);
             }
 
             // Find specific button for feedback

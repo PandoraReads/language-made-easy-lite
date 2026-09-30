@@ -70,7 +70,7 @@ export class TextInputModal extends Modal {
                 }
                 text.inputEl.style.width = '100%';
                 // Focus for immediate editing.
-                setTimeout(() => text.inputEl.focus(), 0);
+                window.setTimeout(() => text.inputEl.focus(), 0);
             });
 
         new Setting(contentEl)

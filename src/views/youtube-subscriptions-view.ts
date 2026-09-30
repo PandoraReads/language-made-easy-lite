@@ -372,7 +372,7 @@ export class YouTubeSubscriptionsView extends ItemView {
     }
 
     /** 列表视图行:缩略图 + 标题/频道/日期 + 操作。 */
-    private renderRow(parent: HTMLElement, item: YouTubeFeedItem, subscription: any): void {
+    private renderRow(parent: HTMLElement, item: YouTubeFeedItem, subscription: unknown): void {
         const row = parent.createDiv('lme-youtube-rss-row');
         row.setAttr('data-item-id', item.itemId);
         if (item.status === 'new') row.addClass('is-new');
@@ -395,7 +395,7 @@ export class YouTubeSubscriptionsView extends ItemView {
         importBtn.onclick = () => { void this.importItem(item, importBtn); };
     }
 
-    private renderItem(parent: HTMLElement, item: YouTubeFeedItem, subscription: any): void {
+    private renderItem(parent: HTMLElement, item: YouTubeFeedItem, subscription: unknown): void {
         const card = parent.createDiv('lme-youtube-rss-card');
         card.setAttr('data-item-id', item.itemId);
         if (item.status === 'new') card.addClass('is-new');

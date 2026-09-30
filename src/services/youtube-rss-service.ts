@@ -47,7 +47,7 @@ const RETRY_DELAYS_MS = [1000, 2500];
 const SUBSCRIPTION_FETCH_SPACING_MS = 1000;
 
 function sleep(ms: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, ms));
+    return new Promise((resolve) => window.setTimeout(resolve, ms));
 }
 
 /** 从 requestUrl 抛出的错误里提取 HTTP 状态码;网络层错误(超时/重置)无状态码返回 null。 */
@@ -64,7 +64,7 @@ async function fetchYouTubeFeed(url: string, headers: Record<string, string> = {
         if (attempt > 0) await sleep(RETRY_DELAYS_MS[attempt - 1]);
         try {
             const response = await requestUrl({ url, method: 'GET', headers: merged });
-            return { status: response.status, text: response.text, headers: (response.headers || {}) as Record<string, string | undefined> };
+            return { status: response.status, text: response.text, headers: (response.headers || {}) };
         } catch (error) {
             lastError = error;
             const status = statusFromError(error);

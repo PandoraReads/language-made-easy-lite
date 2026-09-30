@@ -109,7 +109,7 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 	}
 
 	private getVaultStorageKey(): string {
-		const adapter = this.app.vault.adapter as any;
+		const adapter = this.app.vault.adapter as unknown;
 		try {
 			if (typeof adapter.getBasePath === 'function') {
 				const basePath = adapter.getBasePath();
@@ -267,7 +267,7 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 				await this.activateView(AI_ANALYSIS_VIEW_TYPE, 'right');
 				const leaves = this.app.workspace.getLeavesOfType(AI_ANALYSIS_VIEW_TYPE);
 				if (leaves.length > 0) {
-					const aiView = leaves[0].view as any;
+					const aiView = leaves[0].view as unknown;
 					if (aiView.loadMostRecent) {
 						const loaded = aiView.loadMostRecent();
 						if (!loaded) {
@@ -339,7 +339,7 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 						new UpgradeModal(this.app, themeNames[next] || next).open();
 						return;
 					}
-					this.settings.uiStyle = next as any;
+					this.settings.uiStyle = next;
 					this.applyUiTheme();
 					void this.saveSettings();
 					new Notice(t('notifications.themeSwitched', { name: themeNames[next] || next }));
@@ -402,9 +402,9 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 						item.setTitle(t('commands.lookupSelection'))
 							.setIcon('search')
 							.onClick(async () => {
-								console.log('[LME] editor-menu lookup trigger: "' + selection + '"');
-								const containerEl = (view as any)?.containerEl || (document.activeElement as HTMLElement);
-								const leaf = (view as any)?.leaf;
+								console.debug('[LME] editor-menu lookup trigger: "' + selection + '"');
+								const containerEl = (view as unknown)?.containerEl || (document.activeElement as HTMLElement);
+								const leaf = (view as unknown)?.leaf;
 								const context = await this.captureContext(selection, containerEl, leaf);
 								this.triggerLookup(selection, context.lineText, context.sourcePath, context.lineIndex);
 							});
@@ -421,7 +421,7 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 		// laptops, Force Touch trackpads, external touch monitors) report maxTouchPoints > 0,
 		// which incorrectly routes them to the mobile (magnifier-icon) lookup path.
 		try {
-			if (Platform.isMobile || (Platform as any).isTablet) {
+			if (Platform.isMobile || (Platform as unknown).isTablet) {
 				this.initMobileSupport();
 			} else {
 				this.initDesktopSupport();
@@ -464,7 +464,7 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 
 	public async refreshYouTubeSubscriptions(): Promise<void> {
 		for (const leaf of this.app.workspace.getLeavesOfType(YOUTUBE_SUBSCRIPTIONS_VIEW_TYPE)) {
-			const view = leaf.view as any;
+			const view = leaf.view as unknown;
 			if (typeof view.refresh === 'function') {
 				try { await view.refresh(); } catch (e) { console.warn('[LME] YouTube RSS view refresh failed:', e); }
 			}
@@ -474,9 +474,9 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 
 	/** 社区免费版:首次加载弹欢迎窗(基础版 vs 高级版对照 + 微信引导),仅一次。 */
 	private showWelcomeOnFirstLoad(): void {
-		if ((this.settings as any).welcomeModalShown) return;
+		if ((this.settings as unknown).welcomeModalShown) return;
 		try {
-			(this.settings as any).welcomeModalShown = true;
+			(this.settings as unknown).welcomeModalShown = true;
 			void this.saveSettings();
 			new WelcomeModal(this.app).open();
 		} catch (e) {
@@ -485,10 +485,10 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 	}
 
 	private async openNavigationOnFirstRun(): Promise<void> {
-		if ((this.settings as any).navigationPanelOpened) return;
+		if ((this.settings as unknown).navigationPanelOpened) return;
 		try {
 			await this.activateView(NAVIGATION_VIEW_TYPE, 'main');
-			(this.settings as any).navigationPanelOpened = true;
+			(this.settings as unknown).navigationPanelOpened = true;
 			await this.saveSettings();
 		} catch (e) {
 			console.warn('[LME] Failed to open navigation panel on first run:', e);
@@ -507,7 +507,7 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 			if (!leaf) { new Notice(t('nav.videoNoteFailed')); return null; }
 			await leaf.setViewState({ type: SHADOWING_VIEW_TYPE, active: false });
 		}
-		const view = leaf.view as any;
+		const view = leaf.view as unknown;
 		if (view?.createVideoNoteAndParse) {
 			return await view.createVideoNoteAndParse(normalizedUrl, true, options);
 		}
@@ -565,7 +565,7 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 	}
 
 	public async setUiTheme(theme: string): Promise<void> {
-		this.settings.uiStyle = theme as any;
+		this.settings.uiStyle = theme as unknown;
 		await this.saveSettings();
 		this.applyUiTheme();
 		const names: Record<string, string> = {
@@ -645,7 +645,7 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 		// If opened before some language's reminder time today, schedule a one-shot
 		// re-evaluation at the earliest upcoming time (only fires if app stays open).
 		if (this.reminderTimer !== null) {
-			clearTimeout(this.reminderTimer);
+			window.clearTimeout(this.reminderTimer);
 			this.reminderTimer = null;
 		}
 		if (futureMs.length > 0) {
@@ -654,7 +654,7 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 				this.reminderTimer = window.setTimeout(() => {
 					this.reminderTimer = null;
 					this.maybeShowFlashcardReminder();
-				}, delay) as unknown as number;
+				}, delay);
 			}
 		}
 	}
@@ -688,7 +688,7 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 		}
 
 		if (totalDeleted > 0) {
-			console.log(`[LME] Auto-cleaned ${totalDeleted} mastered flashcards`);
+			console.debug(`[LME] Auto-cleaned ${totalDeleted} mastered flashcards`);
 		}
 	}
 
@@ -716,16 +716,16 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 			const m = content.match(LanguageMadeEasyPlugin.MEDIA_EMBED_REGEX);
 			if (m) {
 				const dest = this.app.metadataCache.getFirstLinkpathDest(m[1], file.path);
-				if (dest instanceof TFile) return { TFile: dest } as any;
+				if (dest instanceof TFile) return { TFile: dest };
 			}
 			return null;
 		};
 		const embedded = await pickMedia();
-		const resolveAndRun = async (media: any) => {
+		const resolveAndRun = async (media: unknown) => {
 			await this.runTranscription(file, media);
 		};
 		if (embedded) {
-			await resolveAndRun((embedded as any).TFile);
+			await resolveAndRun((embedded as unknown).TFile);
 		} else {
 			new Notice(t('transcribe.noMediaFound'));
 			new MediaFileSelectModal(this.app, async (media) => {
@@ -734,7 +734,7 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 		}
 	}
 
-	private async runTranscription(noteFile: any, mediaFile: any): Promise<void> {
+	private async runTranscription(noteFile: unknown, mediaFile: unknown): Promise<void> {
 		const { TFile } = require('obsidian') as typeof import('obsidian');
 		try {
 			if (!(mediaFile instanceof TFile)) {
@@ -780,15 +780,15 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 
 			// Refresh shadowing view if open so blocks reload
 			const leaf = this.app.workspace.getLeavesOfType(SHADOWING_VIEW_TYPE)[0];
-			if (leaf) (leaf.view as any).parseActiveNoteTimestamps?.();
-		} catch (e: any) {
+			if (leaf) (leaf.view as unknown).parseActiveNoteTimestamps?.();
+		} catch (e: unknown) {
 			console.error('[LME] Transcription failed:', e);
 			new Notice((e?.message || t('transcribe.failed')));
 		}
 	}
 
 	/** Insert timestamped lines into the note's `## Subtitles` section (replace or append). */
-	private async insertSubtitlesIntoActiveNote(noteFile: any, formatted: string): Promise<void> {
+	private async insertSubtitlesIntoActiveNote(noteFile: unknown, formatted: string): Promise<void> {
 		const content = await this.app.vault.read(noteFile);
 		const lines = content.split('\n');
 		const header = '## Subtitles';
@@ -809,7 +809,7 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 	}
 
 	/** `.srt` path alongside the note, same basename. */
-	private srtPathFor(noteFile: any): string {
+	private srtPathFor(noteFile: unknown): string {
 		const path: string = noteFile.path;
 		const slash = path.lastIndexOf('/');
 		const dir = slash >= 0 ? path.slice(0, slash) : '';
@@ -867,7 +867,7 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 				if (this.settings.autoOpenSubtitleNote !== false) {
 					await this.openNoteInTab(destPath);
 				}
-			} catch (e: any) {
+			} catch (e: unknown) {
 				console.error('[LME] SRT → subtitle note failed:', e);
 				new Notice(e?.message ? `${t('srtToNote.writeFailed')} (${e.message})` : t('srtToNote.writeFailed'));
 			}
@@ -986,7 +986,7 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 					await this.writeSubtitleNote(notePath, lines, fullBody);
 					lastPath = notePath;
 					ok++;
-				} catch (e: any) {
+				} catch (e: unknown) {
 					console.error('[LME] batch SRT → subtitle note failed:', srtFile.path, e);
 					failed++;
 				}
@@ -1051,15 +1051,15 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 
 		const newLang = this.getCurrentLanguageName();
 		new Notice(t('notifications.langSwitched', { old: oldLang, new: newLang }));
-		console.log('[LME] Language switched to ' + language);
+		console.debug('[LME] Language switched to ' + language);
 
 		// Refresh open views
 		this.app.workspace.iterateAllLeaves((leaf) => {
 			const viewType = leaf.view.getViewType();
 			if (viewType === DICT_VIEW_TYPE) {
-				(leaf.view as any).render?.();
+				(leaf.view as unknown).render?.();
 			} else if (viewType === FLASHCARD_VIEW_TYPE) {
-				(leaf.view as any).render?.();
+				(leaf.view as unknown).render?.();
 			}
 		});
 	}
@@ -1155,7 +1155,7 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 	async onunload() {
 		// Clear pending flashcard reminder timer
 		if (this.reminderTimer !== null) {
-			clearTimeout(this.reminderTimer);
+			window.clearTimeout(this.reminderTimer);
 			this.reminderTimer = null;
 		}
 
@@ -1191,11 +1191,11 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 			// Only trigger if selection is outside dictionary view
 			if (target.closest('.lme-dict-view')) return;
 
-			console.log('[LME] Desktop: Double-click detected: "' + selection + '"');
+			console.debug('[LME] Desktop: Double-click detected: "' + selection + '"');
 
 			// Debounce check
 			if (isProcessing) {
-				console.log('[LME] Already processing, skipping duplicate trigger');
+				console.debug('[LME] Already processing, skipping duplicate trigger');
 				return;
 			}
 
@@ -1217,7 +1217,7 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 				console.error('[LME] Double-click lookup failed:', error);
 				new Notice(t('dict.lookupFailed', { error: error.message }));
 			} finally {
-				setTimeout(() => {
+				window.setTimeout(() => {
 					isProcessing = false;
 				}, 300);
 			}
@@ -1229,7 +1229,7 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 
 			// Debounce: prevent rapid-fire triggers
 			if (isProcessing) {
-				console.log('[LME] Already processing, skipping duplicate trigger');
+				console.debug('[LME] Already processing, skipping duplicate trigger');
 				return;
 			}
 
@@ -1249,7 +1249,7 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 			// Only trigger if selection is outside dictionary view
 			if (target.closest('.lme-dict-view')) return;
 
-			console.log('[LME] Desktop: Ctrl/Cmd+Shift + mouseup detected: "' + selection + '"');
+			console.debug('[LME] Desktop: Ctrl/Cmd+Shift + mouseup detected: "' + selection + '"');
 
 			// CRITICAL: Capture all necessary state BEFORE any async operations
 			// This prevents issues when user releases Ctrl key during async processing
@@ -1275,7 +1275,7 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 				new Notice(t('dict.lookupFailed', { error: error.message }));
 			} finally {
 				// Reset flag after a short delay to prevent rapid-fire triggers
-				setTimeout(() => {
+				window.setTimeout(() => {
 					isProcessing = false;
 				}, 300);
 			}
@@ -1284,8 +1284,8 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 		const setupDocument = (doc: Document) => {
 			if (registeredDocs.has(doc)) return;
 			registeredDocs.add(doc);
-			this.registerDomEvent(doc as any, 'dblclick', (evt: MouseEvent) => handleDoubleClick(evt));
-			this.registerDomEvent(doc as any, 'mouseup', (evt: MouseEvent) => handleMouseUp(evt));
+			this.registerDomEvent(doc as unknown, 'dblclick', (evt: MouseEvent) => handleDoubleClick(evt));
+			this.registerDomEvent(doc as unknown, 'mouseup', (evt: MouseEvent) => handleMouseUp(evt));
 		};
 
 		const setupSameOriginFrames = (doc: Document) => {
@@ -1306,15 +1306,19 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 		};
 
 		setupWindow(window);
-		this.registerEvent(this.app.workspace.on('window-open', (win) => setupWindow(win as any)));
+		this.registerEvent(this.app.workspace.on('window-open', (win) => setupWindow(win as unknown)));
 		this.registerEvent(this.app.workspace.on('layout-change', () => {
 			setupWindow(window);
 			for (const leaf of this.app.workspace.getLeavesOfType('html')) {
 				setupSameOriginFrames(leaf.view.containerEl.ownerDocument || document);
 			}
 		}));
-			if (!Platform.isMobile && !(Platform as any).isTablet) {
-				this.registerInterval(window.setInterval(() => setupSameOriginFrames(document), 2000));
+			// 块语句体刻意为之:eslint-plugin-obsidianmd 的 no-sample-code 规则
+			// 对 `window.setInterval(() => fn(...))` 形状(表达式体调用裸函数)会崩溃。
+			if (!Platform.isMobile && !(Platform as unknown).isTablet) {
+				this.registerInterval(window.setInterval(() => {
+					setupSameOriginFrames(document);
+				}, 2000));
 			}
 		}
 
@@ -1415,7 +1419,7 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 
 				if (sel && sel.rangeCount > 0) {
 					const range = sel.getRangeAt(0);
-					let container = range.commonAncestorContainer as any;
+					let container = range.commonAncestorContainer as unknown;
 					if (container && container.nodeType === Node.TEXT_NODE) container = container.parentElement;
 					const containerEl = container as HTMLElement | null;
 					if (containerEl) {
@@ -1433,11 +1437,11 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 
 				const win = doc.defaultView || window;
 				const padding = 12;
-				const vv = (win as any).visualViewport as VisualViewport | undefined;
+				const vv = (win as unknown).visualViewport as VisualViewport | undefined;
 				const hasVV = !!(vv && Number.isFinite(vv.width) && vv.width > 0 && Number.isFinite(vv.height) && vv.height > 0);
-				const viewportWidth = hasVV ? vv!.width : win.innerWidth;
-				const viewportTop = hasVV && Number.isFinite(vv!.offsetTop) ? vv!.offsetTop : 0;
-				const viewportHeight = hasVV ? vv!.height : win.innerHeight;
+				const viewportWidth = hasVV ? vv.width : win.innerWidth;
+				const viewportTop = hasVV && Number.isFinite(vv.offsetTop) ? vv.offsetTop : 0;
+				const viewportHeight = hasVV ? vv.height : win.innerHeight;
 				const safeBottom = viewportTop + viewportHeight - padding;
 
 				let anchored = false;
@@ -1475,27 +1479,27 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 					applyFixedMenuLayout(doc);
 				}
 
-				requestAnimationFrame(() => {
+				window.requestAnimationFrame(() => {
 					if (anchored) return;
 					updateMenuPosition(doc);
 				});
-			} catch (err) { }
+			} catch (err) { /* selection API unavailable in this frame */ }
 		};
 
 		const setupDoc = (doc: Document) => {
 			let selectionChangeTimer: number | null = null;
-			this.registerDomEvent(doc as any, 'selectionchange', () => {
+			this.registerDomEvent(doc as unknown, 'selectionchange', () => {
 				const win = doc.defaultView || window;
 				if (selectionChangeTimer !== null) win.clearTimeout(selectionChangeTimer);
 				selectionChangeTimer = win.setTimeout(() => showMenuForSelection(doc), 450);
 			});
 
-			this.registerDomEvent(doc as any, 'pointerup', () => {
+			this.registerDomEvent(doc as unknown, 'pointerup', () => {
 				const win = doc.defaultView || window;
 				win.setTimeout(() => showMenuForSelection(doc), 450);
 				win.setTimeout(() => showMenuForSelection(doc), 900);
 			}, { capture: true });
-			this.registerDomEvent(doc as any, 'touchend', () => {
+			this.registerDomEvent(doc as unknown, 'touchend', () => {
 				const win = doc.defaultView || window;
 				win.setTimeout(() => showMenuForSelection(doc), 450);
 				win.setTimeout(() => showMenuForSelection(doc), 900);
@@ -1503,18 +1507,18 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 
 			const win = doc.defaultView;
 			if (win) {
-				this.registerDomEvent(win as any, 'resize', () => updateMenuPosition(doc));
-				this.registerDomEvent(win as any, 'scroll', () => updateMenuPosition(doc), { capture: true });
+				this.registerDomEvent(win, 'resize', () => updateMenuPosition(doc));
+				this.registerDomEvent(win, 'scroll', () => updateMenuPosition(doc), { capture: true });
 				const vv = win.visualViewport;
 				if (vv) {
-					this.registerDomEvent(vv as any, 'resize', () => updateMenuPosition(doc));
-					this.registerDomEvent(vv as any, 'scroll', () => updateMenuPosition(doc));
+					this.registerDomEvent(vv as unknown, 'resize', () => updateMenuPosition(doc));
+					this.registerDomEvent(vv as unknown, 'scroll', () => updateMenuPosition(doc));
 				}
 			}
 		};
 
 		setupDoc(document);
-		this.registerEvent(this.app.workspace.on('window-open', (win) => setupDoc((win as any).document)));
+		this.registerEvent(this.app.workspace.on('window-open', (win) => setupDoc((win as unknown).document)));
 
 		this.register(() => {
 			this.lookupMenuEl?.remove();
@@ -1527,7 +1531,7 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 		let sourcePath = '';
 		let lineIndex = 0;
 		try {
-			console.log('[LME] captureContext triggered for: "' + selection + '"');
+			console.debug('[LME] captureContext triggered for: "' + selection + '"');
 
 			// 1. Identify valid leaf and view
 			let activeLeaf = leaf;
@@ -1538,20 +1542,20 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 			}
 			if (!activeLeaf) activeLeaf = this.app.workspace.activeLeaf;
 
-			const view = activeLeaf?.view!;
+			const view = activeLeaf?.view;
 			const isMarkdown = view?.getViewType() === 'markdown';
-			const mode = (view as any)?.getMode?.();
-			console.log('[LME] captureContext view: ' + (view?.getViewType() || '') + ' | mode: ' + mode);
+			const mode = (view as unknown)?.getMode?.();
+			console.debug('[LME] captureContext view: ' + (view?.getViewType() || '') + ' | mode: ' + mode);
 
 			// 2. Resolve target file path
 			const activeFile = this.app.workspace.getActiveFile();
-			const file = (view as any)?.file || activeFile;
+			const file = (view as unknown)?.file || activeFile;
 			sourcePath = file ? file.path : '';
 
 			// 3. Mode-specific extraction
 			if (isMarkdown && mode === 'source') {
 				// SOURCE MODE (Source / Live Preview)
-				const editor = (view as any).editor;
+				const editor = (view as unknown).editor;
 				const cursor = editor.getCursor?.('from') || { line: 0, ch: 0 };
 				const currentLine = cursor.line;
 
@@ -1565,7 +1569,7 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 
 				lineText = lines.join('\n');
 				lineIndex = currentLine;
-				console.log('[LME] captureContext (Source) captured ' + lines.length + ' lines');
+				console.debug('[LME] captureContext (Source) captured ' + lines.length + ' lines');
 			} else {
 				// READING MODE / DOM Fallback
 				// Skip Range API entirely on mobile to avoid RangeError
@@ -1589,7 +1593,7 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 								if (text.toLowerCase().indexOf(selection.toLowerCase()) !== -1) {
 									lineText = text;
 									if (current.matches('p, li, h1, h2, h3, h4, h5, h6, .textLayer, .lme-shadowing-item, .markdown-rendered')) {
-										console.log('[LME] captureContext (DOM) matched block: ' + current.tagName);
+										console.debug('[LME] captureContext (DOM) matched block: ' + current.tagName);
 										break;
 									}
 								}
@@ -1605,7 +1609,7 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 
 			// 4. ULTIMATE GLOBAL FALLBACK: Async scan file content if still empty
 			if (!lineText && sourcePath) {
-				console.log('[LME] Local capture failed. Initiating global scan for "' + sourcePath + '"...');
+				console.debug('[LME] Local capture failed. Initiating global scan for "' + sourcePath + '"...');
 				try {
 					const content = await this.app.vault.adapter.read(sourcePath);
 					const lines = content.split('\n');
@@ -1617,7 +1621,7 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 							const end = Math.min(lines.length - 1, i + 1);
 							lineText = lines.slice(start, end + 1).join('\n');
 							lineIndex = i;
-							console.log('[LME] captureContext (Global Fallback) found match at line ' + i);
+							console.debug('[LME] captureContext (Global Fallback) found match at line ' + i);
 							break;
 						}
 					}
@@ -1675,7 +1679,7 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 	 */
 	public async ensureWorkshopSamples(folder: string): Promise<void> {
 		if (this.settings.workshopCatalogSeeded) return;
-		const adapter = this.app.vault.adapter as any;
+		const adapter = this.app.vault.adapter as unknown;
 		try {
 			if (await adapter.exists(folder)) {
 				this.settings.workshopCatalogSeeded = true;
@@ -1776,7 +1780,7 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 	/** 目录页/外部刷新用:重新渲染已打开的目录视图(如设置改了文件夹后)。 */
 	public async refreshWorkshopCatalog(): Promise<void> {
 		for (const leaf of this.app.workspace.getLeavesOfType(WORKSHOP_CATALOG_VIEW_TYPE)) {
-			const view = leaf.view as any;
+			const view = leaf.view as unknown;
 			if (typeof view.refresh === 'function') {
 				try { await view.refresh(); } catch (e) { console.warn('[LME] catalog refresh failed:', e); }
 			}
@@ -1786,7 +1790,7 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 	/** 新报告生成后刷新已打开的 AI 报告管理目录页。 */
 	public async refreshAiReportCatalog(): Promise<void> {
 		for (const leaf of this.app.workspace.getLeavesOfType(AI_REPORT_CATALOG_VIEW_TYPE)) {
-			const view = leaf.view as any;
+			const view = leaf.view as unknown;
 			if (typeof view.refresh === 'function') {
 				try { await view.refresh(); } catch (e) { console.warn('[LME] ai report catalog refresh failed:', e); }
 			}
@@ -1794,30 +1798,30 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 	}
 
 	async activateView(type: string, side: 'main' | 'right' = 'right') {
-		console.log('[LME] activateView called for type:', type, 'on side:', side);
+		console.debug('[LME] activateView called for type:', type, 'on side:', side);
 		const { workspace } = this.app;
 		let leaf = workspace.getLeavesOfType(type)[0];
-		console.log('[LME] Existing leaf:', !!leaf);
+		console.debug('[LME] Existing leaf:', !!leaf);
 		if (!leaf) {
-			console.log('[LME] Creating new leaf');
+			console.debug('[LME] Creating new leaf');
 			leaf = (side === 'main') ? workspace.getLeaf('tab') : workspace.getRightLeaf(false);
-			console.log('[LME] Leaf created:', !!leaf);
+			console.debug('[LME] Leaf created:', !!leaf);
 			if (leaf) {
 				await leaf.setViewState({ type, active: true });
-				console.log('[LME] View state set');
+				console.debug('[LME] View state set');
 			}
 		}
 
 		// Force reveal sidebars on mobile/tablet
 		if (side === 'right' && this.app.workspace.rightSplit) {
-			console.log('[LME] Expanding right sidebar');
+			console.debug('[LME] Expanding right sidebar');
 			this.app.workspace.rightSplit.expand();
 		} else if (side === 'left' && this.app.workspace.leftSplit) {
 			this.app.workspace.leftSplit.expand();
 		}
 
 		workspace.revealLeaf(leaf);
-		console.log('[LME] Leaf revealed');
+		console.debug('[LME] Leaf revealed');
 	}
 
 	async loadSettings() {
@@ -1845,7 +1849,7 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 	 * merge is idempotent / last-write-wins.
 	 */
 	private migrateSyncWatermark(): void {
-		const s = this.settings as any;
+		const s = this.settings as unknown;
 		if (typeof s.flashcardSyncLastTime === 'number' || !s.flashcardSyncLastTime) {
 			s.flashcardSyncLastTime = {};
 		}
@@ -1873,13 +1877,13 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 	 * users add them on-demand from the settings UI. Idempotent (skips once populated).
 	 */
 	private migrateAiProviders(): void {
-		const s = this.settings as any;
+		const s = this.settings as unknown;
 		if (Array.isArray(s.aiProviders) && s.aiProviders.length > 0) return;
 
-		const providers: any[] = [];
+		const providers: unknown[] = [];
 
 		// 1. legacy custom providers → openai-compatible records
-		(s.customProviders || []).forEach((cp: any) => {
+		(s.customProviders || []).forEach((cp: unknown) => {
 			if (!cp || providers.some(p => p.id === cp.id)) return;
 			providers.push({
 				id: cp.id, name: cp.name, baseUrl: cp.baseUrl,
@@ -2056,8 +2060,6 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 			s.setProperty(prop, value);
 		}
 
-		// Inject element-specific styles via <style> tag
-		this.injectThemeStyles(theme);
 	}
 
 	private watchObsidianThemeChanges(): void {
@@ -2074,282 +2076,6 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 		this.register(() => observer.disconnect());
 	}
 
-	private injectThemeStyles(theme: string): void {
-		let el = document.getElementById('lme-dynamic-theme') as HTMLStyleElement | null;
-		if (!el) {
-			el = document.createElement('style');
-			el.id = 'lme-dynamic-theme';
-			document.head.appendChild(el);
-		}
-
-		if (theme === 'paper-ink') {
-			el.textContent = this.getThemeDarkModeGuardrails();
-			return;
-		}
-
-		// 社区免费版:非 paper-ink 主题的注入样式已随完整版移除;
-		// 此分支理论不可达(applyUiTheme 已收敛为 paper-ink),兜底仅注入暗色护栏。
-		el.textContent = this.getThemeDarkModeGuardrails();
-	}
-
-	private getThemeDarkModeGuardrails(): string {
-		return `
-			body.theme-dark[class*="lme-style-"]:not(.lme-style-neon-lime) {
-				color-scheme: dark;
-				--lme-dark-surface: var(--lme-paper-aged, #20242a);
-				--lme-dark-surface-soft: var(--lme-paper-mist, #191c20);
-				--lme-dark-surface-glass: var(--lme-glass-bg, rgba(28,32,38,0.88));
-				--lme-dark-border: var(--lme-glass-border, rgba(255,255,255,0.10));
-				--lme-dark-text: var(--lme-text-primary, var(--text-normal));
-				--lme-dark-text-soft: var(--lme-text-secondary, var(--text-muted));
-				--lme-dark-text-muted: var(--lme-text-muted, var(--text-faint));
-				--lme-dark-accent: var(--lme-accent, var(--interactive-accent));
-			}
-
-			body.theme-dark[class*="lme-style-"]:not(.lme-style-neon-lime) .lme-dict-view,
-			body.theme-dark[class*="lme-style-"]:not(.lme-style-neon-lime) .lme-flashcard-view,
-			body.theme-dark[class*="lme-style-"]:not(.lme-style-neon-lime) .lme-shadowing-view,
-			body.theme-dark[class*="lme-style-"]:not(.lme-style-neon-lime) .lme-navigation-view {
-				background-color: var(--lme-bg-universe, #090b0e) !important;
-				background-image:
-					radial-gradient(circle at 12% 8%, rgba(var(--lme-accent-rgb, 216,197,107), 0.10) 0%, transparent 34%),
-					radial-gradient(circle at 88% 18%, rgba(var(--lme-accent-rgb, 216,197,107), 0.07) 0%, transparent 36%),
-					linear-gradient(180deg, var(--lme-bg-deep, #0d0f12) 0%, var(--lme-bg-universe, #090b0e) 100%) !important;
-				color: var(--lme-dark-text) !important;
-			}
-
-			body.theme-dark[class*="lme-style-"]:not(.lme-style-neon-lime) .lme-dict-card,
-			body.theme-dark[class*="lme-style-"]:not(.lme-style-neon-lime) .lme-card-face,
-			body.theme-dark[class*="lme-style-"]:not(.lme-style-neon-lime) .lme-shadowing-item,
-			body.theme-dark[class*="lme-style-"]:not(.lme-style-neon-lime) .lme-settings-tabcontent > div,
-			body.theme-dark[class*="lme-style-"]:not(.lme-style-neon-lime) .lme-dict-search-wrapper,
-			body.theme-dark[class*="lme-style-"]:not(.lme-style-neon-lime) .modal:has(.lme-add-flashcard-modal) {
-				background: var(--lme-dark-surface-glass) !important;
-				border-color: var(--lme-dark-border) !important;
-				color: var(--lme-dark-text) !important;
-				box-shadow: var(--lme-paper-shadow, 0 14px 36px rgba(0,0,0,0.42)) !important;
-			}
-
-			body.theme-dark[class*="lme-style-"]:not(.lme-style-neon-lime) .lme-card-face::before,
-			body.theme-dark[class*="lme-style-"]:not(.lme-style-neon-lime) .lme-dict-card::before,
-			body.theme-dark[class*="lme-style-"]:not(.lme-style-neon-lime) .lme-rating-btn-v2::after,
-			body.theme-dark[class*="lme-style-"]:not(.lme-style-neon-lime) .lme-btn::after,
-			body.theme-dark[class*="lme-style-"]:not(.lme-style-neon-lime) .lme-playback-btn::after,
-			body.theme-dark[class*="lme-style-"]:not(.lme-style-neon-lime) .lme-sidebar-btn::after {
-				opacity: 0.08 !important;
-			}
-
-			body.theme-dark[class*="lme-style-"]:not(.lme-style-neon-lime) :where(
-				.lme-dict-empty-title,
-				.lme-card-word,
-				.lme-card-word-sm,
-				.lme-section-title,
-				.lme-shadowing-item .text,
-				.lme-shadowing-item .text *,
-				.lme-dict-definition-container,
-				.lme-dict-definition,
-				.lme-dict-definition-container p,
-				.lme-dict-definition-container span,
-				.lme-dict-definition-container div,
-				.lme-nav-title,
-				.lme-nav-action,
-				.lme-nav-action-label
-			) {
-				color: var(--lme-dark-text) !important;
-			}
-
-			body.theme-dark[class*="lme-style-"]:not(.lme-style-neon-lime) :where(
-				.lme-dict-empty-desc,
-				.lme-card-definition,
-				.lme-card-context,
-				.lme-card-hint,
-				.lme-card-phonetic,
-				.lme-text-muted,
-				.lme-dict-phonetic,
-				.lme-dict-pos,
-				.lme-dict-context-label,
-				.lme-nav-subtitle,
-				.lme-nav-action-description
-			) {
-				color: var(--lme-dark-text-soft) !important;
-			}
-
-			body.theme-dark[class*="lme-style-"]:not(.lme-style-neon-lime) :where(input, textarea, select, .lme-search-box, .lme-dict-search-input),
-			body.theme-dark[class*="lme-style-"]:not(.lme-style-neon-lime) .lme-add-flashcard-modal input[type="text"],
-			body.theme-dark[class*="lme-style-"]:not(.lme-style-neon-lime) .lme-add-flashcard-modal textarea,
-			body.theme-dark[class*="lme-style-"]:not(.lme-style-neon-lime) .lme-nav-lookup-row input,
-			body.theme-dark[class*="lme-style-"]:not(.lme-style-neon-lime) .lme-nav-video-row input {
-				background: var(--lme-dark-surface-soft) !important;
-				border-color: var(--lme-dark-border) !important;
-				color: var(--lme-dark-text) !important;
-				box-shadow: none !important;
-			}
-
-			body.theme-dark[class*="lme-style-"]:not(.lme-style-neon-lime) :where(input, textarea, .lme-dict-search-input)::placeholder {
-				color: var(--lme-dark-text-muted) !important;
-			}
-
-			body.theme-dark[class*="lme-style-"]:not(.lme-style-neon-lime) :where(
-				.lme-btn,
-				.lme-btn-subtle,
-				.lme-open-note-btn-footer,
-				.lme-open-note-btn-minimal,
-				.lme-rating-btn-v2,
-				.lme-playback-btn,
-				.lme-sidebar-btn,
-				.lme-audio-btn,
-				.lme-add-flashcard-subtle,
-				.lme-nav-language-badge,
-				.lme-tag,
-				.lme-filter-btn
-			) {
-				background: rgba(var(--lme-accent-rgb, 216,197,107), 0.12) !important;
-				border-color: rgba(var(--lme-accent-rgb, 216,197,107), 0.22) !important;
-				color: var(--lme-dark-text) !important;
-				box-shadow: none !important;
-			}
-
-			body.theme-dark[class*="lme-style-"]:not(.lme-style-neon-lime) :where(
-				.lme-btn:hover,
-				.lme-btn-subtle:hover,
-				.lme-open-note-btn-footer:hover,
-				.lme-open-note-btn-minimal:hover,
-				.lme-rating-btn-v2:hover,
-				.lme-playback-btn:hover,
-				.lme-sidebar-btn:hover,
-				.lme-audio-btn:hover,
-				.lme-add-flashcard-subtle:hover,
-				.lme-nav-language-badge:hover
-			) {
-				background: rgba(var(--lme-accent-rgb, 216,197,107), 0.20) !important;
-				border-color: rgba(var(--lme-accent-rgb, 216,197,107), 0.34) !important;
-				color: var(--lme-dark-text) !important;
-			}
-
-			body.theme-dark[class*="lme-style-"]:not(.lme-style-neon-lime) :where(
-				.lme-btn.mod-cta,
-				.lme-btn.is-active,
-				.lme-playback-btn.is-active,
-				.lme-sidebar-btn.is-active,
-				.lme-shadowing-item.active .time,
-				.lme-heatmap-cell.active,
-				.lme-heatmap-cell.is-today
-			) {
-				background: var(--lme-dark-accent) !important;
-				border-color: var(--lme-dark-accent) !important;
-				color: #101214 !important;
-			}
-
-			body.theme-dark[class*="lme-style-"]:not(.lme-style-neon-lime) .lme-shadowing-item:not(.active) {
-				color: var(--lme-dark-text-soft) !important;
-				opacity: 0.86 !important;
-			}
-
-			body.theme-dark[class*="lme-style-"]:not(.lme-style-neon-lime) .lme-shadowing-item .time {
-				background: rgba(var(--lme-accent-rgb, 216,197,107), 0.12) !important;
-				color: var(--lme-dark-text-soft) !important;
-			}
-
-			body.theme-dark[class*="lme-style-"]:not(.lme-style-neon-lime) .is-dictation .lme-shadowing-item {
-				background: transparent !important;
-				border-color: transparent !important;
-				box-shadow: none !important;
-			}
-
-			body.theme-dark[class*="lme-style-"]:not(.lme-style-neon-lime) .is-dictation .lme-shadowing-item.active {
-				background: rgba(var(--lme-accent-rgb, 216,197,107), 0.08) !important;
-				border-left-color: var(--lme-dark-accent) !important;
-			}
-
-			body.theme-dark[class*="lme-style-"]:not(.lme-style-neon-lime) .lme-dictation-workbench {
-				--lme-dictation-surface: var(--lme-dark-surface-glass) !important;
-				--lme-dictation-surface-soft: rgba(var(--lme-accent-rgb, 216,197,107), 0.09) !important;
-				--lme-dictation-border: var(--lme-dark-border) !important;
-				--lme-dictation-rule: rgba(var(--lme-accent-rgb, 216,197,107), 0.16) !important;
-				--lme-dictation-text: var(--lme-dark-text) !important;
-				--lme-dictation-muted: var(--lme-dark-text-muted) !important;
-				--lme-dictation-soft: var(--lme-dark-text-soft) !important;
-				--lme-success: #69d58b !important;
-				--lme-warning: #f5bd4f !important;
-				--lme-danger: #ff8f86 !important;
-				background: transparent !important;
-				color: var(--lme-dark-text) !important;
-			}
-
-			body.theme-dark[class*="lme-style-"]:not(.lme-style-neon-lime) .lme-dictation-workbench :where(
-				.lme-dictation-stage,
-				.lme-dictation-summary,
-				.lme-dictation-main-input,
-				.lme-dictation-result-body
-			) {
-				background-color: var(--lme-dictation-surface) !important;
-				border-color: var(--lme-dictation-border) !important;
-				color: var(--lme-dictation-text) !important;
-			}
-
-			body.theme-dark[class*="lme-style-"]:not(.lme-style-neon-lime) .lme-dictation-workbench :where(
-				.lme-dictation-action-btn,
-				.lme-dictation-reveal-btn,
-				.lme-dictation-finish-btn,
-				.lme-dictation-token,
-				.lme-dictation-summary-metrics div,
-				.lme-dictation-original-flow
-			) {
-				background-color: var(--lme-dictation-surface-soft) !important;
-				border-color: var(--lme-dictation-border) !important;
-				color: var(--lme-dictation-text) !important;
-			}
-
-			body.theme-dark[class*="lme-style-"]:not(.lme-style-neon-lime) .lme-dictation-workbench :where(
-				.lme-dictation-panel-label,
-				.lme-dictation-time,
-				.lme-dictation-mini-stats,
-				.lme-dictation-history-meta,
-				.lme-dictation-summary-label,
-				.lme-dictation-empty-note,
-				.lme-dictation-live-preview.is-empty,
-				.lme-dictation-empty-answer
-			) {
-				color: var(--lme-dictation-muted) !important;
-			}
-
-			body.theme-dark[class*="lme-style-"]:not(.lme-style-neon-lime) .lme-heatmap-cell {
-				background: rgba(var(--lme-accent-rgb, 216,197,107), 0.10) !important;
-				border-color: rgba(var(--lme-accent-rgb, 216,197,107), 0.16) !important;
-			}
-
-			body.theme-dark[class*="lme-style-"]:not(.lme-style-neon-lime) .lme-dict-definition-container :where(a) {
-				color: var(--lme-dark-accent) !important;
-			}
-
-			body.theme-dark[class*="lme-style-"]:not(.lme-style-neon-lime) .lme-navigation-view .lme-nav-section,
-			body.theme-dark[class*="lme-style-"]:not(.lme-style-neon-lime) .lme-navigation-view .lme-nav-stats-section,
-			body.theme-dark[class*="lme-style-"]:not(.lme-style-neon-lime) .lme-navigation-view .lme-nav-actions-section,
-			body.theme-dark[class*="lme-style-"]:not(.lme-style-neon-lime) .lme-navigation-view .lme-nav-stat {
-				background: transparent !important;
-				border: 0 !important;
-				box-shadow: none !important;
-			}
-
-			body.theme-dark[class*="lme-style-"]:not(.lme-style-neon-lime) .lme-navigation-view .lme-nav-action {
-				background: transparent !important;
-				border: 0 !important;
-				box-shadow: none !important;
-				color: var(--lme-dark-accent) !important;
-			}
-
-			body.theme-dark[class*="lme-style-"]:not(.lme-style-neon-lime) .lme-navigation-view .lme-nav-action-icon {
-				background: rgba(var(--lme-accent-rgb, 216,197,107), 0.10) !important;
-			}
-
-			body.theme-dark[class*="lme-style-"]:not(.lme-style-neon-lime) .lme-navigation-view .lme-nav-action:hover,
-			body.theme-dark[class*="lme-style-"]:not(.lme-style-neon-lime) .lme-navigation-view .lme-nav-action.is-pressed {
-				background: rgba(var(--lme-accent-rgb, 216,197,107), 0.10) !important;
-				box-shadow: none !important;
-				color: var(--lme-dark-text) !important;
-			}
-		`;
-	}
 
 
 	private handleTimestampClick(ts: string) {
@@ -2357,12 +2083,10 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 		if (m) {
 			const sec = parseInt(m[1]) * 60 + parseInt(m[2]);
 			const leaf = this.app.workspace.getLeavesOfType(SHADOWING_VIEW_TYPE)[0];
-			if (leaf) (leaf.view as any).seekTo(sec);
+			if (leaf) (leaf.view as unknown).seekTo(sec);
 		}
 	}
-
-	p
-	p}
+}
 
 function contentToBlocks(content: string): { startSec: number; text: string }[] {
 	const timestampRegex = /\[(\d{1,2}):(\d{2})\]/;
@@ -2407,7 +2131,7 @@ async function executeDocAnalysis(plugin: LanguageMadeEasyPlugin, blocks: { star
 		await plugin.activateView(AI_ANALYSIS_VIEW_TYPE, 'right');
 		const leaves = plugin.app.workspace.getLeavesOfType(AI_ANALYSIS_VIEW_TYPE);
 		if (leaves.length > 0) {
-			const aiView = leaves[0].view as any;
+			const aiView = leaves[0].view as unknown;
 			if (aiView.setResult) aiView.setResult(markdown, undefined, promptMeta);
 		}
 		notice.hide();

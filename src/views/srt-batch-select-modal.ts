@@ -76,7 +76,7 @@ export class SrtBatchSelectModal extends Modal {
         };
 
         this.applyFilter();
-        setTimeout(() => this.searchEl.focus(), 0);
+        window.setTimeout(() => this.searchEl.focus(), 0);
     }
 
     private applyFilter(): void {
@@ -89,7 +89,7 @@ export class SrtBatchSelectModal extends Modal {
         this.listEl.empty();
 
         if (this.filtered.length === 0) {
-            this.listEl.createEl('div', {
+            this.listEl.createDiv({
                 text: t('srtToNote.noSrtFiles'),
                 cls: 'setting-item-description',
             });
@@ -111,7 +111,7 @@ export class SrtBatchSelectModal extends Modal {
             };
             cb.onchange = toggle;
             // Click the label to toggle too (better ergonomics).
-            const label = row.createEl('span', { text: f.path, cls: 'lme-srt-batch-label' });
+            const label = row.createSpan({ text: f.path, cls: 'lme-srt-batch-label' });
             label.onclick = () => {
                 cb.checked = !cb.checked;
                 toggle();

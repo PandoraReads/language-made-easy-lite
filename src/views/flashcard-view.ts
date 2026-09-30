@@ -23,7 +23,6 @@ import type { StudyMode, ModeContext } from './flashcard-modes/types';
 
 export const FLASHCARD_VIEW_TYPE = 'lme-flashcard-view';
 
-
 // Shared heatmap rendering for the flashcard "growth footprint" heatmap.
 export function formatDayKeyUTC(date: Date): string {
     return date.toISOString().split('T')[0];
@@ -83,7 +82,7 @@ type ReviewPhase = 'front' | 'back' | 'done';
 // Page turn sound effect using Web Audio API
 function playPageTurnSound(): void {
     try {
-        const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+        const audioContext = new (window.AudioContext || (window as unknown).webkitAudioContext)();
         const duration = 0.9; // 900ms - slower and more relaxed
 
         // Create softer, more gentle paper rustle
@@ -190,7 +189,7 @@ export class FlashcardView extends ItemView {
     // due 推 10 分钟、卡片永远卡在 Learning，第二天必然再次到期。置空步进后 New 卡
     // 评 Good 直接毕业到 Review 走正常间隔(Good≈2天 / Again≈1天)，历史卡下次复习即自愈。
     private f = fsrs(generatorParameters({ learning_steps: [], relearning_steps: [] }));
-    private randomQuote: { text: string; author: string } = (QUOTES[Math.floor(Math.random() * QUOTES.length)] || QUOTES[0]) as { text: string; author: string };
+    private randomQuote: { text: string; author: string } = (QUOTES[Math.floor(Math.random() * QUOTES.length)] || QUOTES[0]);
     private heatmapData: Map<string, number> = new Map();
     private currentVocabSize: number = 0;
     private vocabSizeCefrLevel: string = '';
@@ -468,7 +467,7 @@ export class FlashcardView extends ItemView {
     private renderBanner(parent: HTMLElement): void {
         const banner = parent.createDiv('lme-quote-banner');
         banner.createEl('p', { cls: 'lme-quote-text', text: `"${this.randomQuote.text}"` });
-        banner.createEl('span', { cls: 'lme-quote-author', text: `— ${this.randomQuote.author}` });
+        banner.createSpan({ cls: 'lme-quote-author', text: `— ${this.randomQuote.author}` });
     }
 
     private renderStats(parent: HTMLElement): void {
@@ -480,8 +479,8 @@ export class FlashcardView extends ItemView {
         ];
         stats.forEach(s => {
             const item = dash.createDiv('lme-stat-item-simple');
-            item.createEl('div', { cls: 'lme-stat-value-simple', text: s.value });
-            item.createEl('div', { cls: 'lme-stat-label-simple', text: s.label });
+            item.createDiv({ cls: 'lme-stat-value-simple', text: s.value });
+            item.createDiv({ cls: 'lme-stat-label-simple', text: s.label });
         });
     }
 
@@ -536,7 +535,7 @@ export class FlashcardView extends ItemView {
     private renderFinished(parent: HTMLElement): void {
         parent.empty();
         const msg = parent.createDiv('lme-done-message');
-        msg.createEl('div', { cls: 'lme-done-emoji', text: '🎉' });
+        msg.createDiv({ cls: 'lme-done-emoji', text: '🎉' });
         msg.createEl('h2', { text: t('flashcard.dailyDone') });
         msg.createEl('p', { text: t('flashcard.dailyDoneDesc', { count: this.todayReviewedCount }) });
         const refillBtn = msg.createEl('button', {
@@ -555,8 +554,8 @@ export class FlashcardView extends ItemView {
         if (!this.hasVocabTest) {
             card.addClass('lme-vocab-marquee-untested');
             const marqueeInner = card.createDiv('lme-vocab-marquee-inner');
-            marqueeInner.createEl('span', { cls: 'lme-vocab-marquee-prompt-icon', text: '\u{1F4CA}' });
-            marqueeInner.createEl('span', { cls: 'lme-vocab-marquee-prompt-text', text: '\u{1F50D} ' + t('flashcard.clickToTest') });
+            marqueeInner.createSpan({ cls: 'lme-vocab-marquee-prompt-icon', text: '\u{1F4CA}' });
+            marqueeInner.createSpan({ cls: 'lme-vocab-marquee-prompt-text', text: '\u{1F50D} ' + t('flashcard.clickToTest') });
             const testBtn = marqueeInner.createEl('button', {
                 cls: 'lme-vocab-marquee-test-btn',
                 text: t('flashcard.testVocab'),
@@ -594,7 +593,7 @@ export class FlashcardView extends ItemView {
      * 纯数据层，无 UI/计数/宠物副作用。grade() 与 Match 的 matchMarkReviewed 共用。
      */
     private async gradeCardFsrs(entry: VocabularyEntry, rating: Rating, now: Date): Promise<void> {
-        const card: any = {
+        const card: unknown = {
             due: new Date(entry.fsrsData.due),
             stability: entry.fsrsData.stability,
             difficulty: entry.fsrsData.difficulty,
@@ -606,7 +605,7 @@ export class FlashcardView extends ItemView {
             last_review: entry.fsrsData.last_review ? new Date(entry.fsrsData.last_review) : undefined,
         };
 
-        const recordLog: any = this.f.repeat(card as Card, now);
+        const recordLog: unknown = this.f.repeat(card as Card, now);
         const nextCard = recordLog[rating].card;
 
         await db.updateVocabulary(entry.id, {
@@ -640,7 +639,7 @@ export class FlashcardView extends ItemView {
         if (isNowMastered) {
             await db.markAsMastered(entry.id);
         } else {
-            await db.updateVocabulary(entry.id, { masteredAt: undefined } as any);
+            await db.updateVocabulary(entry.id, { masteredAt: undefined });
         }
     }
 
@@ -650,7 +649,7 @@ export class FlashcardView extends ItemView {
         await this.gradeCardFsrs(entry, rating, now);
 
         this.todayReviewedCount++;
-        if (rating >= 3) this.todayCorrectCount++;
+        if (rating >= Rating.Good) this.todayCorrectCount++;
         this.phase = 'front';
         this.current = this.queue.shift() ?? null;
         this.todayDueCount = this.getSessionDueCount();
@@ -663,7 +662,7 @@ export class FlashcardView extends ItemView {
         let vocabSizeIncreased = false;
         if (this.hasVocabTest && rating === Rating.Easy) {
             const lang = this.plugin.settings.activeLanguage || 'english';
-            const newSize = await vocabSizeService.recordLearnedWord(lang, entry.id, rating as 4);
+            const newSize = await vocabSizeService.recordLearnedWord(lang, entry.id, rating);
             if (newSize !== this.currentVocabSize) {
                 vocabSizeIncreased = true;
             }
@@ -673,7 +672,7 @@ export class FlashcardView extends ItemView {
         }
 
         // Pet: reward this review BEFORE re-render so the embedded panel reflects it
-        let petFx: any = null;
+        let petFx: unknown = null;
         try {
             const lang = this.plugin.settings.activeLanguage || 'english';
             const petResult = await petService.gainExp(rating, lang, {
@@ -732,47 +731,6 @@ export class AddFlashcardModal extends Modal {
         const { contentEl } = this;
         contentEl.empty();
         contentEl.addClass('lme-add-flashcard-modal');
-
-        // Inject theme-aware styles for AI autofill button
-        const styleId = 'lme-ai-autofill-theme-styles';
-        if (!document.getElementById(styleId)) {
-            const s = document.createElement('style');
-            s.id = styleId;
-            s.textContent =
-                // coral-warmth
-                'body.lme-style-coral-warmth .lme-ai-autofill-btn{background:rgba(255,122,92,0.1)!important;border:1px solid rgba(255,122,92,0.25)!important;color:#FF7A5C!important;box-shadow:0 2px 8px rgba(255,122,92,0.1),inset 0 1px 0 rgba(255,255,255,0.15)!important}'
-                + 'body.lme-style-coral-warmth .lme-ai-autofill-btn:hover{background:rgba(255,122,92,0.2)!important;box-shadow:0 4px 12px rgba(255,122,92,0.2),inset 0 1px 0 rgba(255,255,255,0.2)!important}'
-                // ocean-glass
-                + 'body.lme-style-ocean-glass .lme-ai-autofill-btn{background:rgba(74,144,217,0.1)!important;border:1px solid rgba(74,144,217,0.25)!important;color:#4A90D9!important;box-shadow:0 2px 8px rgba(74,144,217,0.1),inset 0 1px 0 rgba(255,255,255,0.15)!important}'
-                + 'body.lme-style-ocean-glass .lme-ai-autofill-btn:hover{background:rgba(74,144,217,0.2)!important;box-shadow:0 4px 12px rgba(74,144,217,0.2),inset 0 1px 0 rgba(255,255,255,0.2)!important}'
-                // aurora-prism
-                + 'body.lme-style-aurora-prism .lme-ai-autofill-btn{background:rgba(168,85,247,0.1)!important;border:1px solid rgba(168,85,247,0.25)!important;color:#A855F7!important;box-shadow:0 2px 8px rgba(168,85,247,0.1),inset 0 1px 0 rgba(255,255,255,0.15)!important}'
-                + 'body.lme-style-aurora-prism .lme-ai-autofill-btn:hover{background:rgba(168,85,247,0.2)!important;box-shadow:0 4px 12px rgba(168,85,247,0.2),inset 0 1px 0 rgba(255,255,255,0.2)!important}'
-                // neon-lime
-                + 'body.lme-style-neon-lime .lme-ai-autofill-btn{background:rgba(230,255,0,0.08)!important;border:1px solid rgba(230,255,0,0.25)!important;color:#E6FF00!important;box-shadow:0 2px 8px rgba(230,255,0,0.08),inset 0 1px 0 rgba(255,255,255,0.15)!important}'
-                + 'body.lme-style-neon-lime .lme-ai-autofill-btn:hover{background:rgba(230,255,0,0.16)!important;box-shadow:0 4px 12px rgba(230,255,0,0.16),inset 0 1px 0 rgba(255,255,255,0.2)!important}'
-                // candy-pop
-                + 'body.lme-style-candy-pop .lme-ai-autofill-btn{background:rgba(255,107,157,0.1)!important;border:1px solid rgba(255,107,157,0.25)!important;color:#FF6B9D!important;box-shadow:0 2px 8px rgba(255,107,157,0.1),inset 0 1px 0 rgba(255,255,255,0.15)!important}'
-                + 'body.lme-style-candy-pop .lme-ai-autofill-btn:hover{background:rgba(255,107,157,0.2)!important;box-shadow:0 4px 12px rgba(255,107,157,0.2),inset 0 1px 0 rgba(255,255,255,0.2)!important}'
-                // lavender-dream
-                + 'body.lme-style-lavender-dream .lme-ai-autofill-btn{background:rgba(139,92,246,0.1)!important;border:1px solid rgba(139,92,246,0.25)!important;color:#8B5CF6!important;box-shadow:0 2px 8px rgba(139,92,246,0.1),inset 0 1px 0 rgba(255,255,255,0.15)!important}'
-                + 'body.lme-style-lavender-dream .lme-ai-autofill-btn:hover{background:rgba(139,92,246,0.2)!important;box-shadow:0 4px 12px rgba(139,92,246,0.2),inset 0 1px 0 rgba(255,255,255,0.2)!important}'
-                // mint-coach
-                + 'body.lme-style-mint-coach .lme-ai-autofill-btn{background:rgba(5,59,69,0.08)!important;border:1px solid rgba(5,59,69,0.2)!important;color:#053B45!important;box-shadow:0 2px 8px rgba(5,59,69,0.08),inset 0 1px 0 rgba(255,255,255,0.15)!important}'
-                + 'body.lme-style-mint-coach .lme-ai-autofill-btn:hover{background:rgba(5,59,69,0.16)!important;box-shadow:0 4px 12px rgba(5,59,69,0.16),inset 0 1px 0 rgba(255,255,255,0.2)!important}'
-                // rose-blush
-                + 'body.lme-style-rose-blush .lme-ai-autofill-btn{background:rgba(249,215,226,0.25)!important;border:1px solid rgba(249,215,226,0.4)!important;color:#0C1727!important;box-shadow:0 2px 8px rgba(249,215,226,0.15),inset 0 1px 0 rgba(255,255,255,0.15)!important}'
-                + 'body.lme-style-rose-blush .lme-ai-autofill-btn:hover{background:rgba(249,215,226,0.4)!important;box-shadow:0 4px 12px rgba(249,215,226,0.25),inset 0 1px 0 rgba(255,255,255,0.2)!important}'
-                // mindful-oasis
-                + 'body.lme-style-mindful-oasis .lme-ai-autofill-btn{background:rgba(15,42,51,0.06)!important;border:1.5px solid rgba(15,42,51,0.2)!important;color:#0F2A33!important;box-shadow:0 2px 8px rgba(15,42,51,0.06),inset 0 1px 0 rgba(255,255,255,0.15)!important}'
-                + 'body.lme-style-mindful-oasis .lme-ai-autofill-btn:hover{background:rgba(15,42,51,0.12)!important;box-shadow:0 4px 12px rgba(15,42,51,0.12),inset 0 1px 0 rgba(255,255,255,0.2)!important}'
-                // default (no theme class)
-                ':not(body[class*=lme-style]) .lme-ai-autofill-btn{background:rgba(136,136,136,0.08)!important;border:1px solid rgba(136,136,136,0.2)!important;color:var(--text-normal)!important;box-shadow:0 2px 8px rgba(0,0,0,0.04),inset 0 1px 0 rgba(255,255,255,0.15)!important}'
-                + ':not(body[class*=lme-style]) .lme-ai-autofill-btn:hover{background:rgba(136,136,136,0.16)!important;box-shadow:0 4px 12px rgba(0,0,0,0.08),inset 0 1px 0 rgba(255,255,255,0.2)!important}'
-                // disabled state
-                + '.lme-ai-autofill-btn:disabled{opacity:0.5!important;cursor:not-allowed!important}';
-            document.head.appendChild(s);
-        }
 
         contentEl.createEl('h2', { text: t('flashcard.addTitle') });
 
@@ -915,7 +873,7 @@ export class AddFlashcardModal extends Modal {
             }
 
             new Notice(t('flashcard.aiDone'));
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('[EME] AI auto-fill failed:', err);
             new Notice(t('flashcard.aiFailed', { error: err.message || t('common.unknownError') }));
         } finally {
@@ -1005,8 +963,8 @@ export class AddFlashcardModal extends Modal {
                     + '> ' + t('vocabNote.source') + ': custom-flashcard | ' + t('vocabNote.date') + ': ' + dateStr + '\n\n';
 
                 if (file) {
-                    const content = await this.app.vault.read(file as any);
-                    await this.app.vault.modify(file as any, content + (content.endsWith('\n') ? '' : '\n') + cardContent);
+                    const content = await this.app.vault.read(file as unknown);
+                    await this.app.vault.modify(file as unknown, content + (content.endsWith('\n') ? '' : '\n') + cardContent);
                 } else {
                     const header = t('vocabNote.header');
                     await this.app.vault.create(fullPath, header + cardContent);
@@ -1021,7 +979,7 @@ export class AddFlashcardModal extends Modal {
             // Refresh the flashcard view if it's open
             const flashcardLeaf = this.app.workspace.getLeavesOfType('lme-flashcard-view')[0];
             if (flashcardLeaf) {
-                const view = flashcardLeaf.view as any;
+                const view = flashcardLeaf.view as unknown;
                 if (existing) {
                     await view.render();
                 } else {

@@ -78,7 +78,7 @@ export class AIAnalysisView extends ItemView {
 
 	private renderEmpty() {
 		this.contentEl.empty();
-		this.contentEl.createEl('div', {
+		this.contentEl.createDiv({
 			cls: 'lme-ai-analysis-empty',
 			text: t('aiAnalysis.noResult')
 		});
@@ -176,7 +176,7 @@ export class AIAnalysisView extends ItemView {
 					if (!tsRegex.test(text)) continue;
 					tsRegex.lastIndex = 0;
 
-					const fragment = document.createDocumentFragment();
+					const fragment = createFragment();
 					let lastIndex = 0;
 					let match;
 					while ((match = tsRegex.exec(text)) !== null) {
@@ -184,7 +184,7 @@ export class AIAnalysisView extends ItemView {
 							fragment.appendChild(document.createTextNode(text.slice(lastIndex, match.index)));
 						}
 						const sec = parseInt(match[1]) * 60 + parseInt(match[2]);
-						const span = document.createElement('span');
+						const span = createSpan();
 						span.className = 'lme-ai-timestamp';
 						span.textContent = match[0];
 						span.onclick = () => this.seekInShadowingView(sec);
@@ -195,7 +195,7 @@ export class AIAnalysisView extends ItemView {
 						fragment.appendChild(document.createTextNode(text.slice(lastIndex)));
 					}
 					el.replaceChild(fragment, child);
-				} else if (child instanceof HTMLElement) {
+				} else if (child.instanceOf(HTMLElement)) {
 					walk(child);
 				}
 			}
@@ -204,14 +204,14 @@ export class AIAnalysisView extends ItemView {
 	}
 
 	private seekInShadowingView(sec: number) {
-		if (this.shadowingLeaf && (this.shadowingLeaf.view as any).seekTo) {
-			(this.shadowingLeaf.view as any).seekTo(sec);
+		if (this.shadowingLeaf && (this.shadowingLeaf.view as unknown).seekTo) {
+			(this.shadowingLeaf.view as unknown).seekTo(sec);
 			return;
 		}
 		const { workspace } = this.app;
 		const leaves = workspace.getLeavesOfType('lme-shadowing-view');
-		if (leaves.length > 0 && (leaves[0].view as any).seekTo) {
-			(leaves[0].view as any).seekTo(sec);
+		if (leaves.length > 0 && (leaves[0].view as unknown).seekTo) {
+			(leaves[0].view as unknown).seekTo(sec);
 		} else {
 			new Notice(t('aiAnalysis.noShadowingView'));
 		}

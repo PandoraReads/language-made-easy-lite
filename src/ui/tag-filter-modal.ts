@@ -72,7 +72,7 @@ export class TagFilterModal extends Modal {
         };
 
         // 初始焦点进搜索框;Esc 走 Modal 默认关闭
-        setTimeout(() => this.searchInput?.focus(), 50);
+        window.setTimeout(() => this.searchInput?.focus(), 50);
     }
 
     private renderGrid(): void {

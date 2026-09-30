@@ -61,7 +61,8 @@ const PLACEHOLDER_RE = /REPLACE_WITH/i;
 /** Normalize a frontmatter `tags` value (string | array | scalar) into a clean lowercased list. */
 export function normalizeTags(raw: unknown): string[] {
     if (raw == null) return [];
-    const arr: unknown[] = Array.isArray(raw) ? raw : String(raw).split(',');
+    const rawStr = typeof raw === 'object' || typeof raw === 'function' ? JSON.stringify(raw) : String(raw);
+    const arr: unknown[] = Array.isArray(raw) ? raw : rawStr.split(',');
     const out: string[] = [];
     const seen = new Set<string>();
     for (const item of arr) {
@@ -126,10 +127,10 @@ export function resolveCoverSrc(app: App, link: string, sourcePath: string): str
 export async function parseWorkshopNote(
     file: TFile,
     app: App,
-    progress?: Partial<WorkshopProgress> | undefined,
+    progress?: Partial<WorkshopProgress>  ,
 ): Promise<WorkshopNoteProps> {
     const body: string = await app.vault.cachedRead(file);
-    const fm = (app.metadataCache.getFileCache(file)?.frontmatter ?? {}) as Record<string, any>;
+    const fm = (app.metadataCache.getFileCache(file)?.frontmatter ?? {}) as Record<string, unknown>;
 
     // Title: first H1 in body, else frontmatter, else basename.
     let title = file.basename;
@@ -167,7 +168,8 @@ export async function parseWorkshopNote(
     const hasVideo = urlValid || embedMatch;
 
     // Channel: frontmatter 频道/channel, else ''.
-    const channel = String(fm['频道'] ?? fm.channel ?? '').trim();
+    const rawChannel = fm['频道'] ?? fm.channel ?? '';
+    const channel = (typeof rawChannel === 'object' ? JSON.stringify(rawChannel) : String(rawChannel)).trim();
 
     return {
         file,

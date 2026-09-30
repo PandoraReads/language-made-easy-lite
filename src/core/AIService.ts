@@ -4,7 +4,7 @@
 // Copyright (c) 2024-2026 PandoraReads | panrunrun@gmail.com
 
 import { requestUrl } from 'obsidian';
-import type { LMESettings, AIProviderConfig, AIProviderKind } from '../models';
+import type { LMESettings, AIProviderConfig, AIProviderKind, PronunciationScore } from '../models';
 import { t } from '../i18n';
 
 export interface WordLookupResult {
@@ -260,63 +260,63 @@ export class AIService {
         level: string,
         levelLabel: Record<string, string>
     ): string {
-        const template = '\n<div style=\"background:#FFF8F0;border:2px solid #8B7E74;padding:24px;border-radius:12px;font-family:Georgia,serif;line-height:1.6;color:#8B7E74;box-shadow:4px 4px 0 #F0E6D8;\">'
-            + '\n<div style=\"text-align:center;border-bottom:4px double #8B7E74;padding-bottom:16px;margin-bottom:24px;\">'
-            + '\n<h1 style=\"font-size:1.8em;margin:8px 0;font-weight:900;letter-spacing:-0.5px;\">{{视频主题}}</h1>'
-            + '\n<div style=\"background:#FFB5A7;color:#fff;display:inline-block;padding:3px 14px;font-size:0.85em;letter-spacing:1px;\">Level: ' + (levelLabel[level] || level) + '</div>'
+        const template = '\n<div style="background:#FFF8F0;border:2px solid #8B7E74;padding:24px;border-radius:12px;font-family:Georgia,serif;line-height:1.6;color:#8B7E74;box-shadow:4px 4px 0 #F0E6D8;">'
+            + '\n<div style="text-align:center;border-bottom:4px double #8B7E74;padding-bottom:16px;margin-bottom:24px;">'
+            + '\n<h1 style="font-size:1.8em;margin:8px 0;font-weight:900;letter-spacing:-0.5px;">{{视频主题}}</h1>'
+            + '\n<div style="background:#FFB5A7;color:#fff;display:inline-block;padding:3px 14px;font-size:0.85em;letter-spacing:1px;">Level: ' + (levelLabel[level] || level) + '</div>'
             + '\n</div>'
-            + '\n<div style=\"display:flex;gap:20px;margin-bottom:28px;\">'
-            + '\n<div style=\"flex:1;border-right:1px solid #E8D5C8;padding-right:16px;\">'
-            + '\n<p style=\"font-size:1.05em;font-style:italic;color:#8B7E74;margin-top:0;\">{{从字幕中选取一句最有代表性的话作为引言}}</p>'
+            + '\n<div style="display:flex;gap:20px;margin-bottom:28px;">'
+            + '\n<div style="flex:1;border-right:1px solid #E8D5C8;padding-right:16px;">'
+            + '\n<p style="font-size:1.05em;font-style:italic;color:#8B7E74;margin-top:0;">{{从字幕中选取一句最有代表性的话作为引言}}</p>'
             + '\n</div>'
-            + '\n<div style=\"flex:1.2;font-size:0.92em;\">'
-            + '\n<b style=\"font-size:1.1em;border-bottom:2px solid #FFB5A7;\">内容概要</b>'
-            + '\n<p style=\"margin-top:8px;\">{{2-3句中文概要}}</p>'
+            + '\n<div style="flex:1.2;font-size:0.92em;">'
+            + '\n<b style="font-size:1.1em;border-bottom:2px solid #FFB5A7;">内容概要</b>'
+            + '\n<p style="margin-top:8px;">{{2-3句中文概要}}</p>'
             + '\n</div>'
             + '\n</div>'
-            + '\n<hr style=\"border:0;border-top:1px solid #F0E6D8;margin:24px 0;\">'
-            + '\n<h3 style=\"background:#B5D8C7;color:#fff;display:inline-block;padding:4px 12px;font-size:1em;margin-bottom:16px;\">视频时间线</h3>'
-            + '\n<div style=\"background:#FFF0E8;padding:16px;border-radius:10px;margin-bottom:28px;\">'
+            + '\n<hr style="border:0;border-top:1px solid #F0E6D8;margin:24px 0;">'
+            + '\n<h3 style="background:#B5D8C7;color:#fff;display:inline-block;padding:4px 12px;font-size:1em;margin-bottom:16px;">视频时间线</h3>'
+            + '\n<div style="background:#FFF0E8;padding:16px;border-radius:10px;margin-bottom:28px;">'
             + '\n{{视频时间线列表}}'
             + '\n</div>'
-            + '\n<h3 style=\"background:#C5B3E6;color:#fff;display:inline-block;padding:4px 12px;font-size:1em;margin-bottom:16px;\">语言实验室</h3>'
+            + '\n<h3 style="background:#C5B3E6;color:#fff;display:inline-block;padding:4px 12px;font-size:1em;margin-bottom:16px;">语言实验室</h3>'
             + '\n{{语言点卡片列表}}'
-            + '\n<hr style=\"border:0;border-top:1px solid #F0E6D8;margin:24px 0;\">'
-            + '\n<h3 style=\"background:#FFB5A7;color:#fff;display:inline-block;padding:4px 12px;font-size:1em;margin-bottom:16px;\">重点词汇</h3>'
-            + '\n<div style=\"border:1px solid #F0E6D8;padding:16px;border-radius:12px;background:#FFFAF6;\">'
+            + '\n<hr style="border:0;border-top:1px solid #F0E6D8;margin:24px 0;">'
+            + '\n<h3 style="background:#FFB5A7;color:#fff;display:inline-block;padding:4px 12px;font-size:1em;margin-bottom:16px;">重点词汇</h3>'
+            + '\n<div style="border:1px solid #F0E6D8;padding:16px;border-radius:12px;background:#FFFAF6;">'
             + '\n{{词汇列表}}'
             + '\n</div>'
-            + '\n<hr style=\"border:0;border-top:1px solid #F0E6D8;margin:24px 0;\">'
-            + '\n<div style=\"border:2px solid #C5B3E6;padding:16px;background:#F8F0FC;border-radius:10px;\">'
-            + '\n<h4 style=\"margin:0 0 12px 0;text-align:center;letter-spacing:2px;\">表达习得</h4>'
+            + '\n<hr style="border:0;border-top:1px solid #F0E6D8;margin:24px 0;">'
+            + '\n<div style="border:2px solid #C5B3E6;padding:16px;background:#F8F0FC;border-radius:10px;">'
+            + '\n<h4 style="margin:0 0 12px 0;text-align:center;letter-spacing:2px;">表达习得</h4>'
             + '\n{{表达卡片列表}}'
             + '\n</div>'
-            + '\n<div style=\"margin-top:30px;display:flex;justify-content:space-between;align-items:center;font-size:0.75em;color:#B8A99A;\">'
+            + '\n<div style="margin-top:30px;display:flex;justify-content:space-between;align-items:center;font-size:0.75em;color:#B8A99A;">'
             + '\n<span></span>'
-            + '\n<span style=\"letter-spacing:2px;\">© 2026 PANDORA\'S DIGITAL GARDEN</span>'
+            + '\n<span style="letter-spacing:2px;">© 2026 PANDORA\'S DIGITAL GARDEN</span>'
             + '\n<span></span>'
             + '\n</div>'
             + '\n</div>';
 
         const timelineExample = '每条时间线格式：\n'
-            + '<div style=\"margin-bottom:10px;border-bottom:1px dashed #D4C4B5;padding-bottom:6px;\">'
-            + '<span style=\"color:#FFB5A7;font-weight:bold;\">[MM:SS - MM:SS]</span>'
+            + '<div style="margin-bottom:10px;border-bottom:1px dashed #D4C4B5;padding-bottom:6px;">'
+            + '<span style="color:#FFB5A7;font-weight:bold;">[MM:SS - MM:SS]</span>'
             + ' <b>主题标题</b>：一句话描述</div>\n'
             + '时间戳从字幕实际时间计算。';
 
         const langPointExample = '每个语言点用一个卡片：\n'
-            + '<div style=\"border:1px solid #E8D5C8;padding:12px;margin-bottom:14px;position:relative;border-radius:8px;\">'
-            + '<span style=\"position:absolute;top:-10px;left:10px;background:#FFF8F0;padding:0 5px;font-weight:bold;font-size:0.8em;\">类型标签</span>'
-            + '<p style=\"font-size:0.93em;\"><b>\"英文原文（用 &lt;span style=&quot;background:#FCD5CE;padding:0 2px;&quot;&gt;高亮关键词&lt;/span&gt; 标注重点词）\"</b></p>'
-            + '<p style=\"font-size:0.85em;color:#9B8E82;\"><b>讲解：</b>中文讲解这个语言点的含义、用法。给一个简短例句及翻译。</p>'
+            + '<div style="border:1px solid #E8D5C8;padding:12px;margin-bottom:14px;position:relative;border-radius:8px;">'
+            + '<span style="position:absolute;top:-10px;left:10px;background:#FFF8F0;padding:0 5px;font-weight:bold;font-size:0.8em;">类型标签</span>'
+            + '<p style="font-size:0.93em;"><b>"英文原文（用 &lt;span style=&quot;background:#FCD5CE;padding:0 2px;&quot;&gt;高亮关键词&lt;/span&gt; 标注重点词）"</b></p>'
+            + '<p style="font-size:0.85em;color:#9B8E82;"><b>讲解：</b>中文讲解这个语言点的含义、用法。给一个简短例句及翻译。</p>'
             + '</div>\n'
             + '类型标签可选：句法分析 ANALYSIS、地道结构 STRUCTURE、语用提示 USAGE 等。每个卡片选不同标签。';
 
         const vocabExample = '每个词汇一行，格式：\n'
-            + '<p style=\"margin:6px 0;\"><b>Word</b> <small>/音标/</small><br>中文释义。用法提示。</p>';
+            + '<p style="margin:6px 0;"><b>Word</b> <small>/音标/</small><br>中文释义。用法提示。</p>';
 
         const expressionExample = '每个表达一个卡片：\n'
-            + '<div style=\"background:#FFF8F0;padding:6px 14px;border:1px solid #C5B3E6;display:inline-block;margin:4px;font-size:0.9em;border-radius:16px;\">'
+            + '<div style="background:#FFF8F0;padding:6px 14px;border:1px solid #C5B3E6;display:inline-block;margin:4px;font-size:0.9em;border-radius:16px;">'
             + '<b>English Expression</b><br><small>中文解释</small></div>';
 
         return '你是一位经验丰富的英语教师，正在为中国学生分析一段英语视频的字幕。' +
@@ -337,7 +337,7 @@ export class AIService {
             '\n- 引用的英文原文加粗，重点词用粉色高亮标注' +
             '\n- 时间戳格式必须为 [MM:SS - MM:SS]，加粗粉色' +
             '\n- 严禁包含任何引导性客套话' +
-            '\n- 输出必须是完整的 HTML，从 <div style=\"background:#FFF8F0;...> 开始，到 </div> 结束，不要用 ``` 包裹' +
+            '\n- 输出必须是完整的 HTML，从 <div style="background:#FFF8F0;...> 开始，到 </div> 结束，不要用 ``` 包裹' +
             '\n- 根据学习者水平调整深度：初学者侧重基础词汇和句型，高级侧重语感差异和地道用法';
     }
 
@@ -394,7 +394,7 @@ export class AIService {
                 throw new Error('Gemini API 未返回有效内容: ' + JSON.stringify(resp.json || {}).slice(0, 400));
             }
             return text.trim();
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('[EME] Gemini analysis error', err);
             throw new Error('Gemini 调用失败: ' + err.message);
         }
@@ -489,7 +489,7 @@ export class AIService {
         const raw: string = await AIService.runChat(provider, apiKey, modelName, prompt, providers);
 
         const cleaned = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
-        let parsed: any;
+        let parsed: unknown;
         try {
             parsed = JSON.parse(cleaned);
         } catch {
@@ -597,7 +597,7 @@ If the audio is too quiet, unclear, or empty, still return a valid JSON with low
 
             const rawText = resp.json.candidates[0].content.parts[0].text.trim();
             return AIService.parseScoringResponse(rawText);
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('[EME] Gemini pronunciation scoring error', err);
             throw new Error('AI scoring failed: ' + (err.message || 'Unknown error'));
         }
@@ -657,7 +657,7 @@ If the audio is too quiet, unclear, or empty, still return a valid JSON with low
 
     private static parseScoringResponse(raw: string): PronunciationScore {
         const cleaned = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
-        let parsed: any;
+        let parsed: unknown;
         try {
             parsed = JSON.parse(cleaned);
         } catch {
@@ -696,18 +696,18 @@ If the audio is too quiet, unclear, or empty, still return a valid JSON with low
             recognizedText: String(parsed.recognizedText || ''),
             summary: String(parsed.summary || ''),
             wordComparison: Array.isArray(parsed.wordComparison)
-                ? parsed.wordComparison.map((w: any) => ({
+                ? parsed.wordComparison.map((w: unknown) => ({
                     word: String(w.word || ''),
                     status: ['correct', 'wrong', 'missing', 'extra'].includes(w.status) ? w.status : 'wrong'
                 }))
                 : [],
             tips: Array.isArray(parsed.tips)
-                ? parsed.tips.map((t: any) => String(t)).slice(0, 3)
+                ? parsed.tips.map((t: unknown) => String(t)).slice(0, 3)
                 : []
         };
     }
 
-    private static clampScore(val: any): number {
+    private static clampScore(val: unknown): number {
         const n = Number(val);
         if (isNaN(n)) return 0;
         return Math.max(0, Math.min(100, Math.round(n)));
@@ -724,8 +724,8 @@ If the audio is too quiet, unclear, or empty, still return a valid JSON with low
 
     private static withTimeout<T>(promise: Promise<T>, timeoutMs: number, message: string): Promise<T> {
         return new Promise((resolve, reject) => {
-            const timeoutId = setTimeout(() => reject(new Error(message)), timeoutMs);
-            promise.then(resolve, reject).finally(() => clearTimeout(timeoutId));
+            const timeoutId = window.setTimeout(() => reject(new Error(message)), timeoutMs);
+            promise.then(resolve, reject).finally(() => window.clearTimeout(timeoutId));
         });
     }
 
@@ -745,8 +745,8 @@ If the audio is too quiet, unclear, or empty, still return a valid JSON with low
     private static async postChatCompletion(
         url: string,
         apiKey: string,
-        payload: any
-    ): Promise<{ ok: true; json: any } | { ok: false; status: number; body: string }> {
+        payload: unknown
+    ): Promise<{ ok: true; json: unknown } | { ok: false; status: number; body: string }> {
         try {
             const resp = await AIService.withTimeout(requestUrl({
                 url,
@@ -761,7 +761,7 @@ If the audio is too quiet, unclear, or empty, still return a valid JSON with low
                 return { ok: true, json: resp.json };
             }
             return { ok: false, status: resp.status, body: typeof resp.text === 'string' ? resp.text : '' };
-        } catch (err: any) {
+        } catch (err: unknown) {
             // requestUrl throws on network-level failures; on some Obsidian versions it
             // also rejects for HTTP error statuses, carrying status/body on the error.
             const status = err?.status ?? err?.statusCode ?? 0;
@@ -780,9 +780,9 @@ If the audio is too quiet, unclear, or empty, still return a valid JSON with low
     private static async postWithRateLimitRetry(
         url: string,
         apiKey: string,
-        payload: any,
+        payload: unknown,
         errorPrefix: string
-    ): Promise<any> {
+    ): Promise<unknown> {
         let lastStatus = 0;
         let lastBody = '';
         for (let attempt = 0; attempt <= AIService.MAX_RATE_LIMIT_RETRIES; attempt++) {
@@ -824,7 +824,7 @@ If the audio is too quiet, unclear, or empty, still return a valid JSON with low
     }
 
     private static delay(ms: number): Promise<void> {
-        return new Promise(resolve => setTimeout(resolve, ms));
+        return new Promise(resolve => window.setTimeout(resolve, ms));
     }
 
     /**
@@ -962,7 +962,7 @@ If the audio is too quiet, unclear, or empty, still return a valid JSON with low
             data: audio,
         });
 
-        let resp: any;
+        let resp: unknown;
         try {
             resp = await AIService.withTimeout(requestUrl({
                 url,
@@ -971,13 +971,13 @@ If the audio is too quiet, unclear, or empty, still return a valid JSON with low
                     'Authorization': `Bearer ${key}`,
                     'Content-Type': contentType,
                     // Whisper expects the actual multipart Content-Type (no JSON header)
-                } as any,
+                },
                 body,
             }), AIService.AI_TRANSCRIBE_TIMEOUT_MS, 'AI request timeout');
-        } catch (e: any) {
+        } catch (e: unknown) {
             const status = e?.status || 0;
             let bodyText = '';
-            try { bodyText = typeof e?.body === 'string' ? e.body : JSON.stringify(e?.body || {}); } catch {}
+            try { bodyText = typeof e?.body === 'string' ? e.body : JSON.stringify(e?.body || {}); } catch { /* non-serializable body */ }
             throw new Error(AIService.describeApiFailure(status, bodyText, t('transcribe.failed')));
         }
 

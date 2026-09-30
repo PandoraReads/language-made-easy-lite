@@ -12,258 +12,6 @@ import { vocabSizeService } from '../core/VocabSizeService';
 import { db } from '../core/Database';
 import type { TestResult, BandResult } from '../core/VocabTestGenerator';
 import { t, getLocale } from '../i18n';
-
-const STYLE_ID = 'lme-vocab-test-styles';
-
-function injectStyles(): void {
-    if (document.getElementById(STYLE_ID)) return;
-    const s = document.createElement('style');
-    s.id = STYLE_ID;
-    s.textContent = `
-/* ===== Modal outer ===== */
-.lme-vocab-test-outer {
-    max-width: 520px !important;
-    width: 520px !important;
-    border-radius: 24px !important;
-    background: var(--lme-bg-deep) !important;
-    padding: 0 !important;
-    box-shadow: 0 24px 64px rgba(0,0,0,0.18) !important;
-    overflow: hidden !important;
-    border: 1px solid var(--lme-glass-border) !important;
-    font-family: var(--lme-font-sans) !important;
-}
-.lme-vocab-test-modal {
-    padding: 0 !important;
-    background: transparent !important;
-}
-
-/* ===== Intro ===== */
-.lme-vocab-test-intro {
-    display: flex; flex-direction: column; align-items: center;
-    gap: 16px; padding: 40px 32px 32px;
-}
-.lme-vocab-test-intro-icon { font-size: 48px; margin-bottom: 4px; }
-.lme-vocab-test-intro h2 {
-    color: var(--lme-seal-red); font-family: var(--lme-font-serif);
-    font-size: 1.6em; font-weight: 700; margin: 0;
-}
-.lme-vocab-test-intro-desc {
-    text-align: center; color: var(--lme-text-secondary);
-    font-size: 14px; max-width: 360px; line-height: 1.7;
-}
-.lme-vocab-test-rules {
-    width: 100%; max-width: 380px;
-    background: var(--lme-glass-bg); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-    border: 1px solid var(--lme-glass-border); border-radius: 12px;
-    padding: 16px 20px; margin: 4px 0;
-}
-.lme-vocab-test-rules ul { list-style: none; padding: 0; margin: 0; }
-.lme-vocab-test-rules li {
-    padding: 5px 0; font-size: 13px; color: var(--lme-text-secondary);
-    position: relative; padding-left: 20px; line-height: 1.5;
-}
-.lme-vocab-test-rules li::before {
-    content: '\\2022'; position: absolute; left: 6px; color: var(--lme-accent);
-}
-.lme-vocab-test-info {
-    display: flex; gap: 12px; font-size: 12px;
-    color: var(--lme-text-muted); margin: 8px 0;
-}
-.lme-vocab-test-info span {
-    padding: 4px 12px; border-radius: 10px;
-    background: var(--lme-glass-bg); border: 1px solid var(--lme-glass-border);
-}
-
-/* ===== Shared button ===== */
-.lme-vocab-test-btn-container { display: flex; gap: 12px; justify-content: center; margin-top: 8px; }
-.lme-vocab-test-btn {
-    padding: 12px 32px; border-radius: 20px; border: none;
-    font-size: 15px; font-family: var(--lme-font-sans); cursor: pointer;
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); font-weight: 600;
-}
-.lme-vocab-test-btn-primary {
-    display: flex; align-items: center; gap: 6px;
-    padding: 10px 24px; border-radius: 18px;
-    background: var(--lme-accent); color: var(--lme-paper-cream);
-    box-shadow: 0 4px 14px rgba(0,0,0,0.15);
-    border: none;
-    font-size: 14px; font-family: var(--lme-font-sans); font-weight: 600;
-    cursor: pointer; transition: all 0.2s ease;
-}
-.lme-vocab-test-btn-primary:hover {
-    transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.2);
-}
-.lme-vocab-test-btn-primary:active { transform: scale(0.97); }
-
-/* ===== Test card ===== */
-.lme-vocab-test-card {
-    display: flex; flex-direction: column; align-items: center;
-    padding: 32px 32px 28px; gap: 24px; min-height: 380px; justify-content: center;
-}
-.lme-vocab-test-progress-container { width: 100%; display: flex; align-items: center; gap: 12px; }
-.lme-vocab-test-progress-track {
-    flex: 1; height: 6px; border-radius: 3px;
-    background: var(--lme-paper-edge); overflow: hidden;
-}
-.lme-vocab-test-progress-bar {
-    height: 100%; border-radius: 3px;
-    background: var(--lme-accent); transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.lme-vocab-test-progress-text {
-    font-size: 12px; color: var(--lme-text-muted);
-    white-space: nowrap; font-variant-numeric: tabular-nums;
-}
-.lme-vocab-test-band {
-    font-size: 11px; color: var(--lme-text-muted);
-    padding: 2px 10px; border-radius: 8px;
-    background: var(--lme-glass-bg); border: 1px solid var(--lme-glass-border);
-}
-.lme-vocab-test-word {
-    font-size: 38px; font-weight: 700; color: var(--lme-seal-red);
-    letter-spacing: 0.5px; font-family: var(--lme-font-serif);
-    min-height: 52px; display: flex; align-items: center;
-}
-.lme-vocab-test-choice-container { display: flex; gap: 20px; }
-.lme-vocab-test-btn-yes, .lme-vocab-test-btn-no {
-    display: flex; align-items: center; gap: 8px;
-    padding: 14px 36px; border-radius: 22px;
-    border: 1px solid var(--lme-glass-border);
-    font-size: 16px; font-family: var(--lme-font-sans); font-weight: 600;
-    cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    background: var(--lme-glass-bg); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-    color: var(--lme-text-primary); box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-}
-.lme-vocab-test-btn-icon { font-size: 16px; }
-.lme-vocab-test-btn-yes:hover {
-    background: var(--lme-academic-green); color: var(--lme-paper-cream);
-    border-color: transparent; transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.15);
-}
-.lme-vocab-test-btn-no:hover {
-    background: var(--lme-seal-red); color: var(--lme-paper-cream);
-    border-color: transparent; transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.15);
-}
-.lme-vocab-test-hint { font-size: 12px; color: var(--lme-text-muted); }
-
-/* ===== Results ===== */
-.lme-vocab-test-results {
-    display: flex; flex-direction: column; align-items: center;
-    gap: 10px; padding: 32px 28px 28px;
-}
-.lme-vocab-test-results h2 {
-    color: var(--lme-text-primary); font-family: var(--lme-font-serif);
-    font-size: 1.2em; font-weight: 700; margin: 0;
-}
-.lme-vocab-test-results-size { display: flex; align-items: baseline; gap: 6px; margin: 4px 0; }
-.lme-vocab-test-results-number {
-    font-size: 48px; font-weight: 800; color: var(--lme-seal-red);
-    letter-spacing: -1px; font-family: var(--lme-font-serif); line-height: 1;
-}
-.lme-vocab-test-results-unit { font-size: 16px; color: var(--lme-text-muted); }
-
-/* Benchmark badge */
-.lme-vocab-test-benchmark {
-    display: flex; flex-direction: column; align-items: center; gap: 4px;
-    margin: 4px 0 8px;
-}
-.lme-vocab-test-benchmark-badge {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 4px 16px; border-radius: 14px;
-    font-size: 16px; font-weight: 700; letter-spacing: 0.5px;
-    background: var(--lme-accent); color: var(--lme-paper-cream);
-}
-.lme-vocab-test-benchmark-desc {
-    font-size: 13px; color: var(--lme-text-secondary);
-}
-.lme-vocab-test-cefr {
-    font-size: 12px; color: var(--lme-text-muted);
-    padding: 2px 8px; border-radius: 8px;
-    background: var(--lme-glass-bg); border: 1px solid var(--lme-glass-border);
-}
-
-/* Honesty section */
-.lme-vocab-test-honesty {
-    width: 100%; max-width: 380px;
-    padding: 10px 16px; border-radius: 10px; text-align: center;
-    font-size: 12px; line-height: 1.5;
-}
-.lme-vocab-test-honesty-green {
-    background: rgba(34,197,94,0.08); color: #16a34a;
-    border: 1px solid rgba(34,197,94,0.15);
-}
-.lme-vocab-test-honesty-yellow {
-    background: rgba(245,158,11,0.08); color: #d97706;
-    border: 1px solid rgba(245,158,11,0.15);
-}
-.lme-vocab-test-honesty-red {
-    background: rgba(239,68,68,0.08); color: #dc2626;
-    border: 1px solid rgba(239,68,68,0.15);
-}
-.lme-vocab-test-honesty-label {
-    font-weight: 700; font-size: 13px; margin-bottom: 2px;
-}
-
-/* Band decay chart */
-.lme-vocab-test-bands {
-    width: 100%; max-width: 400px; margin: 4px 0;
-    background: var(--lme-glass-bg); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-    border: 1px solid var(--lme-glass-border); border-radius: 12px; padding: 14px 18px;
-}
-.lme-vocab-test-bands h3 {
-    font-size: 12px; color: var(--lme-text-muted); margin: 0 0 10px 0;
-    text-align: center; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em;
-}
-.lme-vocab-test-band-row { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
-.lme-vocab-test-band-label {
-    font-size: 12px; font-weight: 600; color: var(--lme-text-secondary);
-    width: 28px; text-align: right; flex-shrink: 0; font-variant-numeric: tabular-nums;
-}
-.lme-vocab-test-band-range {
-    font-size: 10px; color: var(--lme-text-muted);
-    width: 52px; text-align: right; flex-shrink: 0;
-}
-.lme-vocab-test-band-bar-bg {
-    flex: 1; height: 8px; border-radius: 4px;
-    background: var(--lme-paper-edge); overflow: hidden;
-}
-.lme-vocab-test-band-bar-fill {
-    height: 100%; border-radius: 4px;
-    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-    min-width: 0;
-}
-.lme-vocab-test-band-bar-fill-good { background: var(--lme-academic-green); }
-.lme-vocab-test-band-bar-fill-mid { background: #f59e0b; }
-.lme-vocab-test-band-bar-fill-low { background: var(--lme-seal-red); }
-.lme-vocab-test-band-pct {
-    font-size: 11px; color: var(--lme-text-muted);
-    width: 34px; text-align: right; flex-shrink: 0; font-variant-numeric: tabular-nums;
-}
-.lme-vocab-test-band-size {
-    font-size: 10px; color: var(--lme-text-muted);
-    width: 44px; text-align: right; flex-shrink: 0;
-}
-
-.lme-vocab-test-unavailable { text-align: center; padding: 40px; color: var(--lme-text-muted); font-size: 14px; }
-.lme-vocab-test-error { text-align: center; padding: 20px; color: var(--lme-seal-red); font-size: 14px; }
-
-/* Action buttons (save/share) */
-.lme-vocab-test-action-container {
-    display: flex; gap: 10px; justify-content: center; margin-top: 8px;
-}
-.lme-vocab-test-btn-save, .lme-vocab-test-btn-share {
-    display: flex; align-items: center; gap: 6px;
-    padding: 10px 24px; border-radius: 18px;
-    border: 1px solid var(--lme-glass-border);
-    font-size: 14px; font-family: var(--lme-font-sans); font-weight: 600;
-    cursor: pointer; transition: all 0.2s ease;
-    background: var(--lme-glass-bg); color: var(--lme-text-primary);
-}
-.lme-vocab-test-btn-save:hover, .lme-vocab-test-btn-share:hover {
-    transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
-`;
-    document.head.appendChild(s);
-}
-
 // PandoraReads — 词汇量测试
 export class VocabTestModal extends Modal {
     private plugin: LanguageMadeEasyPlugin;
@@ -296,8 +44,7 @@ export class VocabTestModal extends Modal {
     }
 
     async onOpen(): Promise<void> {
-        injectStyles();
-
+        
         const { contentEl } = this;
         contentEl.empty();
 
@@ -312,7 +59,7 @@ export class VocabTestModal extends Modal {
         const available = await vocabSizeService.ensureTestAvailable(language);
 
         if (!available) {
-            contentEl.createEl('div', {
+            contentEl.createDiv({
                 cls: 'lme-vocab-test-unavailable',
                 text: t('vocabTest.notAvailable', { lang: language }),
             });
@@ -336,7 +83,7 @@ export class VocabTestModal extends Modal {
         const langName = this.getLangDisplayName(language);
 
         const container = parent.createDiv('lme-vocab-test-intro');
-        container.createEl('div', { cls: 'lme-vocab-test-intro-icon', text: '\u{1F4DD}' });
+        container.createDiv({ cls: 'lme-vocab-test-intro-icon', text: '\u{1F4DD}' });
         container.createEl('h2', { text: t('vocabTest.title') });
         container.createEl('p', {
             cls: 'lme-vocab-test-intro-desc',
@@ -442,7 +189,7 @@ export class VocabTestModal extends Modal {
             this.plugin.settings.vocabTestCompleted = true;
             await this.plugin.saveSettings();
         } catch (error) {
-            contentEl.createEl('div', {
+            contentEl.createDiv({
                 cls: 'lme-vocab-test-error',
                 text: t('vocabTest.saveFailed', { error: error.message || t('errors.unknown') }),
             });
@@ -458,8 +205,8 @@ export class VocabTestModal extends Modal {
 
         // Vocabulary size
         const sizeEl = container.createDiv('lme-vocab-test-results-size');
-        sizeEl.createEl('span', { cls: 'lme-vocab-test-results-number', text: this.results.estimatedSize.toLocaleString() });
-        sizeEl.createEl('span', { cls: 'lme-vocab-test-results-unit', text: t('vocabTest.wordUnit') });
+        sizeEl.createSpan({ cls: 'lme-vocab-test-results-number', text: this.results.estimatedSize.toLocaleString() });
+        sizeEl.createSpan({ cls: 'lme-vocab-test-results-unit', text: t('vocabTest.wordUnit') });
 
         // Benchmark + CEFR + Language-specific proficiency
         const benchmark = vocabSizeService.getBenchmarkLabel(this.results.estimatedSize);
@@ -496,8 +243,8 @@ export class VocabTestModal extends Modal {
             const sizeStr = br.estimatedSize.toLocaleString();
 
             const row = bandsContainer.createDiv('lme-vocab-test-band-row');
-            row.createEl('span', { cls: 'lme-vocab-test-band-label', text: br.band });
-            row.createEl('span', { cls: 'lme-vocab-test-band-range', text: bandRanges[i] || '' });
+            row.createSpan({ cls: 'lme-vocab-test-band-label', text: br.band });
+            row.createSpan({ cls: 'lme-vocab-test-band-range', text: bandRanges[i] || '' });
 
             const barBg = row.createDiv('lme-vocab-test-band-bar-bg');
             const barFill = barBg.createDiv('lme-vocab-test-band-bar-fill');
@@ -512,8 +259,8 @@ export class VocabTestModal extends Modal {
                 barFill.addClass('lme-vocab-test-band-bar-fill-low');
             }
 
-            row.createEl('span', { cls: 'lme-vocab-test-band-pct', text: pctStr });
-            row.createEl('span', { cls: 'lme-vocab-test-band-size', text: sizeStr });
+            row.createSpan({ cls: 'lme-vocab-test-band-pct', text: pctStr });
+            row.createSpan({ cls: 'lme-vocab-test-band-size', text: sizeStr });
         }
 
         // Detect cliff (biggest drop between adjacent bands)
@@ -554,7 +301,7 @@ export class VocabTestModal extends Modal {
             this.close();
             const flashcardLeaf = this.app.workspace.getLeavesOfType('lme-flashcard-view')[0];
             if (flashcardLeaf) {
-                const view = flashcardLeaf.view as any;
+                const view = flashcardLeaf.view as unknown;
                 if (view.render) view.render();
             }
         };
@@ -564,94 +311,6 @@ export class VocabTestModal extends Modal {
 // ============================================================
 // Vocabulary Test History Modal
 // ============================================================
-
-const HISTORY_STYLE_ID = 'lme-vocab-history-styles';
-
-function injectHistoryStyles(): void {
-    if (document.getElementById(HISTORY_STYLE_ID)) return;
-    const s = document.createElement('style');
-    s.id = HISTORY_STYLE_ID;
-    s.textContent = `
-.lme-vocab-history-outer {
-    max-width: 520px !important; width: 520px !important;
-    border-radius: 24px !important;
-    background: var(--lme-bg-deep) !important;
-    padding: 0 !important;
-    box-shadow: 0 24px 64px rgba(0,0,0,0.18) !important;
-    overflow: hidden !important;
-    border: 1px solid var(--lme-glass-border) !important;
-    font-family: var(--lme-font-sans) !important;
-}
-.lme-vocab-history-modal { padding: 0 !important; background: transparent !important; }
-
-.lme-vocab-history-header {
-    display: flex; flex-direction: column; align-items: center;
-    gap: 8px; padding: 28px 24px 16px;
-}
-.lme-vocab-history-header h2 {
-    color: var(--lme-text-primary); font-family: var(--lme-font-serif);
-    font-size: 1.3em; font-weight: 700; margin: 0;
-}
-.lme-vocab-history-header-desc {
-    font-size: 12px; color: var(--lme-text-muted); text-align: center;
-}
-
-.lme-vocab-history-list {
-    padding: 0 24px 16px; display: flex; flex-direction: column; gap: 8px;
-    max-height: 420px; overflow-y: auto;
-}
-.lme-vocab-history-item {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 12px 16px; border-radius: 12px;
-    background: var(--lme-glass-bg); border: 1px solid var(--lme-glass-border);
-}
-.lme-vocab-history-item-left {
-    display: flex; align-items: baseline; gap: 10px;
-}
-.lme-vocab-history-item-number {
-    font-size: 28px; font-weight: 800; color: var(--lme-seal-red);
-    font-family: var(--lme-font-serif); line-height: 1; letter-spacing: -0.5px;
-}
-.lme-vocab-history-item-unit { font-size: 13px; color: var(--lme-text-muted); }
-.lme-vocab-history-item-right {
-    display: flex; flex-direction: column; align-items: flex-end; gap: 4px;
-}
-.lme-vocab-history-item-tags {
-    display: flex; gap: 5px;
-}
-.lme-vocab-history-item-tag {
-    padding: 2px 8px; border-radius: 8px;
-    font-size: 11px; font-weight: 600; letter-spacing: 0.5px;
-}
-.lme-vocab-history-item-tag-level {
-    background: rgba(197, 160, 89, 0.12); color: var(--lme-gold-accent);
-    border: 1px solid rgba(197, 160, 89, 0.2);
-}
-.lme-vocab-history-item-tag-cefr {
-    background: rgba(139, 58, 58, 0.15); color: var(--lme-seal-red);
-    border: 1px solid rgba(139, 58, 58, 0.2);
-}
-.lme-vocab-history-item-date {
-    font-size: 11px; color: var(--lme-text-muted);
-}
-.lme-vocab-history-item-latest {
-    border-color: rgba(197, 160, 89, 0.3);
-    box-shadow: 0 0 12px rgba(197, 160, 89, 0.06);
-}
-.lme-vocab-history-latest-label {
-    font-size: 9px; color: var(--lme-gold-accent); font-weight: 700;
-    letter-spacing: 0.08em; text-transform: uppercase;
-}
-.lme-vocab-history-empty {
-    text-align: center; padding: 40px; color: var(--lme-text-muted); font-size: 14px;
-}
-.lme-vocab-history-footer {
-    display: flex; justify-content: center; padding: 8px 24px 20px;
-}
-`;
-    document.head.appendChild(s);
-}
-
 export class VocabHistoryModal extends Modal {
     private plugin: LanguageMadeEasyPlugin;
 
@@ -661,8 +320,7 @@ export class VocabHistoryModal extends Modal {
     }
 
     async onOpen(): Promise<void> {
-        injectHistoryStyles();
-        const { contentEl } = this;
+                const { contentEl } = this;
         contentEl.empty();
 
         const modalEl = contentEl.closest('.modal') as HTMLElement;
@@ -690,8 +348,8 @@ export class VocabHistoryModal extends Modal {
                 if (i === 0) item.addClass('lme-vocab-history-item-latest');
 
                 const left = item.createDiv('lme-vocab-history-item-left');
-                left.createEl('span', { cls: 'lme-vocab-history-item-number', text: r.estimatedSize.toLocaleString() });
-                left.createEl('span', { cls: 'lme-vocab-history-item-unit', text: t('vocabTest.wordUnit') });
+                left.createSpan({ cls: 'lme-vocab-history-item-number', text: r.estimatedSize.toLocaleString() });
+                left.createSpan({ cls: 'lme-vocab-history-item-unit', text: t('vocabTest.wordUnit') });
 
                 const right = item.createDiv('lme-vocab-history-item-right');
 

@@ -16,18 +16,18 @@ const ONLINE_DICT_TIMEOUT_MS = 8000;
 async function requestUrlWithTimeout(options: Parameters<typeof requestUrl>[0], timeoutMs = ONLINE_DICT_TIMEOUT_MS): Promise<Awaited<ReturnType<typeof requestUrl>>> {
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
     const timeout = new Promise<never>((_, reject) => {
-        timeoutId = setTimeout(() => reject(new Error('Dictionary request timed out')), timeoutMs);
+        timeoutId = window.setTimeout(() => reject(new Error('Dictionary request timed out')), timeoutMs);
     });
 
     try {
         return await Promise.race([requestUrl(options), timeout]);
     } finally {
-        if (timeoutId) clearTimeout(timeoutId);
+        if (timeoutId) window.clearTimeout(timeoutId);
     }
 }
 
 // Cache for lemmatization results (improves performance)
-const LEMMA_CACHE = new Map<string, any[]>();
+const LEMMA_CACHE = new Map<string, unknown[]>();
 
 // MDX Engine instances for each language
 const mdxEngines: Record<string, {
@@ -51,13 +51,13 @@ function getLanguageMDXPaths(language: string, settings: LMESettings): MdxDictio
     }
 
     // Fallback: read legacy flat fields
-    const lang = language as string;
-    const mdxPath = (settings as any)[`${lang}MdxPath`] || '';
-    const mddPath = (settings as any)[`${lang}MddPath`] || '';
-    const cssPath = (settings as any)[`${lang}MdxCssPath`] || '';
-    const mdxPath2 = (settings as any)[`${lang}MdxPath2`] || '';
-    const mddPath2 = (settings as any)[`${lang}MddPath2`] || '';
-    const cssPath2 = (settings as any)[`${lang}MdxCssPath2`] || '';
+    const lang = language;
+    const mdxPath = (settings as unknown)[`${lang}MdxPath`] || '';
+    const mddPath = (settings as unknown)[`${lang}MddPath`] || '';
+    const cssPath = (settings as unknown)[`${lang}MdxCssPath`] || '';
+    const mdxPath2 = (settings as unknown)[`${lang}MdxPath2`] || '';
+    const mddPath2 = (settings as unknown)[`${lang}MddPath2`] || '';
+    const cssPath2 = (settings as unknown)[`${lang}MdxCssPath2`] || '';
 
     const dicts: MdxDictionary[] = [];
     if (mdxPath) {
@@ -157,7 +157,7 @@ async function querySingleMDX(word: string, language: string, dict: MdxDictionar
  * If dictId is provided, search that specific engine first.
  * Fallback: try all loaded engines.
  */
-export async function getMDXResource(path: string, language: string = 'english', dictId?: string): Promise<any | null> {
+export async function getMDXResource(path: string, language: string = 'english', dictId?: string): Promise<unknown | null> {
     // ── 桌面路径:精确 dictId 优先,再遍历全部已加载引擎 ──
     if (dictId && mdxEngines[dictId]?.engine) {
         const buffer = await mdxEngines[dictId].engine.getResource(path);
@@ -187,11 +187,11 @@ export function preloadAudio(word: string, language: string = 'english'): void {
 
     // Skip if already cached
     if (audioCache.has(cacheKey)) {
-        console.log(`[LME Audio] Already cached: ${word} (${language})`);
+        console.debug(`[LME Audio] Already cached: ${word} (${language})`);
         return;
     }
 
-    console.log(`[LME Audio] Preloading: ${word} (${language})`);
+    console.debug(`[LME Audio] Preloading: ${word} (${language})`);
 
     try {
         // Use fast TTS sources with fallbacks
@@ -223,7 +223,7 @@ export function preloadAudio(word: string, language: string = 'english'): void {
         // and harmless — playback has its own fallback chain — so keep this
         // path at debug level to avoid console noise on every lookup.
         audio.onerror = (e) => {
-            console.debug('[LME Audio] Preload error:', audio!.error);
+            console.debug('[LME Audio] Preload error:', audio.error);
 
             // Try fallback URL if available
             if (urls.length > 1 && !audioCache.has(`${cacheKey}_fallback`)) {
@@ -243,7 +243,7 @@ export function preloadAudio(word: string, language: string = 'english'): void {
             }
         };
 
-        console.log(`[LME Audio] Preload started: ${word} (${language})`);
+        console.debug(`[LME Audio] Preload started: ${word} (${language})`);
     } catch (e) {
         console.debug('[LME Audio] Preload failed:', e);
     }
@@ -264,7 +264,7 @@ export async function playAudio(source: string, languageOrPath: string | boolean
     }
 
     const startTime = Date.now();
-    console.log(`[LME Audio] playAudio called: word="${source}", language="${language}", isPath=${isPath}", dictId=${dictId}`);
+    console.debug(`[LME Audio] playAudio called: word="${source}", language="${language}", isPath=${isPath}", dictId=${dictId}`);
 
     try {
         let audioUrl: string;
@@ -274,9 +274,9 @@ export async function playAudio(source: string, languageOrPath: string | boolean
             // Local MDX Sound - check cache first
             if (audioBlobCache.has(cacheKey)) {
                 audioUrl = audioBlobCache.get(cacheKey)!;
-                console.log('[LME Audio] Using cached blob URL');
+                console.debug('[LME Audio] Using cached blob URL');
             } else {
-                console.log('[LME Audio] Loading MDX sound:', source);
+                console.debug('[LME Audio] Loading MDX sound:', source);
                 const buffer = await getMDXResource(source, language, dictId);
                 if (buffer) {
                     // Detect MIME type from file extension
@@ -293,11 +293,11 @@ export async function playAudio(source: string, languageOrPath: string | boolean
                         spx: 'audio/speex',
                     };
                     const mimeType = mimeMap[ext] || 'audio/mpeg';
-                    console.log('[LME Audio] Resource loaded, MIME:', mimeType, 'size:', buffer.length);
+                    console.debug('[LME Audio] Resource loaded, MIME:', mimeType, 'size:', buffer.length);
                     const blob = new Blob([buffer], { type: mimeType });
                     audioUrl = URL.createObjectURL(blob);
                     audioBlobCache.set(cacheKey, audioUrl);
-                    console.log('[LME Audio] Created and cached blob URL');
+                    console.debug('[LME Audio] Created and cached blob URL');
                 } else {
                     console.error('[LME Audio] MDX resource not found for path:', source, 'language:', language);
                     throw new Error(t('errors.mdxResourceNotFound'));
@@ -309,13 +309,13 @@ export async function playAudio(source: string, languageOrPath: string | boolean
             // ═══════════════════════════════════════════════════════════════
 
             // STRATEGY 1: Try Web Speech API (browser built-in, no network needed)
-            console.log('[LME Audio] Trying Web Speech API (browser built-in)...');
+            console.debug('[LME Audio] Trying Web Speech API (browser built-in)...');
             // STRATEGY 1: Use online TTS services directly (ensure female voice)
-            console.log('[LME Audio] Using online TTS service directly');
+            console.debug('[LME Audio] Using online TTS service directly');
             let audio = audioCache.get(cacheKey);
 
             if (!audio) {
-                console.log('[LME Audio] Not preloaded, creating now...');
+                console.debug('[LME Audio] Not preloaded, creating now...');
 
                 // Build TTS URLs with fallbacks (DOMESTIC OPTIMIZED)
                 const ttsUrls: Record<string, string[]> = {
@@ -344,7 +344,7 @@ export async function playAudio(source: string, languageOrPath: string | boolean
 
                     // Try fallback URL if available
                     if (urls.length > 1) {
-                        console.log(`[LME Audio] Trying fallback URL`);
+                        console.debug(`[LME Audio] Trying fallback URL`);
                         try {
                             const fallbackAudio = new Audio(urls[1]);
                             fallbackAudio.preload = 'auto';
@@ -360,7 +360,7 @@ export async function playAudio(source: string, languageOrPath: string | boolean
                     }
                 };
             } else {
-                console.log('[LME Audio] Using preloaded/cached audio');
+                console.debug('[LME Audio] Using preloaded/cached audio');
             }
 
             // Reset to beginning if needed
@@ -369,7 +369,7 @@ export async function playAudio(source: string, languageOrPath: string | boolean
             }
 
             // Play immediately (even if still loading)
-            console.log('[LME Audio] Starting playback...');
+            console.debug('[LME Audio] Starting playback...');
             const playPromise = audio.play();
 
             if (playPromise) {
@@ -380,7 +380,7 @@ export async function playAudio(source: string, languageOrPath: string | boolean
             }
 
             const elapsed = Date.now() - startTime;
-            console.log(`[LME Audio] ✅ Playing after ${elapsed}ms`);
+            console.debug(`[LME Audio] ✅ Playing after ${elapsed}ms`);
 
             return;
         }
@@ -396,7 +396,7 @@ export async function playAudio(source: string, languageOrPath: string | boolean
         });
 
         const elapsed = Date.now() - startTime;
-        console.log(`[LME Audio] MDX audio playing after ${elapsed}ms`);
+        console.debug(`[LME Audio] MDX audio playing after ${elapsed}ms`);
 
     } catch (e) {
         console.error('[LME Audio] Exception:', e);
@@ -412,13 +412,13 @@ async function tryWebSpeechAPI(word: string, language: string): Promise<boolean>
     try {
         // Check if SpeechSynthesis API is available
         if (!('speechSynthesis' in window) && !('webkitSpeechSynthesis' in window)) {
-            console.log('[LME Audio] Web Speech API not available in this browser');
+            console.debug('[LME Audio] Web Speech API not available in this browser');
             return false;
         }
 
-        const synth = window.speechSynthesis || (window as any).webkitSpeechSynthesis;
+        const synth = window.speechSynthesis || (window as unknown).webkitSpeechSynthesis;
         if (!synth) {
-            console.log('[LME Audio] SpeechSynthesis not accessible');
+            console.debug('[LME Audio] SpeechSynthesis not accessible');
             return false;
         }
 
@@ -428,7 +428,7 @@ async function tryWebSpeechAPI(word: string, language: string): Promise<boolean>
         };
 
         const langCode = langCodes[language] || 'en-US';
-        console.log(`[LME Audio] Using Web Speech API with language: ${langCode}`);
+        console.debug(`[LME Audio] Using Web Speech API with language: ${langCode}`);
 
         // Create utterance
         const utterance = new SpeechSynthesisUtterance(word);
@@ -444,14 +444,14 @@ async function tryWebSpeechAPI(word: string, language: string): Promise<boolean>
             const matchingVoice = voices.find(voice => voice.lang.startsWith(langCode));
             if (matchingVoice) {
                 utterance.voice = matchingVoice;
-                console.log(`[LME Audio] Selected voice: ${matchingVoice.name} (${matchingVoice.lang})`);
+                console.debug(`[LME Audio] Selected voice: ${matchingVoice.name} (${matchingVoice.lang})`);
             }
         }
 
         // Create a promise to track completion
         return new Promise<boolean>((resolve) => {
             utterance.onend = () => {
-                console.log('[LME Audio] ✅ Web Speech API playback completed');
+                console.debug('[LME Audio] ✅ Web Speech API playback completed');
                 resolve(true);
             };
 
@@ -464,7 +464,7 @@ async function tryWebSpeechAPI(word: string, language: string): Promise<boolean>
             synth.speak(utterance);
 
             // Wait a bit and resolve (it's async but we want to return quickly)
-            setTimeout(() => {
+            window.setTimeout(() => {
                 resolve(true); // Assume success if no immediate error
             }, 100);
         });
@@ -493,7 +493,7 @@ export function lookupMulti(
     settings: LMESettings,
     onResult?: (result: DictResult) => void
 ): Promise<DictResult[]> {
-    console.log(`[LME] Looking up "${word}" in ${language}`);
+    console.debug(`[LME] Looking up "${word}" in ${language}`);
 
     const completedResults: DictResult[] = [];
     const lookupTasks: Promise<void>[] = [];
@@ -502,7 +502,7 @@ export function lookupMulti(
     preloadAudio(word, language);
 
     const allDicts = getLanguageMDXPaths(language, settings);
-    console.log(`[LME] Dictionary configs:`, allDicts.map(d => d.name));
+    console.debug(`[LME] Dictionary configs:`, allDicts.map(d => d.name));
 
     // Helper: emit a result immediately
     const emit = (result: DictResult) => {
@@ -518,17 +518,17 @@ export function lookupMulti(
             for (const dict of allDicts) {
                 try {
                     const result = await querySingleMDX(word, language, dict);
-                    console.log(`[LME] Found in ${dict.name}`);
+                    console.debug(`[LME] Found in ${dict.name}`);
                     emit(result);
-                } catch (e: any) {
-                    console.log(`[LME] ${dict.name} failed: ${e.message}`);
+                } catch (e: unknown) {
+                    console.debug(`[LME] ${dict.name} failed: ${e.message}`);
                 }
             }
 
             const onlineEnabledKey = `${language}OnlineDictEnabled` as keyof LMESettings;
             const shouldUseOnline = Platform.isMobile || settings[onlineEnabledKey] !== false;
             if (!shouldUseOnline) {
-                console.log(`[LME] Online dictionary disabled for ${language} on desktop`);
+                console.debug(`[LME] Online dictionary disabled for ${language} on desktop`);
                 return;
             }
 
@@ -554,22 +554,22 @@ export function lookupMulti(
                     }
 
                     if (result?.definition?.trim()) {
-                        console.log(`[LME] ✓ Found via ${dict}`);
+                        console.debug(`[LME] ✓ Found via ${dict}`);
                         emit(result);
                         return;
                     }
-                } catch (e: any) {
-                    console.log(`[LME] ${dict} failed: ${e.message}`);
+                } catch (e: unknown) {
+                    console.debug(`[LME] ${dict} failed: ${e.message}`);
                 }
             }
-            console.log(`[LME] All online dictionaries failed for "${word}"`);
+            console.debug(`[LME] All online dictionaries failed for "${word}"`);
         })()
     );
 
     // Return a promise that resolves when ALL tasks finish
     return Promise.allSettled(lookupTasks).then(() => {
         if (completedResults.length > 0) {
-            console.log(`[LME] All done, ${completedResults.length} results for "${word}"`);
+            console.debug(`[LME] All done, ${completedResults.length} results for "${word}"`);
             return completedResults;
         }
         throw new Error(t('errors.mdxNotFound', { word }));
@@ -593,7 +593,7 @@ async function queryYoudaoFree(word: string, language: string): Promise<DictResu
         const resp = await requestUrlWithTimeout({ url, method: 'GET' });
         const data = resp.json;
 
-        console.log('[LME] Youdao jsonapi response keys:', data ? Object.keys(data) : 'null');
+        console.debug('[LME] Youdao jsonapi response keys:', data ? Object.keys(data) : 'null');
 
         // ── 1. Phonetic (Youdao uses usphone/ukphone) ──
         let phonetic = '';
@@ -681,7 +681,7 @@ async function queryYoudaoFree(word: string, language: string): Promise<DictResu
                 const trs = item?.phr?.trs || [];
                 const meanings = trs
                     .slice(0, 2)
-                    .map((tr: any) => tr?.tr?.l?.i || '')
+                    .map((tr: unknown) => tr?.tr?.l?.i || '')
                     .filter(Boolean)
                     .join('; ');
                 if (headword && meanings) {
@@ -700,7 +700,7 @@ async function queryYoudaoFree(word: string, language: string): Promise<DictResu
             webPhrases: webPhrases.length > 0 ? webPhrases : undefined,
             srcYoudao: true,
         };
-    } catch (e: any) {
+    } catch (e: unknown) {
         console.error('[LME] Youdao error:', e);
         throw new Error(t('errors.youdaoFailed') + ': ' + (e.message || t('errors.unknown')));
     }
@@ -732,7 +732,7 @@ async function queryGoogleFree(word: string, language: string): Promise<DictResu
         const dictEntries = data[1] || [];
         const explains: string[] = [];
 
-        dictEntries.forEach((entry: any) => {
+        dictEntries.forEach((entry: unknown) => {
             const pos = entry[0];
             const meanings = (entry[1] as string[]).slice(0, 3);
             // Only include meanings that contain Chinese characters
@@ -757,7 +757,7 @@ async function queryGoogleFree(word: string, language: string): Promise<DictResu
             partOfSpeech: dictEntries[0]?.[0] || '',
             srcGoogle: true
         };
-    } catch (e: any) {
+    } catch (e: unknown) {
         console.error('[LME] Google Translate error:', e);
         throw new Error(t('errors.googleFailed') + ': ' + (e.message || t('errors.unknown')));
     }
@@ -793,7 +793,7 @@ async function queryMyMemory(word: string, language: string): Promise<DictResult
         const resp = await requestUrlWithTimeout({ url, method: 'GET' });
         const data = resp.json;
 
-        console.log('[LME] MyMemory response:', data);
+        console.debug('[LME] MyMemory response:', data);
 
         // Check for valid response
         if (!data || !data.responseStatus || data.responseStatus !== 200) {
@@ -836,7 +836,7 @@ async function queryMyMemory(word: string, language: string): Promise<DictResult
             partOfSpeech: '',
             srcMyMemory: true
         };
-    } catch (e: any) {
+    } catch (e: unknown) {
         console.error('[LME] MyMemory Translation error:', e);
         throw new Error(t('errors.mymemoryFailed') + ': ' + (e.message || t('errors.unknown')));
     }
@@ -846,7 +846,7 @@ async function queryMyMemory(word: string, language: string): Promise<DictResult
  * Get lemmatized candidates with caching
  * Returns array of form candidates (original + alternatives)
  */
-async function getLemmatizedCandidates(word: string, language: string): Promise<any[]> {
+async function getLemmatizedCandidates(word: string, language: string): Promise<unknown[]> {
     const trimmed = word.trim();
     if (!trimmed) return [];
 
@@ -856,7 +856,7 @@ async function getLemmatizedCandidates(word: string, language: string): Promise<
         return LEMMA_CACHE.get(cacheKey)!;
     }
 
-    const candidates: any[] = [];
+    const candidates: unknown[] = [];
 
     try {
         // 社区免费版:仅英语。英语走最小词形还原(原词直查)。
@@ -967,7 +967,7 @@ export async function fetchCleanDefinition(word: string, language: string): Prom
                 if (wordData?.trs?.length > 0) {
                     const trs = wordData.trs
                         .slice(0, 3)
-                        .map((tr: any) => (typeof tr === 'string' ? tr : tr.tr?.[0]?.l?.i?.[0] || ''))
+                        .map((tr: unknown) => (typeof tr === 'string' ? tr : tr.tr?.[0]?.l?.i?.[0] || ''))
                         .filter(Boolean);
                     if (trs.length > 0) return trs.join('; ');
                 }

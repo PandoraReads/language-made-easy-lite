@@ -1,9 +1,9 @@
 import { Platform } from 'obsidian';
 
-let fs: any = null;
+let fs: unknown = null;
 try {
     if (Platform.isDesktop) {
-        fs = (window as any).require('fs');
+        fs = (window as unknown).require('fs');
     }
 } catch (e) {
     // Silent fail
