@@ -339,7 +339,7 @@ export class ShadowingView extends ItemView {
         const stamp = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}`;
         const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/i)?.[1];
         const bili = url.match(/(?:bilibili\.com\/video\/|b23\.tv\/)((?:BV[a-zA-Z0-9]{10})|(?:av[0-9]+)|[a-zA-Z0-9]+)/i)?.[1];
-        return `${t('shadowing.videoNoteTitle')}-${yt || bili || stamp}`.replace(/[\\\/:*?"<>|]/g, '_');
+        return `${t('shadowing.videoNoteTitle')}-${yt || bili || stamp}`.replace(/[\\/:*?"<>|]/g, '_');
     }
 
     private async getAvailableVideoNotePath(folder: string, baseName: string): Promise<string> {
@@ -527,6 +527,7 @@ export class ShadowingView extends ItemView {
         // Attempt 1: Node.js https — read redirect Location header directly (desktop)
         if (Platform.isDesktop) {
             try {
+                // eslint-disable-next-line @typescript-eslint/no-require-imports -- desktop-only lazy load behind a Platform.isDesktop guard (the no-nodejs-modules sanctioned pattern)
                 const https = require('https');
                 const redirectUrl = await new Promise<string | null>((resolve) => {
                     const req = https.get(targetUrl, { headers: { 'User-Agent': ua } }, (res: unknown) => {

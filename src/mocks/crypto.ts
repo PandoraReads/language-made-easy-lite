@@ -1,15 +1,24 @@
 import { Platform } from 'obsidian';
 
-let cryptoModule: unknown = null;
+// Minimal crypto surface (shape of Node's crypto.randomUUID on desktop).
+interface CryptoModuleLike {
+    randomUUID?: () => string;
+}
+
+interface WindowWithRequire {
+    require?: (id: string) => unknown;
+}
+
+let cryptoModule: CryptoModuleLike | null = null;
 try {
     if (Platform.isDesktop) {
-        cryptoModule = (window as unknown).require('crypto');
+        cryptoModule = (window as WindowWithRequire).require?.('crypto') as CryptoModuleLike | undefined ?? null;
     }
 } catch (e) {
     // Silent fail
 }
 
-export const randomUUID = () => {
+export const randomUUID = (): string => {
     // 1. Try modern browser API
     if (typeof window !== 'undefined' && window.crypto?.randomUUID) {
         return window.crypto.randomUUID();
@@ -30,18 +39,17 @@ export const randomUUID = () => {
     });
 };
 
-export const getRandomValues = (arr: unknown) => {
+export const getRandomValues = (arr: ArrayBufferView & { [i: number]: number }): ArrayBufferView => {
     if (typeof window !== 'undefined' && window.crypto?.getRandomValues) {
-        return window.crypto.getRandomValues(arr);
+        return window.crypto.getRandomValues(arr as unknown as ArrayBufferView & ArrayBufferView<ArrayBuffer>);
     }
     if (typeof globalThis !== 'undefined' && window.crypto?.getRandomValues) {
-        return window.crypto.getRandomValues(arr);
+        return window.crypto.getRandomValues(arr as unknown as ArrayBufferView & ArrayBufferView<ArrayBuffer>);
     }
-    for (let i = 0; i < arr.length; i++) arr[i] = Math.floor(Math.random() * 256);
+    const indexed = arr as unknown as { [i: number]: number; length: number };
+    for (let i = 0; i < indexed.length; i++) indexed[i] = Math.floor(Math.random() * 256);
     return arr;
 };
 
-export default cryptoModule || {
-    randomUUID,
-    getRandomValues
-};
+const resolved: CryptoModuleLike = cryptoModule ?? {};
+export default resolved;

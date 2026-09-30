@@ -24,13 +24,35 @@ export type NativePickResult =
 // app.js), which is why the first lookup wins on current desktop builds; the
 // direct require() calls cover older/other setups. Returns null when
 // unavailable (mobile, stripped-down Electron), letting callers fall back.
-export function getElectronRemote(): unknown | null {
+
+/** Result shape of Electron's showOpenDialog. */
+export interface OpenDialogResult {
+    canceled?: boolean;
+    filePaths?: string[];
+}
+
+/** Minimal @electron/remote surface this plugin uses. */
+export interface ElectronRemoteLike {
+    dialog: {
+        showOpenDialog(arg1: unknown, arg2?: unknown): Promise<OpenDialogResult>;
+    };
+    getCurrentWindow?: () => unknown;
+}
+
+interface WindowWithElectron {
+    electron?: { remote?: ElectronRemoteLike };
+    require?: (id: string) => unknown;
+}
+
+export function getElectronRemote(): ElectronRemoteLike | null {
     if (!Platform.isDesktop) return null;
-    const w = window as unknown;
+    const w = window as WindowWithElectron;
     try {
-        const remote = w.electron?.remote
-            ?? w.require?.('@electron/remote')
-            ?? w.require?.('electron')?.remote;
+        const electronModule = w.require?.('electron') as { remote?: ElectronRemoteLike } | undefined;
+        const remote: ElectronRemoteLike | undefined =
+            w.electron?.remote
+            ?? (w.require?.('@electron/remote') as ElectronRemoteLike | undefined)
+            ?? electronModule?.remote;
         return remote?.dialog ? remote : null;
     } catch {
         return null;

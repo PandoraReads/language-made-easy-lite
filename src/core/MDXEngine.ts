@@ -1,23 +1,33 @@
 // @ts-nocheck
 import { Platform } from 'obsidian';
+import type { MDX, MDD } from 'js-mdict';
+
+/** Minimal Node fs surface the dictionary engine depends on (desktop only). */
+interface NodeFsLike {
+    existsSync(path: string): boolean;
+    readFileSync(path: string, encoding: string): string;
+    readdirSync(path: string): string[];
+}
 
 // Dynamic requires for Node-only modules to prevent load failures on mobile
-let fs: unknown = null;
-let jsMdict: unknown = null;
+let fs: NodeFsLike | null = null;
+let jsMdict: typeof import('js-mdict') | null = null;
 
 try {
     if (Platform.isDesktop) {
-        fs = require('fs');
-        jsMdict = require('js-mdict');
+        // eslint-disable-next-line @typescript-eslint/no-require-imports -- desktop-only lazy load behind a Platform.isDesktop guard (the no-nodejs-modules sanctioned pattern)
+        fs = require('fs') as NodeFsLike;
+        // eslint-disable-next-line @typescript-eslint/no-require-imports -- desktop-only lazy load behind a Platform.isDesktop guard (the no-nodejs-modules sanctioned pattern)
+        jsMdict = require('js-mdict') as typeof import('js-mdict');
     }
 } catch (e) {
     console.warn('[EME] Node modules could not be pre-loaded, will retry on demand.');
 }
 
 export class MDXEngine {
-    private mdx: unknown = null;
+    private mdx: MDX | null = null;
     // Multiple MDD files: main + numbered (.1.mdd, .2.mdd, ...)
-    private mdds: unknown[] = [];
+    private mdds: MDD[] = [];
     private mdxPath: string;
     private mddPath: string;
     private cssPath: string;
@@ -84,7 +94,7 @@ export class MDXEngine {
                 loadedPaths.add(this.mddPath);
                 console.debug(`[EME] MDD loaded: ${this.mddPath} (${mdd.keywordList?.length || 0} keys)`);
             } catch (e) {
-                console.warn(`[EME] Failed to load MDD: ${this.mddPath}`, e.message);
+                console.warn(`[EME] Failed to load MDD: ${this.mddPath}`, (e instanceof Error ? e.message : String(e)));
             }
         } else {
             console.warn(`[EME] MDD not found: ${this.mddPath}`);
@@ -114,11 +124,11 @@ export class MDXEngine {
                     const audioCount = mdd.keywordList?.filter(k => /\.(mp3|wav|ogg|spx|aac|m4a)/i.test(k.keyText)).length || 0;
                     console.debug(`[EME] MDD auto-loaded: ${fullPath} (${mdd.keywordList?.length || 0} keys, ${audioCount} audio)`);
                 } catch (e) {
-                    console.warn(`[EME] Failed to load MDD: ${fullPath}`, e.message);
+                    console.warn(`[EME] Failed to load MDD: ${fullPath}`, (e instanceof Error ? e.message : String(e)));
                 }
             }
         } catch (e) {
-            console.warn(`[EME] Failed to scan directory for MDD files:`, e.message);
+            console.warn(`[EME] Failed to scan directory for MDD files:`, (e instanceof Error ? e.message : String(e)));
         }
     }
 
@@ -263,7 +273,7 @@ export class MDXEngine {
     /**
      * Try to locate a resource in a specific MDD using binary search.
      */
-    private locateInMdd(mdd: unknown, key: string): Buffer | null {
+    private locateInMdd(mdd: MDD, key: string): Buffer | null {
         try {
             const result = mdd.locate(key);
             if (result && result.definition) {
@@ -278,7 +288,7 @@ export class MDXEngine {
     /**
      * Linear scan through a specific MDD's keys (handles case/path mismatches).
      */
-    private linearScanInMdd(mdd: unknown, rawPath: string): Buffer | null {
+    private linearScanInMdd(mdd: MDD, rawPath: string): Buffer | null {
         const list = mdd.keywordList;
         if (!list || list.length === 0) return null;
 

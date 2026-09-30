@@ -42,7 +42,8 @@ export function t(key: string, params?: Record<string, unknown>): string {
 			return result.replace(/\{(\w+)\}/g, (match, paramKey) => {
 				const v = params[paramKey];
 				if (v === undefined) return match;
-				return typeof v === 'object' || typeof v === 'function' ? JSON.stringify(v) : String(v);
+				if (v === null || typeof v === 'object' || typeof v === 'function') return JSON.stringify(v);
+				return String(v as string | number | bigint | boolean | symbol);
 			});
 		}
 		return result;

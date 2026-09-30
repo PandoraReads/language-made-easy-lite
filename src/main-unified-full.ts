@@ -8,6 +8,7 @@
 import {
 	Plugin,
 	TFile,
+	normalizePath,
 	WorkspaceLeaf,
 	Notice,
 	Platform,
@@ -520,7 +521,6 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 	}
 
 	public async transcribeMediaToNewNote(): Promise<void> {
-		const { TFile } = require('obsidian') as typeof import('obsidian');
 		const folder = this.settings.subtitleNoteFolder || this.app.workspace.getActiveFile()?.parent?.path || '';
 		const title = this.buildGeneratedNoteTitle(t('nav.audioNoteTitle'));
 		const notePath = await this.getAvailableGeneratedPath(folder, title, 'md');
@@ -590,7 +590,6 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 	}
 
 	private async getAvailableGeneratedPath(folder: string, baseName: string, ext: string): Promise<string> {
-		const { normalizePath } = require('obsidian') as typeof import('obsidian');
 		let index = 0;
 		while (true) {
 			const suffix = index === 0 ? '' : `-${index + 1}`;
@@ -702,7 +701,6 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 	 * and export a `.srt` next to the note.
 	 */
 	private async transcribeMediaFlow(): Promise<void> {
-		const { TFile } = require('obsidian') as typeof import('obsidian');
 		const file = this.app.workspace.getActiveFile();
 		if (!file || file.extension !== 'md') {
 			new Notice(t('transcribe.noActiveNote'));
@@ -735,7 +733,6 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 	}
 
 	private async runTranscription(noteFile: unknown, mediaFile: unknown): Promise<void> {
-		const { TFile } = require('obsidian') as typeof import('obsidian');
 		try {
 			if (!(mediaFile instanceof TFile)) {
 				new Notice(t('transcribe.noMediaFound'));
@@ -830,7 +827,6 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 	 * default folder; if none is set, prompts for the destination path.
 	 */
 	private convertSrtToNoteFlow(): void {
-		const { TFile } = require('obsidian') as typeof import('obsidian');
 
 		// Bail early with a clear message if there are no SRT files to pick from.
 		const hasSrt = this.app.vault.getFiles().some(f => f.extension?.toLowerCase() === 'srt');
@@ -880,7 +876,6 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 	 * Resolves to '' if the user submits an empty path.
 	 */
 	private resolveSubtitleNotePath(srtPath: string, stem: string): Promise<string> {
-		const { normalizePath } = require('obsidian') as typeof import('obsidian');
 
 		const folder = (this.settings.subtitleNoteFolder || '').trim();
 		if (folder) {
@@ -909,7 +904,6 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 	 * needed.
 	 */
 	private async writeSubtitleNote(notePath: string, lines: string, fullBody: string): Promise<void> {
-		const { TFile } = require('obsidian') as typeof import('obsidian');
 		const existing = this.app.vault.getAbstractFileByPath(notePath);
 		if (existing instanceof TFile) {
 			await this.insertSubtitlesIntoActiveNote(existing, lines);
@@ -928,7 +922,6 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 
 	/** Open a vault note by path in a new tab. No-op if the file isn't found. */
 	private async openNoteInTab(notePath: string): Promise<void> {
-		const { TFile } = require('obsidian') as typeof import('obsidian');
 		const file = this.app.vault.getAbstractFileByPath(notePath);
 		if (file instanceof TFile) {
 			await this.app.workspace.getLeaf('tab').openFile(file);
@@ -1012,7 +1005,6 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 	 * user submits an empty folder.
 	 */
 	private resolveSubtitleNoteFolder(): Promise<string> {
-		const { normalizePath } = require('obsidian') as typeof import('obsidian');
 
 		const folder = (this.settings.subtitleNoteFolder || '').trim();
 		if (folder) {
@@ -1034,7 +1026,6 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 
 	/** Thin wrapper to normalize a vault path (keeps `require('obsidian')` local). */
 	private normalizeSubtitlePath(path: string): string {
-		const { normalizePath } = require('obsidian') as typeof import('obsidian');
 		return normalizePath(path);
 	}
 
