@@ -10,7 +10,7 @@
 > ### 💡 Freemium notice
 > The basic features of this plugin are free to install and use; advanced features are fully unlocked with the Full Edition — a one-time purchase, with lifetime access to all future updates. The in-plugin upgrade dialog shows the purchase links. See the [feature comparison](#-free-basic-vs-full-edition) below for the differences.
 >
-> **The Basic Edition is for trying out and light learning; for heavy long-term use, batch processing, or multiple languages, upgrade to the Full Edition.**
+> **The Basic Edition covers the full daily learning loop — lookup, flashcard review, shadowing, and video notes; advanced capabilities such as more languages, cross-device sync, and batch processing are in the Full Edition.**
 
 ---
 
@@ -33,7 +33,7 @@ Paste a YouTube / Bilibili link and the plugin fetches the title, channel, and c
 ### 📖 Dictionary Assistant — read anything, look up instantly
 - **Instant lookup**: `Ctrl/Cmd + double-click` any word (or select text) — definitions appear in the sidebar instantly
 - **Context capture**: the full sentence containing the word is automatically saved as its example sentence
-- **Offline MDX dictionaries**: load local `.mdx`/`.mdd` dictionaries on desktop (1 in the free Basic Edition, 5 in the Full Edition; mobile import is Full Edition)
+- **Offline MDX dictionaries**: load local `.mdx`/`.mdd` dictionaries on desktop with no count limit (mobile import is Full Edition)
 - **Online fallback chain**: Youdao → Google Translate → MyMemory, all free public APIs, no key needed
 - **Pronunciation**: audio playback with smart preloading
 - **One-click add** to your vocabulary notebook (IndexedDB + auto-maintained markdown file)
@@ -101,13 +101,13 @@ The Basic Edition is free forever. The **Full Edition** unlocks every advanced m
 | Feature module | Basic (free) | Full Edition |
 |---|:---:|:---:|
 | Dictionary lookup (double-click / context capture / pronunciation / notebook) | ✅ | ✅ |
-| Local MDX dictionaries (desktop) | **1** | **5** |
+| Local MDX dictionaries (desktop) | ✅ | ✅ |
 | Mobile dictionaries (import for offline lookup) | — | ✅ |
 | Cross-device flashcard sync | — | ✅ |
-| FSRS flashcards (flip mode / stats / pet companion) | **250-card cap** | **Unlimited** |
+| FSRS flashcards (flip mode / stats / pet companion) | ✅ | ✅ |
 | AI analysis (6 templates / scoring / flashcard auto-fill) | **Partial** | **Full** |
 | Shadowing workshop (shadowing / dictation / speed control) | ✅ | ✅ |
-| Video note generation (incl. subtitle download) | **10 per week** | **Unlimited** |
+| Video note generation (incl. subtitle download) | ✅ | ✅ |
 | SRT to note, vocabulary test, YouTube subscriptions & preview | ✅ | ✅ |
 | **More languages**: German / French / Spanish / Korean / Russian / Japanese | — | ✅ |
 | **9 extra UI themes** (beyond Classic Paper & Ink) | — | ✅ |
