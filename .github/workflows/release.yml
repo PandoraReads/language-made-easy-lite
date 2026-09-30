@@ -9,8 +9,9 @@ on:
 
 permissions:
   contents: write
-  # Artifact attestations 需要的 OIDC 权限(社区市场校验 release 资产来源)
+  # Artifact attestations 需要的权限(社区市场校验 release 资产来源)
   id-token: write
+  attestations: write
 
 jobs:
   release:
