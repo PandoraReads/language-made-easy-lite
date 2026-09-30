@@ -49,11 +49,25 @@ export function extractChannelId(text: string): string | null {
     return path || null;
 }
 
+/**
+ * 只认"页面自身"的频道元数据信号,按优先级取第一个命中的:
+ * 1. <link rel="canonical"> — 频道页 canonical 恒为 /channel/UC... 形式
+ * 2. <meta itemprop="identifier"> — 频道页 schema.org 标识
+ * 3. "externalId" — ytInitialData 里 channelMetadataRenderer(页面自身元数据)的字段
+ * 4. <meta itemprop="channelId"> — 旧版页面布局
+ * 5. <meta property="og:url"> — 指向 /channel/UC... 的社交分享 URL
+ *
+ * 不能退化为通用 "channelId": 或 /channel/ 链接匹配:频道页(如 @NBCNews)内嵌 JSON 的
+ * 推荐频道轮播 gridChannelRenderer(如 TODAY)会先于页面自身元数据出现,抓"第一个"
+ * 会订阅错频道。宁可返回 null 走"请粘贴 /channel/UC... 链接"的明确报错。
+ */
 export function extractChannelIdFromHtml(html: string): string | null {
     const patterns = [
+        /<link[^>]+rel=["']canonical["'][^>]*href=["'][^"']*\/channel\/(UC[a-zA-Z0-9_-]+)["']/i,
+        /<meta[^>]+itemprop=["']identifier["'][^>]+content=["'](UC[a-zA-Z0-9_-]+)["']/i,
+        /["']externalId["']\s*:\s*["'](UC[a-zA-Z0-9_-]+)["']/i,
         /<meta[^>]+itemprop=["']channelId["'][^>]+content=["'](UC[a-zA-Z0-9_-]+)["']/i,
-        /["']channelId["']\s*:\s*["'](UC[a-zA-Z0-9_-]+)["']/i,
-        /youtube\.com\/channel\/(UC[a-zA-Z0-9_-]+)/i,
+        /<meta[^>]+property=["']og:url["'][^>]+content=["'][^"']*\/channel\/(UC[a-zA-Z0-9_-]+)["']/i,
     ];
     for (const pattern of patterns) {
         const match = html.match(pattern);

@@ -34,6 +34,24 @@ try {
     assert('builds thumbnail', parsed[0]?.thumbnailUrl.includes('abcdefghijk'));
     assert('extracts channel input', rss.extractChannelId('https://www.youtube.com/channel/UC_abc123456789012345') === 'UC_abc123456789012345');
     assert('extracts channel html id', rss.extractChannelIdFromHtml('<meta itemprop="channelId" content="UC_abc123456789012345">') === 'UC_abc123456789012345');
+    // 回归案例:@NBCNews 频道页 JSON 里推荐频道轮播(gridChannelRenderer,TODAY)先于页面自身元数据出现,
+    // 抓"第一个 channelId"会订阅成 TODAY。必须只认页面自身信号。
+    const today = 'UChDKyKQ59fYz3JO2fl0Z6sg';
+    const nbc = 'UCeY0bbntWzzVIaj2z3QigXg';
+    const nbcPage = '<!doctype html><html><head>'
+        + `<link rel="canonical" href="https://www.youtube.com/channel/${nbc}">`
+        + `<meta itemprop="identifier" content="${nbc}">`
+        + '</head><body><script>var ytInitialData = {"contents":{"horizontalListRenderer":{"items":['
+        + `{"gridChannelRenderer":{"channelId":"${today}","title":"TODAY"}}]}}};</script>`
+        + `<div>"channelMetadataRenderer":{"title":"NBC News","externalId":"${nbc}"}</div>`
+        + '</body></html>';
+    assert('prefers page canonical over featured-channel JSON', rss.extractChannelIdFromHtml(nbcPage) === nbc);
+    assert('extracts id from canonical link', rss.extractChannelIdFromHtml(`<link rel="canonical" href="https://www.youtube.com/channel/${nbc}">`) === nbc);
+    assert('extracts id from meta itemprop identifier', rss.extractChannelIdFromHtml(`<meta itemprop="identifier" content="${nbc}">`) === nbc);
+    assert('extracts id from externalId json', rss.extractChannelIdFromHtml(`"channelMetadataRenderer":{"externalId":"${nbc}"}`) === nbc);
+    assert('extracts id from og:url', rss.extractChannelIdFromHtml(`<meta property="og:url" content="https://www.youtube.com/channel/${nbc}">`) === nbc);
+    assert('rejects featured-channel JSON without page metadata', rss.extractChannelIdFromHtml(`{"gridChannelRenderer":{"channelId":"${today}"}}`) === null);
+    assert('rejects featured-channel links without page metadata', rss.extractChannelIdFromHtml(`<a href="https://www.youtube.com/channel/${today}">TODAY</a>`) === null);
     const subscription = { id: 'one', channelId: 'UC_abc123456789012345', channelName: 'One', channelUrl: '', feedUrl: '', createdAt: 1, lastCheckedAt: 0 };
     const first = rss.mergeYouTubeItems([], parsed, subscription, 1);
     const second = rss.mergeYouTubeItems(first, [{ ...parsed[0], videoId: 'lmnopqrstuv' }], { ...subscription, id: 'two' }, 2);
