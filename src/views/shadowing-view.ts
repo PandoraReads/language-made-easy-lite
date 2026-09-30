@@ -55,6 +55,8 @@ export class ShadowingView extends ItemView {
     private ytMobileHandler: ((event: MessageEvent) => void) | null = null;
     private ytMobileTime: number = 0;
     private ytMobileState: number = -1;
+    private ytIframeHandler: ((event: MessageEvent) => void) | null = null;
+    private ytListenTimer: number | null = null;
     private blocks: TimestampBlock[] = [];
     private shadowingMode = false;
     private activeBlock: TimestampBlock | null = null;
@@ -183,6 +185,7 @@ export class ShadowingView extends ItemView {
             this.practice = null;
         }
         this.cleanupRecorder();
+        this.detachYouTubeIframeController();
         if (this.videoEl) {
             this.videoEl.onerror = null;
             this.videoEl.onpause = null;
