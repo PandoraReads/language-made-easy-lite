@@ -12,88 +12,88 @@
 
 /* ── Global Variables ── */
 .theme-dark, .theme-light {
-    /* Paper Palette */
-    --lme-paper-cream: #FEF9E7;
-    --lme-paper-mist: #F5F1E8;
-    --lme-paper-aged: #EDE4D8;
-    --lme-paper-edge: #E0D9CC;
+    /* Paper Palette — warm ivory, fine-press grade */
+    --lme-paper-cream: #FBF8F2;
+    --lme-paper-mist: #F5F1EA;
+    --lme-paper-aged: #EDE6DA;
+    --lme-paper-edge: #E1DACF;
 
-    /* Ink Palette */
-    --lme-ink-black: #2C2416;
-    --lme-ink-brown: #4A4036;
-    --lme-spine-brown: #6B5D4E;
-    --lme-gold-accent: #C5A059;
+    /* Ink Palette — deep espresso inks */
+    --lme-ink-black: #26201A;
+    --lme-ink-brown: #463D33;
+    --lme-spine-brown: #665947;
+    --lme-gold-accent: #A5814A;
 
-    /* Academic Palette */
-    --lme-academic-green: #3D6B35;
-    --lme-seal-red: #8B3A3A;
-    --lme-classic-blue: #4A5D6F;
+    /* Academic Palette — muted scholarly tones */
+    --lme-academic-green: #37592F;
+    --lme-seal-red: #7E3436;
+    --lme-classic-blue: #46586B;
 
     /* Primary Accent */
     --lme-accent: var(--lme-seal-red);
-    --lme-accent-rgb: 139, 58, 58;
+    --lme-accent-rgb: 126, 52, 54;
     --lme-accent-secondary: var(--lme-academic-green);
 
     /* Paper Textures */
-    --lme-text-primary: #2C2416;
-    --lme-text-secondary: #4A4036;
-    --lme-text-muted: #6B5D4E;
+    --lme-text-primary: #26201A;
+    --lme-text-secondary: #463D33;
+    --lme-text-muted: #665947;
 
-    /* Paper Effects */
-    --lme-paper-shadow: 0 2px 8px rgba(44, 40, 30, 0.1);
-    --lme-paper-shadow-warm: 0 2px 12px rgba(139, 92, 246, 0.15);
-    --lme-ink-glow: 0 0 20px rgba(61, 107, 53, 0.3);
-    --lme-gold-glow: 0 0 20px rgba(197, 160, 89, 0.4);
+    /* Paper Effects — layered ambient + key light */
+    --lme-paper-shadow: 0 1px 2px rgba(38, 30, 22, 0.05), 0 4px 14px rgba(38, 30, 22, 0.08);
+    --lme-paper-shadow-warm: 0 1px 2px rgba(38, 30, 22, 0.05), 0 6px 18px rgba(165, 129, 74, 0.14);
+    --lme-ink-glow: 0 0 16px rgba(55, 89, 47, 0.18);
+    --lme-gold-glow: 0 0 16px rgba(165, 129, 74, 0.22);
 
     /* Glass Effect */
-    --lme-glass-bg: rgba(255, 255, 255, 0.65);
-    --lme-glass-border: rgba(0, 0, 0, 0.1);
+    --lme-glass-bg: rgba(251, 248, 242, 0.72);
+    --lme-glass-border: rgba(38, 30, 22, 0.09);
 }
 
 .theme-dark {
-    /* Dark mode paper palette - warm dark tones */
-    --lme-paper-cream: #1e1c1a;
-    --lme-paper-mist: #252220;
-    --lme-paper-aged: #1a1816;
-    --lme-paper-edge: #3a3530;
+    /* Dark mode paper palette — rich warm charcoal */
+    --lme-paper-cream: #211E1A;
+    --lme-paper-mist: #282420;
+    --lme-paper-aged: #1D1A17;
+    --lme-paper-edge: #403A33;
 
-    /* Dark mode ink palette - warm light tones */
-    --lme-ink-black: #e4ddd2;
-    --lme-ink-brown: #b5a898;
-    --lme-spine-brown: #918175;
-    --lme-gold-accent: #d4b06a;
+    /* Dark mode ink palette — warm light tones */
+    --lme-ink-black: #EAE3D8;
+    --lme-ink-brown: #BCB0A2;
+    --lme-spine-brown: #97897B;
+    --lme-gold-accent: #C9A96A;
 
     /* Accent colors - brighter for dark mode contrast */
-    --lme-seal-red: #c95c5c;
-    --lme-academic-green: #5a9b50;
-    --lme-classic-blue: #6a8da0;
+    --lme-seal-red: #C86A66;
+    --lme-academic-green: #5C9455;
+    --lme-classic-blue: #6E90A4;
 
     /* Text colors - light for dark backgrounds */
-    --lme-text-primary: #e4ddd2;
-    --lme-text-secondary: #b5a898;
-    --lme-text-muted: #918175;
+    --lme-text-primary: #EAE3D8;
+    --lme-text-secondary: #BCB0A2;
+    --lme-text-muted: #97897B;
 
     /* Dark mode backgrounds */
-    --lme-bg-deep: #1e1c1a;
-    --lme-bg-universe: #252220;
-    --lme-bg-nebula: #2a2724;
+    --lme-bg-deep: #1B1916;
+    --lme-bg-universe: #232019;
+    --lme-bg-nebula: #2A2622;
 
-    /* Shadows - more pronounced in dark mode */
-    --lme-paper-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-    --lme-paper-shadow-warm: 0 2px 12px rgba(0, 0, 0, 0.4);
-    --lme-ink-glow: 0 0 20px rgba(90, 155, 80, 0.25);
-    --lme-gold-glow: 0 0 20px rgba(212, 176, 106, 0.3);
+    /* Shadows - layered, more pronounced in dark mode */
+    --lme-paper-shadow: 0 1px 2px rgba(0, 0, 0, 0.25), 0 6px 20px rgba(0, 0, 0, 0.35);
+    --lme-paper-shadow-warm: 0 1px 2px rgba(0, 0, 0, 0.3), 0 6px 20px rgba(201, 169, 106, 0.1);
+    --lme-ink-glow: 0 0 16px rgba(92, 148, 85, 0.15);
+    --lme-gold-glow: 0 0 16px rgba(201, 169, 106, 0.18);
 
-    /* Glass effects */
-    --lme-glass-bg: rgba(0, 0, 0, 0.35);
-    --lme-glass-border: rgba(255, 255, 255, 0.08);
+    /* Glass effects — deep espresso glass */
+    --lme-glass-bg: rgba(24, 21, 18, 0.55);
+    --lme-glass-border: rgba(234, 227, 216, 0.09);
 }
 
 .theme-light {
-    /* Light mode - slightly brighter paper */
-    --lme-bg-deep: #FEF9E7;
-    --lme-bg-universe: #FAF7EF;
-    --lme-bg-nebula: #F5F1E8;
+    /* Light mode — slightly brighter paper */
+    --lme-bg-deep: #FBF8F2;
+    --lme-bg-universe: #F8F4EC;
+    --lme-bg-nebula: #F3EFE7;
 }
 
 .lme-active-line {
@@ -136,13 +136,13 @@
 
 .lme-btn:hover {
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(61, 107, 53, 0.25);
+    box-shadow: 0 1px 2px rgba(38, 30, 22, 0.08), 0 6px 16px rgba(55, 89, 47, 0.18);
     background: var(--lme-academic-green);
 }
 
 .lme-btn:active {
     transform: translateY(0);
-    box-shadow: 0 2px 6px rgba(44, 40, 30, 0.2);
+    box-shadow: 0 1px 4px rgba(38, 30, 22, 0.14);
 }
 
 /* ── Dictionary View ── */
@@ -159,9 +159,9 @@
     font-family: var(--lme-font-sans);
     /* Subtle paper texture overlay */
     background-image:
-        radial-gradient(circle at 30% 20%, rgba(107, 53, 61, 0.04) 0%, transparent 50%),
-        radial-gradient(circle at 70% 80%, rgba(197, 160, 89, 0.03) 0%, transparent 50%),
-        radial-gradient(circle at 40% 80%, rgba(139, 92, 246, 0.02) 0%, transparent 50%),
+        radial-gradient(circle at 30% 20%, rgba(126, 52, 54, 0.04) 0%, transparent 50%),
+        radial-gradient(circle at 70% 80%, rgba(165, 129, 74, 0.03) 0%, transparent 50%),
+        radial-gradient(circle at 40% 80%, rgba(70, 88, 107, 0.02) 0%, transparent 50%),
         url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='paper-noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.5' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' type='matrix' values='0 0 0 0'/%3E%3C/filter%3E%3C/svg%3E");
     background-attachment: fixed;
 }
@@ -252,23 +252,23 @@
     height: 88px;
     background: radial-gradient(circle at 30% 30%,
             rgba(255, 255, 255, 0.95) 0%,
-            rgba(255, 250, 240, 0.7) 20%,
-            rgba(255, 215, 140, 0.4) 50%,
-            rgba(197, 160, 89, 0.2) 70%,
+            rgba(246, 240, 230, 0.7) 20%,
+            rgba(214, 184, 122, 0.4) 50%,
+            rgba(165, 129, 74, 0.2) 70%,
             transparent 100%);
     border-radius: 60% 40% 70% 30% / 50% 60% 40% 50%;
     animation:
         lme-orb-morph 7s ease-in-out infinite,
         lme-orb-pulse 3.5s ease-in-out infinite alternate;
     box-shadow:
-        inset 0 0 30px rgba(255, 215, 140, 0.6),
-        inset -10px -10px 30px rgba(197, 160, 89, 0.4),
-        0 0 40px rgba(255, 215, 140, 0.5),
-        0 0 80px rgba(255, 215, 140, 0.3),
-        0 0 120px rgba(197, 160, 89, 0.2);
+        inset 0 0 26px rgba(214, 184, 122, 0.42),
+        inset -8px -8px 26px rgba(165, 129, 74, 0.28),
+        0 0 28px rgba(214, 184, 122, 0.28),
+        0 0 56px rgba(214, 184, 122, 0.16),
+        0 0 96px rgba(165, 129, 74, 0.1);
     position: relative;
     backdrop-filter: blur(2px);
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.24);
 }
 
 .lme-dict-hero-orb::before {
@@ -298,8 +298,8 @@
     height: 40%;
     transform: translate(-50%, -50%);
     background: radial-gradient(circle,
-            rgba(255, 250, 240, 0.8) 0%,
-            rgba(255, 215, 140, 0.4) 40%,
+            rgba(246, 240, 230, 0.8) 0%,
+            rgba(214, 184, 122, 0.4) 40%,
             transparent 70%);
     border-radius: inherit;
     animation: lme-orb-inner-glow 3s ease-in-out infinite alternate;
@@ -352,24 +352,24 @@
 @keyframes lme-orb-pulse {
     from {
         transform: scale(0.94);
-        opacity: 0.75;
+        opacity: 0.78;
         box-shadow:
-            inset 0 0 25px rgba(255, 215, 140, 0.5),
-            inset -8px -8px 25px rgba(197, 160, 89, 0.3),
-            0 0 35px rgba(255, 215, 140, 0.4),
-            0 0 70px rgba(255, 215, 140, 0.25),
-            0 0 100px rgba(197, 160, 89, 0.15);
+            inset 0 0 22px rgba(214, 184, 122, 0.36),
+            inset -8px -8px 22px rgba(165, 129, 74, 0.22),
+            0 0 26px rgba(214, 184, 122, 0.22),
+            0 0 52px rgba(214, 184, 122, 0.13),
+            0 0 84px rgba(165, 129, 74, 0.08);
     }
 
     to {
         transform: scale(1.06);
         opacity: 0.95;
         box-shadow:
-            inset 0 0 35px rgba(255, 215, 140, 0.7),
-            inset -12px -12px 35px rgba(197, 160, 89, 0.5),
-            0 0 50px rgba(255, 215, 140, 0.6),
-            0 0 100px rgba(255, 215, 140, 0.4),
-            0 0 150px rgba(197, 160, 89, 0.25);
+            inset 0 0 30px rgba(214, 184, 122, 0.5),
+            inset -10px -10px 30px rgba(165, 129, 74, 0.34),
+            0 0 36px rgba(214, 184, 122, 0.34),
+            0 0 72px rgba(214, 184, 122, 0.2),
+            0 0 120px rgba(165, 129, 74, 0.12);
     }
 }
 
@@ -485,19 +485,19 @@
 }
 
 /* ── Dict Empty Background Aurora ── */
-/* Animated pastel gradient — visible on the white/light background
-   because it uses actual faint color hues, not white-on-white. */
+/* Animated ink-wash gradient — faint hues from the paper & ink palette
+   sweeping across vellum, visible on light background without going candy. */
 
 .lme-dict-view {
     position: relative;
     /* Oversized gradient: background-position animation sweeps it across */
     background: linear-gradient(135deg,
-            #ffffff 0%,
-            #f3eeff 20%,
-            #eef5ff 40%,
-            #fff5ee 60%,
-            #edfff6 80%,
-            #ffffff 100%);
+            #fbf8f2 0%,
+            #f6efe2 20%,
+            #f1efe9 40%,
+            #f7ede8 60%,
+            #eff1e9 80%,
+            #fbf8f2 100%);
     background-size: 300% 300%;
     animation: emeAuroraShift 10s ease-in-out infinite alternate;
 }
@@ -506,7 +506,7 @@
     background: linear-gradient(135deg,
             var(--background-primary) 0%,
             rgba(var(--lme-accent-rgb), 0.04) 25%,
-            rgba(100, 160, 255, 0.04) 50%,
+            rgba(110, 144, 164, 0.05) 50%,
             rgba(var(--lme-accent-rgb), 0.03) 75%,
             var(--background-primary) 100%);
     background-size: 300% 300%;
@@ -576,7 +576,7 @@
 
 .lme-dict-search-wrapper:focus-within {
     border-color: var(--lme-ink-brown);
-    box-shadow: 0 4px 12px rgba(44, 40, 30, 0.15);
+    box-shadow: 0 4px 12px rgba(38, 30, 22, 0.15);
 }
 
 .lme-dict-search-icon {
@@ -704,7 +704,7 @@
 }
 
 .lme-dict-card:hover {
-    box-shadow: 0 4px 16px rgba(44, 40, 30, 0.15);
+    box-shadow: 0 4px 16px rgba(38, 30, 22, 0.15);
     transform: translateY(-2px);
 }
 
@@ -964,10 +964,10 @@
 /* ── Tested state: dark glass with rotating light reflection ── */
 .lme-vocab-marquee-tested .lme-vocab-marquee-inner {
     background: linear-gradient(135deg, #1a1410 0%, #2a2018 50%, #1a1410 100%);
-    border: 1px solid rgba(197, 160, 89, 0.25);
+    border: 1px solid rgba(165, 129, 74, 0.25);
     box-shadow:
-        0 0 20px rgba(139, 58, 58, 0.15),
-        0 0 60px rgba(139, 58, 58, 0.05),
+        0 0 20px rgba(126, 52, 54, 0.15),
+        0 0 60px rgba(126, 52, 54, 0.05),
         inset 0 1px 0 rgba(255,255,255,0.05);
     gap: 12px;
     overflow: hidden;
@@ -1033,7 +1033,7 @@
 
 .lme-vocab-marquee-number-label {
     font-size: 11px;
-    color: rgba(197, 160, 89, 0.5);
+    color: rgba(165, 129, 74, 0.5);
     letter-spacing: 0.05em;
     margin-bottom: 2px;
 }
@@ -1048,9 +1048,9 @@
     letter-spacing: -1px;
     color: #f5e6c8;
     text-shadow:
-        0 0 10px rgba(245, 230, 200, 0.6),
-        0 0 30px rgba(245, 230, 200, 0.3),
-        0 0 60px rgba(139, 58, 58, 0.2);
+        0 0 10px rgba(245, 230, 200, 0.45),
+        0 0 30px rgba(245, 230, 200, 0.2),
+        0 0 60px rgba(126, 52, 54, 0.16);
 }
 
 @keyframes lme-float-plus-one {
@@ -1094,9 +1094,9 @@
     border-radius: 10px;
     font-size: 12px;
     font-weight: 700;
-    color: #c5a059;
-    background: rgba(197, 160, 89, 0.12);
-    border: 1px solid rgba(197, 160, 89, 0.25);
+    color: #b08d4f;
+    background: rgba(165, 129, 74, 0.12);
+    border: 1px solid rgba(165, 129, 74, 0.25);
     white-space: nowrap;
 }
 
@@ -1107,15 +1107,15 @@
     font-weight: 700;
     letter-spacing: 0.5px;
     color: #f5e6c8;
-    background: rgba(139, 58, 58, 0.5);
+    background: rgba(126, 52, 54, 0.5);
     border: 1px solid rgba(245, 230, 200, 0.15);
     white-space: nowrap;
 }
 
 .lme-vocab-marquee-tag-cefr-c2,
 .lme-vocab-marquee-tag-cefr-c1 {
-    background: rgba(61, 107, 53, 0.45);
-    border-color: rgba(90, 155, 80, 0.25);
+    background: rgba(55, 89, 47, 0.45);
+    border-color: rgba(92, 148, 85, 0.25);
 }
 
 .lme-vocab-marquee-tag-cefr-b2,
@@ -1127,28 +1127,28 @@
 .lme-vocab-marquee-tested .lme-vocab-marquee-test-btn {
     padding: 5px 16px;
     border-radius: 14px;
-    border: 1px solid rgba(197, 160, 89, 0.3);
-    background: rgba(197, 160, 89, 0.08);
-    color: rgba(197, 160, 89, 0.7);
+    border: 1px solid rgba(165, 129, 74, 0.3);
+    background: rgba(165, 129, 74, 0.08);
+    color: rgba(165, 129, 74, 0.7);
     font-size: 12px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
-    text-shadow: 0 0 4px rgba(197, 160, 89, 0.2);
+    text-shadow: 0 0 4px rgba(165, 129, 74, 0.2);
 }
 
 .lme-vocab-marquee-tested .lme-vocab-marquee-test-btn:hover {
-    color: rgba(197, 160, 89, 0.95);
-    border-color: rgba(197, 160, 89, 0.6);
-    box-shadow: 0 0 14px rgba(197, 160, 89, 0.15);
-    background: rgba(197, 160, 89, 0.15);
+    color: rgba(165, 129, 74, 0.95);
+    border-color: rgba(165, 129, 74, 0.6);
+    box-shadow: 0 0 14px rgba(165, 129, 74, 0.15);
+    background: rgba(165, 129, 74, 0.15);
 }
 
 /* ── Untested state: inviting warm glow ── */
 .lme-vocab-marquee-untested .lme-vocab-marquee-inner {
     background: linear-gradient(135deg, #2a2018 0%, #3a2e20 50%, #2a2018 100%);
-    border: 1px dashed rgba(197, 160, 89, 0.35);
-    box-shadow: 0 0 24px rgba(197, 160, 89, 0.12);
+    border: 1px dashed rgba(165, 129, 74, 0.35);
+    box-shadow: 0 0 24px rgba(165, 129, 74, 0.12);
     flex-direction: column;
     gap: 10px;
     padding: 20px 28px;
@@ -1173,21 +1173,21 @@
 .lme-vocab-marquee-test-btn {
     padding: 8px 28px;
     border-radius: 20px;
-    border: 1px solid rgba(197, 160, 89, 0.5);
-    background: rgba(197, 160, 89, 0.18);
-    color: #ebd07a;
+    border: 1px solid rgba(165, 129, 74, 0.5);
+    background: rgba(165, 129, 74, 0.18);
+    color: #d9bc7a;
     font-size: 14px;
     font-weight: 700;
     cursor: pointer;
     transition: all 0.3s ease;
-    text-shadow: 0 0 8px rgba(197, 160, 89, 0.4);
-    box-shadow: 0 0 16px rgba(197, 160, 89, 0.15);
+    text-shadow: 0 0 8px rgba(165, 129, 74, 0.4);
+    box-shadow: 0 0 16px rgba(165, 129, 74, 0.15);
 }
 
 .lme-vocab-marquee-test-btn:hover {
-    background: rgba(197, 160, 89, 0.28);
-    border-color: rgba(197, 160, 89, 0.7);
-    box-shadow: 0 0 24px rgba(197, 160, 89, 0.25);
+    background: rgba(165, 129, 74, 0.28);
+    border-color: rgba(165, 129, 74, 0.7);
+    box-shadow: 0 0 24px rgba(165, 129, 74, 0.25);
     transform: translateY(-1px);
 }
 
@@ -1213,14 +1213,14 @@
 }
 
 .lme-aurora-blob-1 {
-    background: #f5f5f4;
+    background: #f3eee4;
     /* Warm Parchment */
     top: -100px;
     left: -100px;
 }
 
 .lme-aurora-blob-2 {
-    background: #e7e5e4;
+    background: #e9e1d2;
     /* Muted Sand */
     bottom: -100px;
     right: -100px;
@@ -1228,7 +1228,7 @@
 }
 
 .lme-aurora-blob-3 {
-    background: #d6d3d1;
+    background: #ddd3c0;
     /* Soft Clay */
     bottom: 20%;
     left: 30%;
@@ -1768,7 +1768,7 @@
 
 .lme-rating-btn-v2:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(44, 40, 30, 0.2);
+    box-shadow: 0 4px 12px rgba(38, 30, 22, 0.2);
 }
 
 .lme-rating-again:hover {
@@ -1879,13 +1879,13 @@
 .lme-heatmap-cell:hover {
     transform: scale(1.4);
     z-index: 10;
-    box-shadow: 0 2px 8px rgba(44, 40, 30, 0.3);
+    box-shadow: 0 2px 8px rgba(38, 30, 22, 0.3);
 }
 
 .lme-heatmap-cell.active {
     background: var(--lme-ink-brown);
     opacity: 0.7;
-    box-shadow: 0 2px 4px rgba(44, 40, 30, 0.2);
+    box-shadow: 0 2px 4px rgba(38, 30, 22, 0.2);
 }
 
 .lme-heatmap-cell.is-today {
@@ -1902,14 +1902,14 @@
     0%, 100% {
         filter:
             drop-shadow(0 4px 10px rgba(0, 0, 0, 0.15))
-            drop-shadow(0 0 12px rgba(255, 217, 61, 0.6))
-            drop-shadow(0 0 20px rgba(255, 217, 61, 0.4));
+            drop-shadow(0 0 12px rgba(214, 184, 122, 0.45))
+            drop-shadow(0 0 20px rgba(214, 184, 122, 0.28));
     }
     50% {
         filter:
             drop-shadow(0 4px 10px rgba(0, 0, 0, 0.15))
-            drop-shadow(0 0 16px rgba(255, 217, 61, 0.8))
-            drop-shadow(0 0 28px rgba(255, 217, 61, 0.6));
+            drop-shadow(0 0 16px rgba(214, 184, 122, 0.6))
+            drop-shadow(0 0 28px rgba(214, 184, 122, 0.38));
     }
 }
 
@@ -2432,9 +2432,9 @@ body.lme-player-resizing * {
     align-items: center;
     justify-content: center;
     padding: 0 9px;
-    background: #d6d3d1;
+    background: #D8D1C6;
     /* warm stone */
-    color: #44403c;
+    color: #4A443C;
     font-size: 0.66em;
     font-weight: 700;
     text-transform: uppercase;
@@ -2450,8 +2450,8 @@ body.lme-player-resizing * {
 }
 
 .theme-dark .lme-shadowing-item .time {
-    background: #44403c;
-    color: #d6d3d1;
+    background: #4A443C;
+    color: #D8D1C6;
 }
 
 /* Remove hover stretch to keep mobile clean, only .active grows */
@@ -2466,8 +2466,8 @@ body.lme-player-resizing * {
     top: -22px;
     height: 22px;
     filter: none;
-    background: #d66d4f !important;
-    /* Active Coral */
+    background: #8A423C !important;
+    /* Active Cinnabar */
     color: white !important;
     box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.15);
     z-index: 12;
@@ -2475,31 +2475,31 @@ body.lme-player-resizing * {
 
 /* Alternating Mode-Switcher Style Colors (Earth Tones) */
 .lme-shadowing-item:nth-child(4n+1) .time {
-    background: #d6d3d1;
-    color: #44403c;
+    background: #D8D1C6;
+    color: #4A443C;
 }
 
 /* Stone */
 .theme-dark .lme-shadowing-item:nth-child(4n+1) .time {
-    background: #44403c;
-    color: #d6d3d1;
+    background: #4A443C;
+    color: #D8D1C6;
 }
 
 .lme-shadowing-item:nth-child(4n+2) .time {
-    background: #e29578;
+    background: #A2514A;
     color: white;
 }
 
-/* Coral */
+/* Cinnabar */
 .lme-shadowing-item:nth-child(4n+3) .time {
-    background: #83a598;
+    background: #75906B;
     color: white;
 }
 
 /* Sage */
 .lme-shadowing-item:nth-child(4n+4) .time {
-    background: #ebb8a5;
-    color: #44403c;
+    background: #D9BFA4;
+    color: #4A443C;
 }
 
 /* Sand */
@@ -2776,13 +2776,13 @@ body.lme-player-resizing * {
 }
 .is-dictation .lme-shadowing-item.active {
     background: rgba(var(--lme-accent-rgb, 255, 122, 92), 0.06);
-    border-left: 3px solid var(--lme-accent, #FF7A5C);
+    border-left: 3px solid var(--lme-accent, #7E3436);
     border-radius: 0 6px 6px 0;
     padding-left: 12px;
     box-shadow: none;
 }
 .is-dictation .lme-shadowing-item.active .time {
-    background: var(--lme-accent, #FF7A5C);
+    background: var(--lme-accent, #7E3436);
     color: #fff;
 }
 .is-dictation .lme-shadowing-item .text {
@@ -2799,7 +2799,7 @@ body.lme-player-resizing * {
     transition: border-color 0.2s, box-shadow 0.2s;
 }
 .is-dictation .lme-dictation-input:focus {
-    border-bottom-color: var(--lme-accent, #FF7A5C);
+    border-bottom-color: var(--lme-accent, #7E3436);
     box-shadow: 0 2px 8px rgba(var(--lme-accent-rgb, 255, 122, 92), 0.15);
     outline: none;
 }
@@ -2922,7 +2922,7 @@ body.lme-player-resizing * {
     width: var(--lme-sidebar-width);
     padding: 6px 14px 6px 10px;
     border-radius: 12px 0 0 12px;
-    /* background: #d6d3d1 !important; Removed general background */
+    /* background: #D8D1C6 !important; Removed general background */
     border: none;
     color: #444 !important;
     cursor: pointer;
@@ -2956,8 +2956,8 @@ body.lme-player-resizing * {
 .lme-sidebar-btn.is-shadowing,
 .is-mobile .lme-sidebar-btn.is-shadowing,
 .is-tablet .lme-sidebar-btn.is-shadowing {
-    background: #e29578 !important;
-    /* Persistent Coral */
+    background: #A2514A !important;
+    /* Persistent Cinnabar */
     color: white !important;
     opacity: 0.8;
 }
@@ -2971,7 +2971,7 @@ body.lme-player-resizing * {
 .lme-sidebar-btn.is-dictation,
 .is-mobile .lme-sidebar-btn.is-dictation,
 .is-tablet .lme-sidebar-btn.is-dictation {
-    background: #d6d3d1 !important;
+    background: #D8D1C6 !important;
     /* Persistent Light Gray */
     color: #444 !important;
     opacity: 0.8;
@@ -2982,7 +2982,7 @@ body.lme-player-resizing * {
 .is-tablet .lme-sidebar-btn.is-active.is-dictation {
     color: white !important;
     /* Active dictation text to white for contrast */
-    background: #b1adab !important;
+    background: #ABA49A !important;
     /* Slightly darker gray for active state */
     opacity: 1;
 }
@@ -2999,12 +2999,12 @@ body.lme-player-resizing * {
 }
 
 .lme-sidebar-btn.is-subtitle:hover {
-    background: #6a9e7a !important;
+    background: #677F5D !important;
     opacity: 1;
 }
 
 .lme-sidebar-btn.is-subtitle.is-pressed {
-    background: #5d8f6d !important;
+    background: #586F4F !important;
     opacity: 1;
     transform: scale(0.95);
 }
@@ -3013,23 +3013,23 @@ body.lme-player-resizing * {
 .lme-sidebar-btn.is-ai,
 .is-mobile .lme-sidebar-btn.is-ai,
 .is-tablet .lme-sidebar-btn.is-ai {
-    background: #c9a54e !important;
+    background: #A5814A !important;
     color: white !important;
 }
 
 .lme-sidebar-btn.is-ai:hover {
-    background: #b8942f !important;
+    background: #9C7B41 !important;
     opacity: 1;
 }
 
 .lme-sidebar-btn.is-ai.is-pressed {
-    background: #a07e22 !important;
+    background: #8A6B36 !important;
     opacity: 1;
     transform: scale(0.95);
 }
 
 .theme-dark .lme-sidebar-btn.is-ai {
-    background: #8b7535 !important;
+    background: #93763F !important;
 }
 
 .theme-dark .lme-sidebar-btn.is-ai:hover {
@@ -3040,7 +3040,7 @@ body.lme-player-resizing * {
 .lme-sidebar-btn.is-batch,
 .is-mobile .lme-sidebar-btn.is-batch,
 .is-tablet .lme-sidebar-btn.is-batch {
-    background: #6c5ce7 !important;
+    background: #46586B !important;
     color: white !important;
     margin-top: -2px;
 }
@@ -3301,12 +3301,12 @@ body.lme-shadowing-focus-active .view-content {
 }
 
 .lme-batch-card:hover {
-    border-color: var(--interactive-accent, #6c5ce7);
+    border-color: var(--interactive-accent, #46586B);
 }
 
 .lme-batch-card.is-expanded {
     background: var(--background-primary, #ffffff);
-    border-color: var(--interactive-accent, #6c5ce7);
+    border-color: var(--interactive-accent, #46586B);
 }
 
 .lme-batch-card-header {
@@ -3333,8 +3333,8 @@ body.lme-shadowing-focus-active .view-content {
 
 .lme-batch-card-pos {
     font-size: 0.7em;
-    color: #6c5ce7;
-    background: rgba(108, 92, 231, 0.1);
+    color: #46586B;
+    background: rgba(70, 88, 107, 0.1);
     padding: 1px 6px;
     border-radius: 4px;
     font-weight: 600;
@@ -3389,12 +3389,12 @@ body.lme-shadowing-focus-active .view-content {
     padding: 6px 10px;
     background: var(--background-primary-alt, #f8f9fa);
     border-radius: 4px;
-    border-left: 3px solid var(--interactive-accent, #6c5ce7);
+    border-left: 3px solid var(--interactive-accent, #46586B);
 }
 
 .lme-batch-highlight {
-    background: rgba(108, 92, 231, 0.15);
-    color: #6c5ce7;
+    background: rgba(70, 88, 107, 0.15);
+    color: #46586B;
     font-weight: 600;
     padding: 0 2px;
     border-radius: 2px;
@@ -4468,9 +4468,9 @@ body.lme-shadowing-focus-active .view-content {
 /* ── Dictation Workbench v1 ─────────────────────────────────── */
 .lme-shadowing-list.lme-dictation-workbench {
     --lme-dictation-surface: var(--lme-glass-bg, var(--background-primary));
-    --lme-dictation-surface-soft: rgba(var(--lme-accent-rgb, 139, 58, 58), 0.055);
+    --lme-dictation-surface-soft: rgba(var(--lme-accent-rgb, 126, 52, 54), 0.055);
     --lme-dictation-border: var(--lme-glass-border, var(--background-modifier-border));
-    --lme-dictation-rule: rgba(var(--lme-accent-rgb, 139, 58, 58), 0.13);
+    --lme-dictation-rule: rgba(var(--lme-accent-rgb, 126, 52, 54), 0.13);
     --lme-dictation-text: var(--lme-text-primary, var(--text-normal));
     --lme-dictation-muted: var(--lme-text-muted, var(--text-muted));
     --lme-dictation-soft: var(--lme-text-secondary, var(--text-muted));
@@ -4575,7 +4575,7 @@ body.lme-shadowing-focus-active .view-content {
 .lme-dictation-action-btn:hover:not(:disabled) {
     border-color: rgba(var(--lme-accent-rgb, 255, 122, 92), 0.42);
     color: var(--lme-accent);
-    background: rgba(var(--lme-accent-rgb, 139, 58, 58), 0.10);
+    background: rgba(var(--lme-accent-rgb, 126, 52, 54), 0.10);
 }
 
 .lme-dictation-action-btn.is-active {
@@ -5872,20 +5872,18 @@ body.lme-shadowing-focus-active .view-content {
 }
 
 .lme-sidebar-tab.tab-expand {
-    background: #e29578;
+    background: var(--lme-seal-red);
 }
 
-/* Warm Sage/Coral */
+/* Deep Ink / Archive */
 .lme-sidebar-tab.tab-collapse {
-    background: #457b9d;
-}
-
-/* Slate Blue */
-.lme-sidebar-tab.tab-studio {
-    background: #eab308;
+    background: var(--lme-classic-blue);
 }
 
 /* Library Gold */
+.lme-sidebar-tab.tab-studio {
+    background: var(--lme-gold-accent);
+}
 
 .lme-sidebar-tab:hover {
     height: 42px;
@@ -6496,34 +6494,34 @@ body.lme-shadowing-focus-active .view-content {
 
 /* Specific Bookmark Colors (Earth Tones) */
 .lme-mode-btn.tab-default {
-    background: #d6d3d1;
+    background: #D8D1C6;
     /* warm gray/stone */
 }
 
 .theme-dark .lme-mode-btn.tab-default {
-    background: #44403c;
+    background: #4A443C;
 }
 
 .lme-mode-btn.tab-review {
-    background: #e29578;
-    /* Coral clay */
+    background: #A2514A;
+    /* Cinnabar clay */
 }
 
 .lme-mode-btn.tab-batch {
-    background: #83a598;
+    background: #75906B;
     /* Muted sage */
 }
 
 .lme-mode-btn.tab-default.is-active {
-    background: #78716c;
+    background: #79726A;
 }
 
 .lme-mode-btn.tab-review.is-active {
-    background: #d66d4f;
+    background: #8A423C;
 }
 
 .lme-mode-btn.tab-batch.is-active {
-    background: #5a7b6e;
+    background: #4E6844;
 }
 
 /* Batch Actions Floating Bar */
@@ -6618,18 +6616,18 @@ body.lme-shadowing-focus-active .view-content {
 }
 
 .lme-review-bookmark.tab-encounter {
-    background: #9980FA;
-    /* Soft Purple/Indigo */
+    background: #A5814A;
+    /* Antique Gold */
 }
 
 .lme-review-bookmark.tab-priority {
-    background: #e29578;
-    /* Warm Coral */
+    background: #A2514A;
+    /* Warm Cinnabar */
 }
 
 .lme-review-bookmark.tab-archive {
-    background: #83a598;
-    /* Muted Sage/Blue */
+    background: #75906B;
+    /* Evergreen Sage */
 }
 
 .lme-review-bookmark:hover {
@@ -8219,7 +8217,7 @@ body.lme-shadowing-focus-active .view-content {
     border-radius: 8px;
     padding: 24px;
     font-family: var(--lme-font-sans);
-    box-shadow: 0 8px 32px rgba(44, 40, 30, 0.15);
+    box-shadow: 0 8px 32px rgba(38, 30, 22, 0.15);
 }
 
 /* Modal title */
@@ -8338,7 +8336,7 @@ body.lme-shadowing-focus-active .view-content {
 
 .lme-add-flashcard-modal .lme-modal-buttons button.mod-cta:hover {
     background: var(--lme-academic-green);
-    box-shadow: 0 4px 12px rgba(61, 107, 53, 0.25);
+    box-shadow: 0 4px 12px rgba(55, 89, 47, 0.25);
 }
 
 /* ============================================================
@@ -8455,7 +8453,7 @@ body.lme-shadowing-focus-active .view-content {
 }
 
 .lme-ai-panel-title .svg-icon {
-    color: #c9a54e;
+    color: #A5814A;
 }
 
 .theme-dark .lme-ai-panel-title .svg-icon {
@@ -8530,7 +8528,7 @@ body.lme-shadowing-focus-active .view-content {
 }
 
 .lme-ai-panel-body blockquote {
-    border-left: 3px solid #c9a54e;
+    border-left: 3px solid #A5814A;
     background: rgba(201, 165, 78, 0.08);
     padding: 8px 12px;
     margin: 8px 0;
@@ -8684,7 +8682,7 @@ body.lme-shadowing-focus-active .view-content {
     font-size: 1.05em;
     color: var(--lme-text-primary);
     background: radial-gradient(circle at top left, rgba(var(--lme-accent-rgb), 0.02) 0%, transparent 50%),
-                radial-gradient(circle at bottom right, rgba(139, 92, 246, 0.01) 0%, transparent 50%);
+                radial-gradient(circle at bottom right, rgba(70, 88, 107, 0.01) 0%, transparent 50%);
 }
 
 /* AI Analysis Content Styles (non-!important base styles) */
@@ -8723,7 +8721,7 @@ body.lme-shadowing-focus-active .view-content {
     left: 8px;
     top: -12px;
     font-size: 48px;
-    color: rgba(197, 160, 89, 0.15);
+    color: rgba(165, 129, 74, 0.15);
     font-family: Georgia, serif;
 }
 
@@ -11549,7 +11547,7 @@ body[class*="lme-style-"] .lme-shadowing-view.is-focus-mode .lme-shadowing-item:
 .lme-youtube-rss-add input:focus {
     outline: none;
     border-color: var(--lme-accent, var(--interactive-accent));
-    box-shadow: 0 0 0 2px rgba(var(--lme-accent-rgb, 139, 58, 58), 0.18);
+    box-shadow: 0 0 0 2px rgba(var(--lme-accent-rgb, 126, 52, 54), 0.18);
 }
 /* 添加订阅(主按钮)与刷新(次按钮):脱离 Obsidian 默认配色,跟随插件主题 */
 .lme-youtube-rss-add .mod-cta {
@@ -12145,8 +12143,8 @@ body[class*="lme-style-"] .lme-shadowing-view.is-focus-mode .lme-shadowing-item:
     background: var(--lme-paper-cream);
     border-radius: 8px;
     box-shadow:
-        0 4px 16px rgba(44, 40, 30, 0.12),
-        0 8px 32px rgba(44, 40, 30, 0.08);
+        0 4px 16px rgba(38, 30, 22, 0.12),
+        0 8px 32px rgba(38, 30, 22, 0.08);
     overflow: hidden;
 }
 
@@ -12179,7 +12177,7 @@ body[class*="lme-style-"] .lme-shadowing-view.is-focus-mode .lme-shadowing-item:
     align-items: center;
     margin-bottom: 12px;
     color: var(--lme-gold-accent);
-    filter: drop-shadow(0 2px 4px rgba(197, 160, 89, 0.3));
+    filter: drop-shadow(0 2px 4px rgba(165, 129, 74, 0.3));
 }
 
 .lme-upgrade-logo svg {
@@ -12635,10 +12633,10 @@ body.theme-light[class*="lme-style-"] .lme-shadowing-view.is-focus-mode,
    ============================================================ */
 body.theme-dark[class*="lme-style-"]:not(.lme-style-neon-lime) {
 			color-scheme: dark;
-			--lme-dark-surface: var(--lme-paper-aged, #20242a);
-			--lme-dark-surface-soft: var(--lme-paper-mist, #191c20);
-			--lme-dark-surface-glass: var(--lme-glass-bg, rgba(28,32,38,0.88));
-			--lme-dark-border: var(--lme-glass-border, rgba(255,255,255,0.10));
+			--lme-dark-surface: var(--lme-paper-aged, #241f1b);
+			--lme-dark-surface-soft: var(--lme-paper-mist, #1c1916);
+			--lme-dark-surface-glass: var(--lme-glass-bg, rgba(28, 24, 20, 0.88));
+			--lme-dark-border: var(--lme-glass-border, rgba(234, 227, 216, 0.10));
 			--lme-dark-text: var(--lme-text-primary, var(--text-normal));
 			--lme-dark-text-soft: var(--lme-text-secondary, var(--text-muted));
 			--lme-dark-text-muted: var(--lme-text-muted, var(--text-faint));
@@ -12649,11 +12647,11 @@ body.theme-dark[class*="lme-style-"]:not(.lme-style-neon-lime) {
 		body.theme-dark[class*="lme-style-"]:not(.lme-style-neon-lime) .lme-flashcard-view,
 		body.theme-dark[class*="lme-style-"]:not(.lme-style-neon-lime) .lme-shadowing-view,
 		body.theme-dark[class*="lme-style-"]:not(.lme-style-neon-lime) .lme-navigation-view {
-			background-color: var(--lme-bg-universe, #090b0e) !important;
+			background-color: var(--lme-bg-universe, #231f19) !important;
 			background-image:
-				radial-gradient(circle at 12% 8%, rgba(var(--lme-accent-rgb, 216,197,107), 0.10) 0%, transparent 34%),
-				radial-gradient(circle at 88% 18%, rgba(var(--lme-accent-rgb, 216,197,107), 0.07) 0%, transparent 36%),
-				linear-gradient(180deg, var(--lme-bg-deep, #0d0f12) 0%, var(--lme-bg-universe, #090b0e) 100%) !important;
+				radial-gradient(circle at 12% 8%, rgba(var(--lme-accent-rgb, 126, 52, 54), 0.10) 0%, transparent 34%),
+				radial-gradient(circle at 88% 18%, rgba(var(--lme-accent-rgb, 126, 52, 54), 0.07) 0%, transparent 36%),
+				linear-gradient(180deg, var(--lme-bg-deep, #1b1916) 0%, var(--lme-bg-universe, #231f19) 100%) !important;
 			color: var(--lme-dark-text) !important;
 		}
 
@@ -13183,19 +13181,19 @@ body.theme-dark[class*="lme-style-"]:not(.lme-style-neon-lime) {
     font-size: 11px; font-weight: 600; letter-spacing: 0.5px;
 }
 .lme-vocab-history-item-tag-level {
-    background: rgba(197, 160, 89, 0.12); color: var(--lme-gold-accent);
-    border: 1px solid rgba(197, 160, 89, 0.2);
+    background: rgba(165, 129, 74, 0.12); color: var(--lme-gold-accent);
+    border: 1px solid rgba(165, 129, 74, 0.2);
 }
 .lme-vocab-history-item-tag-cefr {
-    background: rgba(139, 58, 58, 0.15); color: var(--lme-seal-red);
-    border: 1px solid rgba(139, 58, 58, 0.2);
+    background: rgba(126, 52, 54, 0.15); color: var(--lme-seal-red);
+    border: 1px solid rgba(126, 52, 54, 0.2);
 }
 .lme-vocab-history-item-date {
     font-size: 11px; color: var(--lme-text-muted);
 }
 .lme-vocab-history-item-latest {
-    border-color: rgba(197, 160, 89, 0.3);
-    box-shadow: 0 0 12px rgba(197, 160, 89, 0.06);
+    border-color: rgba(165, 129, 74, 0.3);
+    box-shadow: 0 0 12px rgba(165, 129, 74, 0.06);
 }
 .lme-vocab-history-latest-label {
     font-size: 9px; color: var(--lme-gold-accent); font-weight: 700;
@@ -13612,3 +13610,188 @@ body.theme-dark[class*="lme-style-"]:not(.lme-style-neon-lime) {
 
 /* ===== AI autofill button per-theme styles (moved from runtime injection) ===== */
 body.lme-style-coral-warmth .lme-ai-autofill-btn{background:rgba(255,122,92,0.1)!important;border:1px solid rgba(255,122,92,0.25)!important;color:#FF7A5C!important;box-shadow:0 2px 8px rgba(255,122,92,0.1),inset 0 1px 0 rgba(255,255,255,0.15)!important}body.lme-style-coral-warmth .lme-ai-autofill-btn:hover{background:rgba(255,122,92,0.2)!important;box-shadow:0 4px 12px rgba(255,122,92,0.2),inset 0 1px 0 rgba(255,255,255,0.2)!important}body.lme-style-ocean-glass .lme-ai-autofill-btn{background:rgba(74,144,217,0.1)!important;border:1px solid rgba(74,144,217,0.25)!important;color:#4A90D9!important;box-shadow:0 2px 8px rgba(74,144,217,0.1),inset 0 1px 0 rgba(255,255,255,0.15)!important}body.lme-style-ocean-glass .lme-ai-autofill-btn:hover{background:rgba(74,144,217,0.2)!important;box-shadow:0 4px 12px rgba(74,144,217,0.2),inset 0 1px 0 rgba(255,255,255,0.2)!important}body.lme-style-aurora-prism .lme-ai-autofill-btn{background:rgba(168,85,247,0.1)!important;border:1px solid rgba(168,85,247,0.25)!important;color:#A855F7!important;box-shadow:0 2px 8px rgba(168,85,247,0.1),inset 0 1px 0 rgba(255,255,255,0.15)!important}body.lme-style-aurora-prism .lme-ai-autofill-btn:hover{background:rgba(168,85,247,0.2)!important;box-shadow:0 4px 12px rgba(168,85,247,0.2),inset 0 1px 0 rgba(255,255,255,0.2)!important}body.lme-style-neon-lime .lme-ai-autofill-btn{background:rgba(230,255,0,0.08)!important;border:1px solid rgba(230,255,0,0.25)!important;color:#E6FF00!important;box-shadow:0 2px 8px rgba(230,255,0,0.08),inset 0 1px 0 rgba(255,255,255,0.15)!important}body.lme-style-neon-lime .lme-ai-autofill-btn:hover{background:rgba(230,255,0,0.16)!important;box-shadow:0 4px 12px rgba(230,255,0,0.16),inset 0 1px 0 rgba(255,255,255,0.2)!important}body.lme-style-candy-pop .lme-ai-autofill-btn{background:rgba(255,107,157,0.1)!important;border:1px solid rgba(255,107,157,0.25)!important;color:#FF6B9D!important;box-shadow:0 2px 8px rgba(255,107,157,0.1),inset 0 1px 0 rgba(255,255,255,0.15)!important}body.lme-style-candy-pop .lme-ai-autofill-btn:hover{background:rgba(255,107,157,0.2)!important;box-shadow:0 4px 12px rgba(255,107,157,0.2),inset 0 1px 0 rgba(255,255,255,0.2)!important}body.lme-style-lavender-dream .lme-ai-autofill-btn{background:rgba(139,92,246,0.1)!important;border:1px solid rgba(139,92,246,0.25)!important;color:#8B5CF6!important;box-shadow:0 2px 8px rgba(139,92,246,0.1),inset 0 1px 0 rgba(255,255,255,0.15)!important}body.lme-style-lavender-dream .lme-ai-autofill-btn:hover{background:rgba(139,92,246,0.2)!important;box-shadow:0 4px 12px rgba(139,92,246,0.2),inset 0 1px 0 rgba(255,255,255,0.2)!important}body.lme-style-mint-coach .lme-ai-autofill-btn{background:rgba(5,59,69,0.08)!important;border:1px solid rgba(5,59,69,0.2)!important;color:#053B45!important;box-shadow:0 2px 8px rgba(5,59,69,0.08),inset 0 1px 0 rgba(255,255,255,0.15)!important}body.lme-style-mint-coach .lme-ai-autofill-btn:hover{background:rgba(5,59,69,0.16)!important;box-shadow:0 4px 12px rgba(5,59,69,0.16),inset 0 1px 0 rgba(255,255,255,0.2)!important}body.lme-style-rose-blush .lme-ai-autofill-btn{background:rgba(249,215,226,0.25)!important;border:1px solid rgba(249,215,226,0.4)!important;color:#0C1727!important;box-shadow:0 2px 8px rgba(249,215,226,0.15),inset 0 1px 0 rgba(255,255,255,0.15)!important}body.lme-style-rose-blush .lme-ai-autofill-btn:hover{background:rgba(249,215,226,0.4)!important;box-shadow:0 4px 12px rgba(249,215,226,0.25),inset 0 1px 0 rgba(255,255,255,0.2)!important}body.lme-style-mindful-oasis .lme-ai-autofill-btn{background:rgba(15,42,51,0.06)!important;border:1.5px solid rgba(15,42,51,0.2)!important;color:#0F2A33!important;box-shadow:0 2px 8px rgba(15,42,51,0.06),inset 0 1px 0 rgba(255,255,255,0.15)!important}body.lme-style-mindful-oasis .lme-ai-autofill-btn:hover{background:rgba(15,42,51,0.12)!important;box-shadow:0 4px 12px rgba(15,42,51,0.12),inset 0 1px 0 rgba(255,255,255,0.2)!important}:not(body[class*=lme-style]) .lme-ai-autofill-btn{background:rgba(136,136,136,0.08)!important;border:1px solid rgba(136,136,136,0.2)!important;color:var(--text-normal)!important;box-shadow:0 2px 8px rgba(0,0,0,0.04),inset 0 1px 0 rgba(255,255,255,0.15)!important}:not(body[class*=lme-style]) .lme-ai-autofill-btn:hover{background:rgba(136,136,136,0.16)!important;box-shadow:0 4px 12px rgba(0,0,0,0.08),inset 0 1px 0 rgba(255,255,255,0.2)!important}.lme-ai-autofill-btn:disabled{opacity:0.5!important;cursor:not-allowed!important}
+
+/* ════════════════════════════════════════════════════════════════
+   Nav Color Index · 彩色书脊层 (Fine Press 补充, 2026-10)
+   ──────────────────────────────────────────────────────────────
+   导航页多色系统:行动卡按功能分五个色相,统计数字四色编辑排版,
+   页底装订丝带渐变,背景三色水墨晕染。
+   全部色值取自 Paper & Ink 调色板,零结构改动,纯视觉层。
+   ════════════════════════════════════════════════════════════════ */
+
+/* ── 1. 行动卡语气色 ─ 覆盖 12333 行的拍平规则 ── */
+.lme-nav-action.is-play,
+.lme-nav-action.is-shadowing {
+    /* 朱砂陶土 · 跟读/视频 (对应跟读身份色) */
+    --lme-nav-action-bg: rgba(162, 81, 74, 0.10);
+    --lme-nav-action-bg-hover: #A2514A;
+    --lme-nav-tone-rgb: 162, 81, 74;
+    color: #A2514A !important;
+}
+
+.lme-nav-action.is-ai,
+.lme-nav-action.is-theme {
+    /* 古董烫金 · AI 精讲 */
+    --lme-nav-action-bg: rgba(165, 129, 74, 0.11);
+    --lme-nav-action-bg-hover: #966F3C;
+    --lme-nav-tone-rgb: 165, 129, 74;
+    color: #966F3C !important;
+}
+
+.lme-nav-action.is-review {
+    /* 常青墨绿 · 卡片复习 */
+    --lme-nav-action-bg: rgba(85, 118, 74, 0.11);
+    --lme-nav-action-bg-hover: #55764A;
+    --lme-nav-tone-rgb: 85, 118, 74;
+    color: #4C6B42 !important;
+}
+
+.lme-nav-action.is-batch,
+.lme-nav-action.is-guide {
+    /* 靛墨蓝 · 卡片管理 */
+    --lme-nav-action-bg: rgba(70, 88, 107, 0.10);
+    --lme-nav-action-bg-hover: #46586B;
+    --lme-nav-tone-rgb: 70, 88, 107;
+    color: #46586B !important;
+}
+
+.lme-nav-action.is-test {
+    /* 印章朱砂 · 词汇测试 (品牌主accent) */
+    --lme-nav-action-bg: rgba(126, 52, 54, 0.09);
+    --lme-nav-action-bg-hover: #7E3436;
+    --lme-nav-tone-rgb: 126, 52, 54;
+    color: #7E3436 !important;
+}
+
+.lme-nav-action.is-dictation {
+    /* 墨石 · 听写 */
+    --lme-nav-action-bg: rgba(118, 104, 86, 0.10);
+    --lme-nav-action-bg-hover: #6B5E4E;
+    --lme-nav-tone-rgb: 118, 104, 86;
+    color: #6B5E4E !important;
+}
+
+.lme-nav-action.is-subtitle {
+    /* 鼠尾草 · 字幕 */
+    --lme-nav-action-bg: rgba(117, 144, 107, 0.12);
+    --lme-nav-action-bg-hover: #75906B;
+    --lme-nav-tone-rgb: 117, 144, 107;
+    color: #5F7A55 !important;
+}
+
+/* 卡顶书签丝带 & 图标底色跟随语气色 */
+.lme-nav-action::before {
+    background: rgba(var(--lme-nav-tone-rgb, var(--lme-nav-accent-rgb)), 0.44);
+}
+
+.lme-nav-action-icon {
+    background: rgba(var(--lme-nav-tone-rgb, var(--lme-nav-accent-rgb)), 0.14);
+}
+
+/* 暗色:语气色提亮一档 */
+.theme-dark .lme-nav-action.is-play,
+.theme-dark .lme-nav-action.is-shadowing {
+    --lme-nav-action-bg: rgba(192, 118, 110, 0.14);
+    --lme-nav-action-bg-hover: #C0766E;
+    --lme-nav-tone-rgb: 192, 118, 110;
+    color: #D09088 !important;
+}
+
+.theme-dark .lme-nav-action.is-ai,
+.theme-dark .lme-nav-action.is-theme {
+    --lme-nav-action-bg: rgba(201, 169, 106, 0.12);
+    --lme-nav-action-bg-hover: #B08D4F;
+    --lme-nav-tone-rgb: 201, 169, 106;
+    color: #D3B47E !important;
+}
+
+.theme-dark .lme-nav-action.is-review {
+    --lme-nav-action-bg: rgba(111, 163, 98, 0.12);
+    --lme-nav-action-bg-hover: #5C9455;
+    --lme-nav-tone-rgb: 111, 163, 98;
+    color: #8FBE80 !important;
+}
+
+.theme-dark .lme-nav-action.is-batch,
+.theme-dark .lme-nav-action.is-guide {
+    --lme-nav-action-bg: rgba(110, 144, 164, 0.13);
+    --lme-nav-action-bg-hover: #5A7A91;
+    --lme-nav-tone-rgb: 110, 144, 164;
+    color: #93B4C8 !important;
+}
+
+.theme-dark .lme-nav-action.is-test {
+    --lme-nav-action-bg: rgba(200, 106, 102, 0.13);
+    --lme-nav-action-bg-hover: #A85551;
+    --lme-nav-tone-rgb: 200, 106, 102;
+    color: #D08A86 !important;
+}
+
+.theme-dark .lme-nav-action.is-dictation {
+    --lme-nav-action-bg: rgba(151, 137, 123, 0.13);
+    --lme-nav-action-bg-hover: #857665;
+    --lme-nav-tone-rgb: 151, 137, 123;
+    color: #B3A594 !important;
+}
+
+.theme-dark .lme-nav-action.is-subtitle {
+    --lme-nav-action-bg: rgba(117, 144, 107, 0.15);
+    --lme-nav-action-bg-hover: #75906B;
+    --lme-nav-tone-rgb: 117, 144, 107;
+    color: #A3BD98 !important;
+}
+
+/* ── 2. 页面三色水墨晕染 (色系内,替换色系外的橙/薄荷) ── */
+.lme-navigation-view {
+    --lme-nav-bg:
+        radial-gradient(circle at 50% -12%, rgba(var(--lme-nav-accent-rgb), 0.22), transparent 36%),
+        radial-gradient(circle at 6% 14%, rgba(165, 129, 74, 0.13), transparent 34%),
+        radial-gradient(circle at 94% 22%, rgba(70, 88, 107, 0.11), transparent 36%),
+        radial-gradient(circle at 80% 86%, rgba(126, 52, 54, 0.05), transparent 40%),
+        linear-gradient(135deg, #fbf8f2 0%, #f4eee2 44%, #eef2ee 100%);
+}
+
+.theme-dark .lme-navigation-view {
+    --lme-nav-bg:
+        radial-gradient(circle at 50% -12%, rgba(var(--lme-nav-accent-rgb), 0.18), transparent 38%),
+        radial-gradient(circle at 8% 16%, rgba(201, 169, 106, 0.09), transparent 36%),
+        radial-gradient(circle at 90% 20%, rgba(110, 144, 164, 0.08), transparent 36%),
+        linear-gradient(135deg, #1c1917 0%, #242019 46%, #1a1e1c 100%);
+}
+
+/* ── 3. 统计数字四色编辑排版 ── */
+.lme-nav-stat:nth-child(1) strong { color: #7E3436; }
+.lme-nav-stat:nth-child(2) strong { color: #966F3C; }
+.lme-nav-stat:nth-child(3) strong { color: #4C6B42; }
+.lme-nav-stat:nth-child(4) strong { color: #46586B; }
+
+.theme-dark .lme-nav-stat:nth-child(1) strong { color: #D08A86; }
+.theme-dark .lme-nav-stat:nth-child(2) strong { color: #D3B47E; }
+.theme-dark .lme-nav-stat:nth-child(3) strong { color: #8FBE80; }
+.theme-dark .lme-nav-stat:nth-child(4) strong { color: #93B4C8; }
+
+/* ── 4. 区块标题金侧标 (书页检索签) ── */
+.lme-nav-section h2 {
+    position: relative;
+}
+
+.lme-nav-section h2::before {
+    content: "";
+    position: absolute;
+    left: -12px;
+    top: 0.18em;
+    width: 3px;
+    height: 0.82em;
+    border-radius: 2px;
+    background: linear-gradient(180deg, #A5814A, rgba(165, 129, 74, 0.35));
+}
+
+/* ── 5. 页底装订丝带 (金-朱砂-墨-靛蓝) ── */
+.lme-nav-footer {
+    /* 长属性:不重置原有的 background-clip:text,渐变仍只染文字 */
+    background-image: linear-gradient(90deg,
+        rgba(165, 129, 74, 0.58),
+        rgba(126, 52, 54, 0.60),
+        var(--text-muted),
+        rgba(70, 88, 107, 0.58));
+}
