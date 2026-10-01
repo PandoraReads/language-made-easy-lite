@@ -168,8 +168,7 @@ export class LMESettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName(t('settings.currentLanguageName'))
-			.setDesc(`${t('settings.currentLanguageDesc')}
-${t('settings.fullEditionNote')}`)
+			.setDesc(`${t('settings.currentLanguageDesc')}\n${t('settings.fullEditionNote')}`)
 			.addDropdown(drop => {
 				// 社区免费版:语种入口固定为英语,不再逐次弹付费引导
 				drop.addOption('english', '🇬🇧 English')
@@ -186,8 +185,7 @@ ${t('settings.fullEditionNote')}`)
 
 		new Setting(containerEl)
 			.setName(t('settings.uiStyleName'))
-			.setDesc(`${t('settings.uiStyleDesc')}
-${t('settings.fullEditionNote')}`)
+			.setDesc(`${t('settings.uiStyleDesc')}\n${t('settings.fullEditionNote')}`)
 			.addDropdown(drop => {
 				// 社区免费版:主题入口固定为经典纸墨,不再逐次弹付费引导
 				drop.addOption('paper-ink', 'Paper & Ink (经典纸墨)')
@@ -232,8 +230,7 @@ ${t('settings.fullEditionNote')}`)
 
 		new Setting(containerEl)
 			.setName(t('settings.flashcardStudyMode'))
-			.setDesc(`${t('settings.flashcardStudyModeDesc')}
-${t('settings.fullEditionNote')}`)
+			.setDesc(`${t('settings.flashcardStudyModeDesc')}\n${t('settings.fullEditionNote')}`)
 			.addDropdown(drop => {
 				// 社区免费版:学习模式入口固定为翻卡,不再逐次弹付费引导
 				drop.addOption('flip', t('settings.flashcardStudyModeFlip'))
@@ -242,7 +239,6 @@ ${t('settings.fullEditionNote')}`)
 						this.plugin.settings.flashcardStudyMode = 'flip';
 						await this.plugin.saveSettings();
 					});
-			});
 			});
 
 		// ── Auto Cleanup ───────────────────────
