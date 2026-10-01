@@ -50,6 +50,7 @@ export default {
 		// Current Learning Language
 		currentLanguage: '当前学习语言 / Current Language',
 		currentLanguageName: '当前学习语言',
+	fullEditionNote: '更多选项为高级版功能,当前锁定为免费版可用设置',
 		currentLanguageDesc: '选择当前学习的语言（切换后所有功能将使用新语言）',
 
 		// UI Style

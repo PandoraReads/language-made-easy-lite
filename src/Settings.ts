@@ -168,26 +168,13 @@ export class LMESettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName(t('settings.currentLanguageName'))
-			.setDesc(t('settings.currentLanguageDesc'))
+			.setDesc(`${t('settings.currentLanguageDesc')}
+${t('settings.fullEditionNote')}`)
 			.addDropdown(drop => {
+				// 社区免费版:语种入口固定为英语,不再逐次弹付费引导
 				drop.addOption('english', '🇬🇧 English')
-					.addOption('german', '🇩🇪 Deutsch')
-					.addOption('french', '🇫🇷 Français')
-					.addOption('spanish', '🇪🇸 Español')
-					.addOption('korean', '🇰🇷 한국어')
-					.addOption('russian', '🇷🇺 Русский')
-					.addOption('japanese', '🇯🇵 日本語')
-					.addOption('chinese', '🇨🇳 中文');
-
-				drop.setValue(this.plugin.settings.activeLanguage)
-					.onChange(async (v) => {
-						// 社区免费版:仅英语可切换,其他语种弹付费引导
-						if (v !== 'english') {
-							const label = drop.selectEl?.selectedOptions?.[0]?.textContent || v;
-							drop.setValue('english');
-							new UpgradeModal(this.app, label).open();
-							return;
-						}
+					.setValue('english')
+					.onChange(async () => {
 						await this.plugin.switchLanguage('english');
 						this.display();
 					});
@@ -199,27 +186,13 @@ export class LMESettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName(t('settings.uiStyleName'))
-			.setDesc(t('settings.uiStyleDesc'))
+			.setDesc(`${t('settings.uiStyleDesc')}
+${t('settings.fullEditionNote')}`)
 			.addDropdown(drop => {
+				// 社区免费版:主题入口固定为经典纸墨,不再逐次弹付费引导
 				drop.addOption('paper-ink', 'Paper & Ink (经典纸墨)')
-					.addOption('mint-coach', 'Mint Atelier (薄荷雅境)')
-					.addOption('rose-blush', 'Rose Blush (蔷薇柔粉)')
-					.addOption('lavender-dream', 'Lavender Dream (紫藤之梦)')
-					.addOption('candy-pop', 'Candy Pop (糖果派对)')
-					.addOption('mindful-oasis', 'Mindful Oasis (童心绿洲)')
-					.addOption('coral-warmth', 'Coral Warmth (珊瑚暖阳)')
-					.addOption('ocean-glass', 'Ocean Glass (海洋之心)')
-					.addOption('aurora-prism', 'Aurora Prism (极光棱镜)')
-					.addOption('neon-lime', 'Dark Lemon (暗夜柠檬)')
 					.setValue('paper-ink')
-					.onChange(async (v) => {
-						// 社区免费版:仅经典纸墨可用,其他主题弹付费引导并回退
-						if (v !== 'paper-ink') {
-							const label = drop.selectEl?.selectedOptions?.[0]?.textContent || v;
-							drop.setValue('paper-ink');
-							new UpgradeModal(this.app, label).open();
-							return;
-						}
+					.onChange(async () => {
 						this.plugin.settings.uiStyle = 'paper-ink';
 						await this.plugin.saveSettings();
 						this.plugin.applyUiTheme();
@@ -259,22 +232,17 @@ export class LMESettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName(t('settings.flashcardStudyMode'))
-			.setDesc(t('settings.flashcardStudyModeDesc'))
+			.setDesc(`${t('settings.flashcardStudyModeDesc')}
+${t('settings.fullEditionNote')}`)
 			.addDropdown(drop => {
+				// 社区免费版:学习模式入口固定为翻卡,不再逐次弹付费引导
 				drop.addOption('flip', t('settings.flashcardStudyModeFlip'))
-					.addOption('audio', t('settings.flashcardStudyModeAudio'))
-					.addOption('write', t('settings.flashcardStudyModeWrite'))
 					.setValue('flip')
-					.onChange(async (v) => {
-						// 社区免费版:听力/填空为完整版功能,弹付费引导,选择保持翻卡
-						if (v !== 'flip') {
-							drop.setValue('flip');
-							new UpgradeModal(this.app, v === 'audio' ? t('settings.flashcardStudyModeAudio') : t('settings.flashcardStudyModeWrite')).open();
-							return;
-						}
+					.onChange(async () => {
 						this.plugin.settings.flashcardStudyMode = 'flip';
 						await this.plugin.saveSettings();
 					});
+			});
 			});
 
 		// ── Auto Cleanup ───────────────────────
@@ -464,8 +432,9 @@ export class LMESettingTab extends PluginSettingTab {
 
 					const editBtn = actions.createEl('button', { text: t('common.edit') });
 						editBtn.style.cssText = 'font-size:0.8em;';
-						// 社区免费版:编辑提示词为完整版功能,弹付费引导
-						editBtn.onclick = () => new UpgradeModal(this.app, t('prompts.editTitle')).open();
+						// 社区免费版:编辑提示词为完整版功能,按钮禁用,不再逐次弹付费引导
+						editBtn.disabled = true;
+						editBtn.setAttr('title', t('settings.fullEditionNote'));
 
 						if (!p.isBuiltIn) {
 							const delBtn = actions.createEl('button', { text: t('common.delete') });
@@ -483,12 +452,11 @@ export class LMESettingTab extends PluginSettingTab {
 
 			new Setting(containerEl)
 				.setName(t('settings.addPrompt'))
+				.setDesc(t('settings.fullEditionNote'))
 				.addButton(btn => {
+					// 社区免费版:添加自定义提示词为完整版功能,按钮禁用,不再逐次弹付费引导
 					btn.setButtonText(t('settings.newPrompt'))
-						.onClick(() => {
-							// 社区免费版:添加自定义提示词为完整版功能,弹付费引导
-							new UpgradeModal(this.app, t('settings.addPrompt')).open();
-						});
+						.setDisabled(true);
 				});
 
 
@@ -876,11 +844,10 @@ export class LMESettingTab extends PluginSettingTab {
 		const importSetting = new Setting(containerEl)
 			.setName(t('settings.addLocalDict'));
 		importSetting.addButton(btn => {
+			// 社区免费版:移动端词典导入为完整版功能,按钮禁用,不再逐次弹付费引导
 			setIcon(btn.buttonEl, 'lock');
 			btn.setButtonText(t('settings.mobileDictImport'))
-				.onClick(() => {
-					new UpgradeModal(this.app, t('freeLimit.mdictFeature')).open();
-				});
+				.setDisabled(true);
 		});
 	}
 

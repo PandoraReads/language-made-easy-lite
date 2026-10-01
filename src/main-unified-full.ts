@@ -42,8 +42,6 @@ import {
     mergeFolderState,
 } from './services/workshop-folder-store';
 import { AIReportCatalogView, AI_REPORT_CATALOG_VIEW_TYPE } from './views/ai-report-catalog-view';
-import sampleEveryday from '../samples/sample-everyday-english.md';
-import sampleMiniTalk from '../samples/sample-mini-talk.md';
 import tedGreatStory from '../samples/ted-ed-great-story.md';
 import tedTariffs from '../samples/ted-ed-tariffs.md';
 import tedDoorway from '../samples/ted-ed-doorway-effect.md';
@@ -1647,11 +1645,11 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 	}
 
 	// ── Shadowing Workshop 目录页 ── 自带 sample(seeding 用,仅缺时写入,绝不覆盖)
-	/** 播种版本:v2 追加 8 篇 TED-Ed 跟读笔记(带封面/链接)。老用户按版本增量补齐。 */
+	/** v1 遗留的两篇无封面示例:升级播种时从工坊文件夹删除。 */
+	private static readonly LEGACY_WORKSHOP_SAMPLES = ['Sample - Everyday English.md', 'Sample - Mini Talk.md'];
+	/** 播种版本:v2 = 8 篇 TED-Ed 跟读笔记(带封面/链接),并清理 v1 无封面示例。 */
 	private static readonly WORKSHOP_SAMPLES_SEED_VERSION = 2;
 	private static readonly BUNDLED_WORKSHOP_SAMPLES: { name: string; content: string; since: number }[] = [
-		{ name: 'Sample - Everyday English.md', content: sampleEveryday, since: 1 },
-		{ name: 'Sample - Mini Talk.md', content: sampleMiniTalk, since: 1 },
 		{ name: 'TED-Ed — 4 ways to tell a great story.md', content: tedGreatStory, since: 2 },
 		{ name: 'TED-Ed — What are tariffs, and how do they work.md', content: tedTariffs, since: 2 },
 		{ name: 'TED-Ed — Ever walk into a room and forget what you were doing.md', content: tedDoorway, since: 2 },
@@ -1706,6 +1704,16 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 						const path = `${folder}/${s.name}`;
 						if (!(await adapter.exists(path))) {
 							await adapter.write(path, s.content);
+						}
+					}
+				}
+				// v1 遗留的无封面示例在升级到 v2 时清理(用户自建同名文件不受影响:
+				// 这两个文件名是插件播种专用名)
+				if (seedVersion < 2) {
+					for (const legacy of LanguageMadeEasyPlugin.LEGACY_WORKSHOP_SAMPLES) {
+						const path = `${folder}/${legacy}`;
+						if (await adapter.exists(path)) {
+							try { await adapter.remove(path); } catch (e) { console.warn('[LME] legacy sample cleanup failed:', path, e); }
 						}
 					}
 				}
