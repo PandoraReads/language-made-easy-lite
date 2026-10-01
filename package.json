@@ -1,6 +1,6 @@
 {
   "name": "language-made-easy",
-  "version": "4.0.10",
+  "version": "4.0.11",
   "description": "Learn English through immersive reading, instant word lookup, FSRS flashcard review, video shadowing, and dictation (Obsidian plugin).",
   "main": "main.js",
   "scripts": {
