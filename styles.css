@@ -12936,7 +12936,7 @@ body.theme-dark[class*="lme-style-"]:not(.lme-style-neon-lime) {
     position: relative; padding-left: 20px; line-height: 1.5;
 }
 .lme-vocab-test-rules li::before {
-    content: '\\2022'; position: absolute; left: 6px; color: var(--lme-accent);
+    content: '\2022'; position: absolute; left: 6px; color: var(--lme-accent);
 }
 .lme-vocab-test-info {
     display: flex; gap: 12px; font-size: 12px;
