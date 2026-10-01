@@ -143,7 +143,6 @@ export class ShadowingView extends ItemView {
     async onOpen(): Promise<void> {
         console.debug('[EME] ShadowingView.onOpen() triggered');
         this.renderInitial();
-        this.loadYouTubeIframeAPI();
         // Delay detection slightly to ensure Workspace is ready and avoid initial jitter
         window.setTimeout(() => this.autoDetectVideo(), 100);
 

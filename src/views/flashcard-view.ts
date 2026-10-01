@@ -908,6 +908,7 @@ export class AddFlashcardModal extends Modal {
             // Check if word already exists in this language
             const existing = await db.getVocabularyByWord(normalizedWord, currentLanguage);
 
+            let newEntry: VocabularyEntry | undefined;
             if (existing) {
                 // Update existing entry, preserve FSRS progress
                 await db.updateVocabulary(existing.id, {
@@ -920,7 +921,7 @@ export class AddFlashcardModal extends Modal {
                 // 社区免费版:新建卡前校验闪卡总配额(触顶弹引导)
                 if (!(await assertFlashcardQuota(this.app))) return;
                 // Create new entry
-                const newEntry: VocabularyEntry = {
+                newEntry = {
                     id: randomUUID(),
                     word: normalizedWord,
                     phonetic: phonetic || undefined,
@@ -982,7 +983,7 @@ export class AddFlashcardModal extends Modal {
                 const view = flashcardLeaf.view as unknown;
                 if (existing) {
                     await view.render();
-                } else {
+                } else if (newEntry) {
                     await view.enqueueNewCard(newEntry);
                 }
             }

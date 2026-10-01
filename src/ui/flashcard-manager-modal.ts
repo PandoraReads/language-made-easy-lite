@@ -52,7 +52,6 @@ export class FlashcardManagerModal extends Modal {
 	}
 
 	onOpen() {
-		this.injectStyles();
 		const { contentEl, modalEl } = this;
 		contentEl.empty();
 		contentEl.addClass('lme-fmm');

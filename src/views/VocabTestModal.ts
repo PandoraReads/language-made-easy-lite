@@ -182,9 +182,9 @@ export class VocabTestModal extends Modal {
         const { contentEl } = this;
         contentEl.empty();
 
+        const language = this.plugin.settings.activeLanguage || 'english';
         try {
             this.results = vocabSizeService.calculateResults(this.items, this.answers);
-            const language = this.plugin.settings.activeLanguage || 'english';
             await vocabSizeService.saveTestResult(language, this.results);
             this.plugin.settings.vocabTestCompleted = true;
             await this.plugin.saveSettings();
