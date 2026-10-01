@@ -14,7 +14,7 @@ try {
     if (Platform.isDesktop) {
         cryptoModule = (window as WindowWithRequire).require?.('crypto') as CryptoModuleLike | undefined ?? null;
     }
-} catch (e) {
+} catch {
     // Silent fail
 }
 

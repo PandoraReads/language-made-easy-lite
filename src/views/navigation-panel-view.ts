@@ -7,7 +7,6 @@ import { t } from '../i18n';
 import { FlashcardManagerModal } from '../ui/flashcard-manager-modal';
 import { VocabTestModal } from './VocabTestModal';
 import { FLASHCARD_VIEW_TYPE } from './flashcard-view';
-import { SHADOWING_VIEW_TYPE } from './shadowing-view';
 import { WORKSHOP_CATALOG_VIEW_TYPE } from './workshop-catalog-view';
 import { YOUTUBE_SUBSCRIPTIONS_VIEW_TYPE } from './youtube-subscriptions-view';
 import { AI_REPORT_CATALOG_VIEW_TYPE } from './ai-report-catalog-view';
@@ -89,7 +88,7 @@ export class NavigationPanelView extends ItemView {
 		this.renderLookup(shell);
 		this.renderQuickActions(shell);
 		shell.createDiv({ cls: 'lme-nav-footer', text: t('nav.footer') });
-		shell.createEl('img', { cls: 'lme-nav-logo', attr: { src: logoUrl, alt: 'Logo', 'aria-hidden': 'true' } });
+		shell.createEl('img', { cls: 'lme-nav-logo', attr: { src: logoUrl as string, alt: 'Logo', 'aria-hidden': 'true' } });
 		this.renderFloatingActions(contentEl);
 	}
 
@@ -118,7 +117,7 @@ export class NavigationPanelView extends ItemView {
 	}
 
 	async refreshStats(): Promise<void> {
-		const section = this.contentEl.querySelector('.lme-nav-stats-section') as HTMLElement | null;
+		const section = this.contentEl.querySelector('.lme-nav-stats-section');
 		if (!section) return;
 		section.empty();
 		await this.renderStatsContent(section);

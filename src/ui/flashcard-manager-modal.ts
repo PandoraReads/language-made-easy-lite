@@ -2,11 +2,10 @@
 // Language Made Easy - Flashcard Manager Modal (Redesigned)
 // ============================================================
 
-import { App, Modal, Notice, FuzzySuggestModal, setIcon } from 'obsidian';
+import { App, Modal, Notice, setIcon } from 'obsidian';
 import type LanguageMadeEasyPlugin from '../main-unified-full';
 import { db } from '../core/Database';
-import type { LanguageId,  VocabularyEntry, FSRSData } from '../models';
-import { randomUUID } from '../mocks/crypto';
+import type { LanguageId, VocabularyEntry } from '../models';
 import { t } from '../i18n';
 import { FlashcardEditModal } from './flashcard-edit-modal';
 import { UpgradeModal } from './upgrade-modal';
@@ -63,7 +62,7 @@ export class FlashcardManagerModal extends Modal {
 		this.buildTableWrapper(contentEl);
 		this.buildFooter(contentEl);
 
-		this.loadData().then(() => {
+		void this.loadData().then(() => {
 			this.refresh();
 		});
 	}
@@ -247,7 +246,7 @@ export class FlashcardManagerModal extends Modal {
 		// Sync button (refresh icon, imports from sync file)
 		const syncBtn = toolbar.createEl('button', { cls: 'lme-fmm-btn', attr: { 'aria-label': t('flashcardManager.syncData') } });
 		setIcon(syncBtn, 'refresh-cw');
-		syncBtn.style.cssText = 'display:inline-flex;align-items:center;justify-content:center;padding:6px 10px;';
+		syncBtn.setCssStyles({ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '6px 10px' });
 		// 社区免费版:闪卡多端同步为完整版功能,弹付费引导
 		syncBtn.onclick = () => new UpgradeModal(this.app, t('flashcardManager.syncData')).open();
 	}
@@ -465,7 +464,7 @@ export class FlashcardManagerModal extends Modal {
 			const tdExample = tr.createEl('td', { cls: 'lme-fmm-td-example', text: this.truncateCell(entry.contextSnippet || '', 70) });
 			tdExample.ondblclick = () => this.startInlineEdit(tdExample, entry, 'contextSnippet');
 
-			const tdTranslation = tr.createEl('td', { cls: 'lme-fmm-td-translation', text: this.truncateCell((entry as unknown).contextTranslation || '', 70) });
+			const tdTranslation = tr.createEl('td', { cls: 'lme-fmm-td-translation', text: this.truncateCell(entry.contextTranslation || '', 70) });
 			tdTranslation.ondblclick = () => this.startInlineEdit(tdTranslation, entry, 'contextTranslation');
 
 			// Language badge
@@ -498,9 +497,11 @@ export class FlashcardManagerModal extends Modal {
 			const tdActions = tr.createEl('td', { cls: 'lme-fmm-td-actions' });
 			const editBtn = tdActions.createEl('button', { cls: 'lme-fmm-edit-btn', text: t('common.edit') });
 			editBtn.onclick = () => {
-				new FlashcardEditModal(this.app, entry, async () => {
-					await this.loadData();
-					this.refresh();
+				new FlashcardEditModal(this.app, entry, () => {
+					void (async () => {
+						await this.loadData();
+						this.refresh();
+					})();
 				}).open();
 			};
 			const delBtn = tdActions.createEl('button', { cls: 'lme-fmm-del-btn', text: t('common.delete') });
@@ -546,7 +547,7 @@ export class FlashcardManagerModal extends Modal {
 				await db.updateVocabulary(entry.id, { [field]: val });
 				await this.loadData();
 				this.refresh();
-			} catch (e) {
+			} catch {
 				new Notice(t('flashcardManager.editDuplicateWord'));
 				this.refresh();
 			}
@@ -580,22 +581,4 @@ export class FlashcardManagerModal extends Modal {
 	// ── Dynamic CSS Injection ───────────────────────────────
 
 	}
-
-// ============================================================
-// Default FSRS data for new entries
-// ============================================================
-
-function DEFAULT_FSRS(now: number): FSRSData {
-	return {
-		due: now,
-		stability: 0,
-		difficulty: 0,
-		elapsed_days: 0,
-		scheduled_days: 0,
-		reps: 0,
-		lapses: 0,
-		state: 0,
-		last_review: undefined,
-	};
-}
 

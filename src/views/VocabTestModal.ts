@@ -7,11 +7,12 @@
 
 import { Modal, App } from 'obsidian';
 import type LanguageMadeEasyPlugin from '../main-unified-full';
-import type { VocabTestItem, VocabTestResult } from '../models';
+import type { VocabTestItem } from '../models';
 import { vocabSizeService } from '../core/VocabSizeService';
 import { db } from '../core/Database';
-import type { TestResult, BandResult } from '../core/VocabTestGenerator';
+import type { TestResult } from '../core/VocabTestGenerator';
 import { t, getLocale } from '../i18n';
+import type { FlashcardView } from './flashcard-view';
 // PandoraReads — 词汇量测试
 export class VocabTestModal extends Modal {
     private plugin: LanguageMadeEasyPlugin;
@@ -53,7 +54,7 @@ export class VocabTestModal extends Modal {
         contentEl.addClass('lme-vocab-test-modal');
 
         const closeBtn = contentEl.parentElement?.querySelector('.modal-close-button') as HTMLElement;
-        if (closeBtn) closeBtn.style.display = 'none';
+        if (closeBtn) closeBtn.setCssStyles({ display: 'none' });
 
         const language = this.plugin.settings.activeLanguage || 'english';
         const available = await vocabSizeService.ensureTestAvailable(language);
@@ -127,7 +128,7 @@ export class VocabTestModal extends Modal {
         contentEl.empty();
 
         if (this.currentIndex >= this.items.length) {
-            this.showResults();
+            void this.showResults();
             return;
         }
 
@@ -191,7 +192,7 @@ export class VocabTestModal extends Modal {
         } catch (error) {
             contentEl.createDiv({
                 cls: 'lme-vocab-test-error',
-                text: t('vocabTest.saveFailed', { error: error.message || t('errors.unknown') }),
+                text: t('vocabTest.saveFailed', { error: (error instanceof Error ? error.message : String(error)) || t('errors.unknown') }),
             });
             const btn = contentEl.createEl('button', {
                 cls: 'lme-vocab-test-btn lme-vocab-test-btn-primary', text: t('common.close'),
@@ -301,8 +302,8 @@ export class VocabTestModal extends Modal {
             this.close();
             const flashcardLeaf = this.app.workspace.getLeavesOfType('lme-flashcard-view')[0];
             if (flashcardLeaf) {
-                const view = flashcardLeaf.view as unknown;
-                if (view.render) view.render();
+                const view = flashcardLeaf.view as FlashcardView;
+                if (view.render) void view.render();
             }
         };
     }
@@ -328,7 +329,7 @@ export class VocabHistoryModal extends Modal {
         contentEl.addClass('lme-vocab-history-modal');
 
         const closeBtn = contentEl.parentElement?.querySelector('.modal-close-button') as HTMLElement;
-        if (closeBtn) closeBtn.style.display = 'none';
+        if (closeBtn) closeBtn.setCssStyles({ display: 'none' });
 
         const language = this.plugin.settings.activeLanguage || 'english';
         const history = await db.getVocabSizeHistory(language, 20);

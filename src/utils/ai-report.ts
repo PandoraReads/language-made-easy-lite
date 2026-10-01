@@ -98,7 +98,7 @@ export function renderBody(content: string, container: HTMLElement, app: App, co
 	if (isHtmlContent(content)) {
 		renderHtmlBody(content, container);
 	} else {
-		MarkdownRenderer.render(app, content, container, '', component);
+		void MarkdownRenderer.render(app, content, container, '', component);
 	}
 }
 

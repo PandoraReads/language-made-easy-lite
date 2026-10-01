@@ -58,10 +58,7 @@ export class AIReportPreviewModal extends Modal {
 		// Body (可滚动)
 		const editor = contentEl.createDiv({ cls: 'lme-note-preview-editor' });
 		const body = editor.createDiv({ cls: 'lme-ai-analysis-body' });
-		body.style.flex = '1';
-		body.style.minHeight = '0';
-		body.style.overflowY = 'auto';
-		body.style.padding = '16px 20px';
+		body.setCssStyles({ flex: '1', minHeight: '0', overflowY: 'auto', padding: '16px 20px' });
 		renderBody(this.entry.content, body, this.app, this);
 		enhanceTables(body);
 	}

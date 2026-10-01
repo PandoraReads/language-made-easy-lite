@@ -156,10 +156,6 @@
     padding-top: 20px;
     gap: 16px;
     background-color: var(--lme-bg-deep);
-    background-image:
-        radial-gradient(circle at 30% 20%, rgba(107, 53, 61, 0.04) 0%, transparent 50%),
-        radial-gradient(circle at 70% 80%, rgba(197, 160, 89, 0.03) 0%, transparent 50%),
-        radial-gradient(circle at 40% 80%, rgba(139, 92, 246, 0.02) 0%, transparent 50%);
     font-family: var(--lme-font-sans);
     /* Subtle paper texture overlay */
     background-image:
@@ -12666,7 +12662,7 @@ body.theme-dark[class*="lme-style-"]:not(.lme-style-neon-lime) {
 		body.theme-dark[class*="lme-style-"]:not(.lme-style-neon-lime) .lme-shadowing-item,
 		body.theme-dark[class*="lme-style-"]:not(.lme-style-neon-lime) .lme-settings-tabcontent > div,
 		body.theme-dark[class*="lme-style-"]:not(.lme-style-neon-lime) .lme-dict-search-wrapper,
-		body.theme-dark[class*="lme-style-"]:not(.lme-style-neon-lime) .modal:has(.lme-add-flashcard-modal) {
+		body.theme-dark[class*="lme-style-"]:not(.lme-style-neon-lime) .modal.lme-add-flashcard-modal-shell {
 			background: var(--lme-dark-surface-glass) !important;
 			border-color: var(--lme-dark-border) !important;
 			color: var(--lme-dark-text) !important;

@@ -5,15 +5,19 @@
 // ============================================================
 
 import { ItemView, WorkspaceLeaf, Notice, setIcon, MarkdownRenderer } from 'obsidian';
-import { lookupMulti, extractSentence, fetchPhonetic, fetchCleanDefinition, playAudio, preloadAudio } from '../services/UnifiedDictionaryService';
+import { lookupMulti, extractSentence, fetchPhonetic, fetchCleanDefinition, playAudio } from '../services/UnifiedDictionaryService';
 import { db } from '../core/Database';
 import { assertFlashcardQuota } from '../core/free-quota';
 import { t } from '../i18n';
 import type LanguageMadeEasyPlugin from '../main-unified-full';
-import type { DictResult } from './models';
+import type { DictResult } from '../models';
+import type { FlashcardView } from './flashcard-view';
 import { randomUUID } from '../mocks/crypto';
 
 export const DICT_VIEW_TYPE = 'lme-dict-view';
+
+// ShadowRoot.getSelection() is an experimental API not yet in TS lib.dom
+type ShadowRootWithGetSelection = ShadowRoot & { getSelection?: () => Selection | null };
 
 // PandoraReads — 查词侧栏
 export class DictView extends ItemView {
@@ -176,12 +180,12 @@ export class DictView extends ItemView {
                 type: 'text',
                 placeholder: isInitial ? t('dict.searchPlaceholder') : t('dict.searchPlaceholderFull')
             }
-        }) as HTMLInputElement;
+        });
 
         const performSearch = () => {
             const word = input.value.trim();
             if (word) {
-                this.lookup(word, '', '', 0);
+                void this.lookup(word, '', '', 0);
             }
         };
 
@@ -218,7 +222,7 @@ export class DictView extends ItemView {
             const ctx = contentEl.createDiv('lme-dict-context');
             ctx.createDiv({ cls: 'lme-dict-context-label', text: t('dict.noteContext') });
             const contextTextEl = ctx.createDiv('lme-dict-context-text');
-            MarkdownRenderer.renderMarkdown(this.lastContext, contextTextEl, this.lastSource || '', this);
+            void MarkdownRenderer.render(this.app, this.lastContext, contextTextEl, this.lastSource || '', this);
         }
 
         const btnContainer = inner.createDiv('lme-no-results-actions');
@@ -279,7 +283,7 @@ export class DictView extends ItemView {
                     if (!this.lastResult) this.lastResult = result;
 
                     // Render this result card immediately
-                    this.renderSingleResult(resultsContainer, result);
+                    void this.renderSingleResult(resultsContainer, result);
                 }
             );
 
@@ -298,7 +302,7 @@ export class DictView extends ItemView {
                 const ctx = contentEl.createDiv('lme-dict-context');
                 ctx.createDiv({ cls: 'lme-dict-context-label', text: t('dict.noteContext') });
                 const contextTextEl = ctx.createDiv('lme-dict-context-text');
-                MarkdownRenderer.renderMarkdown(this.lastContext, contextTextEl, this.lastSource || '', this);
+                void MarkdownRenderer.render(this.app, this.lastContext, contextTextEl, this.lastSource || '', this);
             }
 
             // Footer Actions
@@ -314,7 +318,7 @@ export class DictView extends ItemView {
             if (lookupId !== this.activeLookupId) return;
             contentEl.empty();
             this.renderSearchBox(contentEl, false);
-            contentEl.createDiv({ cls: 'lme-error', text: t('dict.lookupFailed', { error: e.message }) });
+            contentEl.createDiv({ cls: 'lme-error', text: t('dict.lookupFailed', { error: e instanceof Error ? e.message : String(e) }) });
         }
     }
 
@@ -341,7 +345,7 @@ export class DictView extends ItemView {
             const ctx = contentEl.createDiv('lme-dict-context');
             ctx.createDiv({ cls: 'lme-dict-context-label', text: t('dict.noteContext') });
             const contextTextEl = ctx.createDiv('lme-dict-context-text');
-            MarkdownRenderer.renderMarkdown(this.lastContext, contextTextEl, this.lastSource || '', this);
+            void MarkdownRenderer.render(this.app, this.lastContext, contextTextEl, this.lastSource || '', this);
         }
 
         // Footer Actions
@@ -393,7 +397,7 @@ export class DictView extends ItemView {
         setIcon(audioBtn, 'volume-2');
         audioBtn.onclick = () => {
             console.debug('[DictView] Audio button clicked');
-            playAudio(res.word, currentLanguage);
+            void playAudio(res.word, currentLanguage);
         };
 
         const meta = card.createDiv('lme-dict-meta');
@@ -441,8 +445,7 @@ export class DictView extends ItemView {
             // isolated shadow root. It is trusted local content by design.
             // eslint-disable-next-line no-unsanitized/property -- trusted local content: entry HTML from the user's own .mdx dictionary file
             contentDiv.innerHTML = res.definition;
-            contentDiv.style.userSelect = 'text';
-            contentDiv.style.webkitUserSelect = 'text';
+            contentDiv.setCssStyles({ userSelect: 'text' });
             shadowRoot.appendChild(contentDiv);
 
             await this.processMdxResources(contentDiv, currentLanguage, res.dictId);
@@ -451,11 +454,11 @@ export class DictView extends ItemView {
 
             // Double-click word lookup in MDX content
             contentDiv.ondblclick = (e) => {
-                const sel = shadowRoot.getSelection?.() || window.getSelection();
+                const sel = (shadowRoot as ShadowRootWithGetSelection).getSelection?.() || window.getSelection();
                 if (sel && sel.toString().trim()) {
                     const word = sel.toString().trim();
                     if (/^[a-zA-ZÀ-ÿāáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜßäöüÄÖÜ가-힣а-яА-ЯёЁ\s'-]+$/.test(word)) {
-                        this.lookup(word.replace(/['.!,;:?]$/g, ''), '', '', 0);
+                        void this.lookup(word.replace(/['.!,;:?]$/g, ''), '', '', 0);
                     }
                 }
             };
@@ -466,7 +469,7 @@ export class DictView extends ItemView {
                 // POS navbar tabs (noun / verb / All): toggle which .oald entry
                 // container is visible. CSS (.oald{display:none}/.oald.visible) is
                 // already in the dictionary stylesheet; only the click switch is missing.
-                const navSpan = target.closest('.oaldpe-nav > span') as HTMLElement | null;
+                const navSpan = target.closest<HTMLElement>('.oaldpe-nav > span');
                 if (navSpan && navSpan.parentElement) {
                     e.preventDefault();
                     e.stopPropagation();
@@ -481,7 +484,7 @@ export class DictView extends ItemView {
                 }
 
                 // Toggle OALD collapsible boxes (Extra Examples / Word Origin / etc.).
-                const boxTitle = target.closest('.collapse .unbox .box_title') as HTMLElement | null;
+                const boxTitle = target.closest<HTMLElement>('.collapse .unbox .box_title');
                 if (boxTitle) {
                     e.preventDefault();
                     e.stopPropagation();
@@ -491,7 +494,7 @@ export class DictView extends ItemView {
                 }
 
                 // Toggle OALD phrase sections (Idioms / Phrasal Verbs).
-                const phraseHeading = target.closest('.idioms > .idioms_heading, .phrasal_verb_links > .unbox') as HTMLElement | null;
+                const phraseHeading = target.closest<HTMLElement>('.idioms > .idioms_heading, .phrasal_verb_links > .unbox');
                 if (phraseHeading && !target.closest('.jumplink_back')) {
                     e.preventDefault();
                     e.stopPropagation();
@@ -511,7 +514,7 @@ export class DictView extends ItemView {
                             const targetId = href.slice(1);
                             if (targetId) {
                                 const dest = shadowRoot.getElementById(targetId)
-                                    || contentDiv.querySelector(`[id="${CSS.escape(targetId)}"]`) as HTMLElement | null;
+                                    || contentDiv.querySelector<HTMLElement>(`[id="${CSS.escape(targetId)}"]`);
                                 if (dest) {
                                     dest.classList.add('expanded');
                                     dest.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -520,12 +523,12 @@ export class DictView extends ItemView {
                         } else if (href.startsWith('entry://')) {
                             e.preventDefault();
                             const word = decodeURIComponent(href.replace('entry://', ''));
-                            this.lookup(word, '', '', 0);
+                            void this.lookup(word, '', '', 0);
                         } else if (href.startsWith('sound://')) {
                             e.preventDefault();
                             const soundPath = href.replace('sound://', '');
                             console.debug('[DictView] MDX sound link clicked:', soundPath);
-                            playAudio(soundPath, currentLanguage, true, res.dictId);
+                            void playAudio(soundPath, currentLanguage, true, res.dictId);
                         }
                     }
                 }
@@ -579,7 +582,7 @@ export class DictView extends ItemView {
             if (sel && sel.toString().trim()) {
                 const word = sel.toString().trim().replace(/['.!,;:?]$/g, '');
                 if (word && /^[a-zA-ZÀ-ÿāáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜßäöüÄÖÜ가-힣а-яА-ЯёЁ\s'-]+$/.test(word)) {
-                    this.lookup(word, '', '', 0);
+                    void this.lookup(word, '', '', 0);
                 }
             }
         };
@@ -744,15 +747,19 @@ export class DictView extends ItemView {
             const style = window.getComputedStyle(el);
 
             if (this.isLightCssColor(style.backgroundColor) || style.backgroundImage !== 'none') {
-                el.style.setProperty('background', 'transparent', 'important');
-                el.style.setProperty('background-color', 'transparent', 'important');
-                el.style.setProperty('background-image', 'none', 'important');
-                el.style.setProperty('box-shadow', 'none', 'important');
+                el.setCssStyles({
+                    background: 'transparent !important',
+                    backgroundColor: 'transparent !important',
+                    backgroundImage: 'none !important',
+                    boxShadow: 'none !important'
+                });
             }
 
             if (this.isDarkCssColor(style.color)) {
-                el.style.setProperty('color', 'var(--lme-mdx-text)', 'important');
-                el.style.setProperty('text-shadow', 'none', 'important');
+                el.setCssStyles({
+                    color: 'var(--lme-mdx-text) !important',
+                    textShadow: 'none !important'
+                });
             }
 
             this.normalizeLightBorderColor(el, style);
@@ -773,7 +780,7 @@ export class DictView extends ItemView {
 
         for (const [prop, value] of borderProps) {
             if (this.isLightCssColor(value)) {
-                el.style.setProperty(prop, 'var(--lme-mdx-border)', 'important');
+                el.setCssStyles({ [prop]: 'var(--lme-mdx-border) !important' });
             }
         }
     }
@@ -912,8 +919,8 @@ export class DictView extends ItemView {
 
             // Refresh flashcard review view if open
             const flashcardLeaf = this.app.workspace.getLeavesOfType('lme-flashcard-view')[0];
-            if (flashcardLeaf && (flashcardLeaf.view as unknown).enqueueNewCard) {
-                await (flashcardLeaf.view as unknown).enqueueNewCard(entry);
+            if (flashcardLeaf && (flashcardLeaf.view as FlashcardView).enqueueNewCard) {
+                await (flashcardLeaf.view as FlashcardView).enqueueNewCard(entry);
             }
 
             // Find specific button for feedback
@@ -921,7 +928,7 @@ export class DictView extends ItemView {
             // but this is called in context of renderSingleResult where 'res' is unique per call.
             // For now, simple notice is good, but let's try a targeted class update if possible.
         } catch (e) {
-            new Notice(t('dict.addToVocabFailed', { error: e.message }));
+            new Notice(t('dict.addToVocabFailed', { error: e instanceof Error ? e.message : String(e) }));
         }
     }
 

@@ -4,16 +4,16 @@
 // Copyright (c) 2024-2026 PandoraReads | panrunrun@gmail.com
 // ============================================================
 
-import { ItemView, WorkspaceLeaf, setIcon, Modal, Notice, Setting } from 'obsidian';
-import { fsrs, generatorParameters, Rating, type Card } from 'ts-fsrs';
+import { ItemView, WorkspaceLeaf, setIcon, Modal, Notice, Setting, type App } from 'obsidian';
+import { fsrs, generatorParameters, Rating, type Card, type Grade, type IPreview } from 'ts-fsrs';
 import type LanguageMadeEasyPlugin from '../main-unified-full';
-import type { VocabularyEntry } from '../../models';
+import type { VocabularyEntry } from '../models';
 import { db } from '../core/Database';
 import { AIService } from '../core/AIService';
 import { playAudio } from '../services/UnifiedDictionaryService';
 import { randomUUID } from '../mocks/crypto';
 import { vocabSizeService } from '../core/VocabSizeService';
-import { petService, type PetSnapshot } from '../core/PetService';
+import { petService, type PetSnapshot, type GainResult } from '../core/PetService';
 import { t } from '../i18n';
 import { VocabTestModal } from './VocabTestModal';
 import { flipMode } from './flashcard-modes/flip-mode';
@@ -270,8 +270,8 @@ export class FlashcardView extends ItemView {
     private loadLocalReviewedIds(language: string): Set<string> {
         try {
             const raw = window.localStorage.getItem(this.getReviewSessionStorageKey(language));
-            const ids = raw ? JSON.parse(raw) : [];
-            return new Set(Array.isArray(ids) ? ids.filter((id) => typeof id === 'string') : []);
+            const ids: unknown[] = raw ? JSON.parse(raw) as unknown[] : [];
+            return new Set(Array.isArray(ids) ? ids.filter((id): id is string => typeof id === 'string') : []);
         } catch {
             return new Set();
         }
@@ -434,7 +434,7 @@ export class FlashcardView extends ItemView {
 
     /** One-shot egg-hatch flourish on the embedded pet. */
     private playHatch(formNameKey: string): void {
-        const stage = this.contentEl.querySelector('.lme-pet-stage') as HTMLElement | null;
+        const stage = this.contentEl.querySelector('.lme-pet-stage');
         if (stage) {
             stage.addClass('is-evolving');
             window.setTimeout(() => stage.removeClass('is-evolving'), 1200);
@@ -488,10 +488,11 @@ export class FlashcardView extends ItemView {
         parent.empty();
         const entry = this.current!;
         const ctx: ModeContext = {
+            app: this.app,
             entry,
             language: this.plugin.settings.activeLanguage || 'english',
             component: this,
-            onGrade: (r) => { this.grade(r); },
+            onGrade: (r) => { void this.grade(r); },
             onFlip: () => playPageTurnSound(),
         };
         flipMode.render(parent, ctx);
@@ -593,7 +594,7 @@ export class FlashcardView extends ItemView {
      * 纯数据层，无 UI/计数/宠物副作用。grade() 与 Match 的 matchMarkReviewed 共用。
      */
     private async gradeCardFsrs(entry: VocabularyEntry, rating: Rating, now: Date): Promise<void> {
-        const card: unknown = {
+        const card = {
             due: new Date(entry.fsrsData.due),
             stability: entry.fsrsData.stability,
             difficulty: entry.fsrsData.difficulty,
@@ -605,8 +606,8 @@ export class FlashcardView extends ItemView {
             last_review: entry.fsrsData.last_review ? new Date(entry.fsrsData.last_review) : undefined,
         };
 
-        const recordLog: unknown = this.f.repeat(card as Card, now);
-        const nextCard = recordLog[rating].card;
+        const recordLog: IPreview = this.f.repeat(card as Card, now);
+        const nextCard = recordLog[rating as Grade].card;
 
         await db.updateVocabulary(entry.id, {
             fsrsData: {
@@ -617,7 +618,7 @@ export class FlashcardView extends ItemView {
                 scheduled_days: nextCard.scheduled_days,
                 reps: nextCard.reps,
                 lapses: nextCard.lapses,
-                state: nextCard.state as number,
+                state: nextCard.state,
                 last_review: now.getTime(),
             },
         });
@@ -627,8 +628,8 @@ export class FlashcardView extends ItemView {
             vocabId: entry.id,
             reviewTime: now.getTime(),
             rating: rating as 1 | 2 | 3 | 4,
-            scheduledDays: recordLog[rating].log.scheduled_days,
-            stateBefore: card.state as number,
+            scheduledDays: recordLog[rating as Grade].log.scheduled_days,
+            stateBefore: card.state,
             language: this.plugin.settings.activeLanguage || 'english',
         });
 
@@ -672,7 +673,7 @@ export class FlashcardView extends ItemView {
         }
 
         // Pet: reward this review BEFORE re-render so the embedded panel reflects it
-        let petFx: unknown = null;
+        let petFx: GainResult | null = null;
         try {
             const lang = this.plugin.settings.activeLanguage || 'english';
             const petResult = await petService.gainExp(rating, lang, {
@@ -731,6 +732,8 @@ export class AddFlashcardModal extends Modal {
         const { contentEl } = this;
         contentEl.empty();
         contentEl.addClass('lme-add-flashcard-modal');
+        // 供暗色主题样式直接命中父级 .modal（替代 CSS :has() 选择器）
+        this.modalEl.addClass('lme-add-flashcard-modal-shell');
 
         contentEl.createEl('h2', { text: t('flashcard.addTitle') });
 
@@ -741,21 +744,30 @@ export class AddFlashcardModal extends Modal {
             .addText(text => {
                 this.wordInput = text.inputEl;
                 text.setPlaceholder(t('flashcard.wordPlaceholder'));
-                text.inputEl.style.width = '100%';
+                text.inputEl.setCssStyles({ width: '100%' });
             });
 
         // AI auto-fill button
         const aiBtnContainer = contentEl.createDiv();
-        aiBtnContainer.style.cssText = 'display:flex;align-items:center;gap:10px;margin:-8px 0 8px 0;padding:0 0 0 0;';
+        aiBtnContainer.setCssStyles({ display: 'flex', alignItems: 'center', gap: '10px', margin: '-8px 0 8px 0', padding: '0 0 0 0' });
         const aiFillBtn = aiBtnContainer.createEl('button', {
             cls: 'lme-ai-autofill-btn',
             text: t('flashcard.aiFill')
         });
-        aiFillBtn.style.cssText = 'padding:6px 16px;border-radius:20px;font-size:0.85em;cursor:pointer;transition:all 0.25s ease;border:1px solid rgba(255,255,255,0.18);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);';
+        aiFillBtn.setCssStyles({
+            padding: '6px 16px',
+            borderRadius: '20px',
+            fontSize: '0.85em',
+            cursor: 'pointer',
+            transition: 'all 0.25s ease',
+            border: '1px solid rgba(255,255,255,0.18)',
+            backdropFilter: 'blur(8px)',
+            webkitBackdropFilter: 'blur(8px)'
+        } as Partial<CSSStyleDeclaration>);
         const aiHint = aiBtnContainer.createSpan({ text: t('flashcard.aiFillHint') });
-        aiHint.style.cssText = 'font-size:0.8em;color:var(--text-muted);';
+        aiHint.setCssStyles({ fontSize: '0.8em', color: 'var(--text-muted)' });
         const aiSpinner = aiBtnContainer.createSpan({ text: '' });
-        aiSpinner.style.cssText = 'display:none;font-size:0.85em;color:var(--text-muted);';
+        aiSpinner.setCssStyles({ display: 'none', fontSize: '0.85em', color: 'var(--text-muted)' });
 
         aiFillBtn.onclick = () => this.aiAutoFill(aiFillBtn, aiSpinner);
 
@@ -766,7 +778,7 @@ export class AddFlashcardModal extends Modal {
             .addText(text => {
                 this.phoneticInput = text.inputEl;
                 text.setPlaceholder(t('flashcard.phoneticPlaceholder'));
-                text.inputEl.style.width = '100%';
+                text.inputEl.setCssStyles({ width: '100%' });
             });
 
         // Definition input
@@ -776,7 +788,7 @@ export class AddFlashcardModal extends Modal {
             .addTextArea(text => {
                 this.definitionInput = text.inputEl;
                 text.setPlaceholder(t('flashcard.definitionPlaceholder'));
-                text.inputEl.style.width = '100%';
+                text.inputEl.setCssStyles({ width: '100%' });
                 text.inputEl.rows = 4;
             });
 
@@ -787,7 +799,7 @@ export class AddFlashcardModal extends Modal {
             .addTextArea(text => {
                 this.contextInput = text.inputEl;
                 text.setPlaceholder(t('flashcard.examplePlaceholder'));
-                text.inputEl.style.width = '100%';
+                text.inputEl.setCssStyles({ width: '100%' });
                 text.inputEl.rows = 3;
             });
 
@@ -809,10 +821,7 @@ export class AddFlashcardModal extends Modal {
 
         // Buttons
         const buttonContainer = contentEl.createDiv('lme-modal-buttons');
-        buttonContainer.style.marginTop = '20px';
-        buttonContainer.style.display = 'flex';
-        buttonContainer.style.gap = '10px';
-        buttonContainer.style.justifyContent = 'flex-end';
+        buttonContainer.setCssStyles({ marginTop: '20px', display: 'flex', gap: '10px', justifyContent: 'flex-end' });
 
         const cancelBtn = buttonContainer.createEl('button', {
             text: t('common.cancel')
@@ -848,7 +857,7 @@ export class AddFlashcardModal extends Modal {
 
         btn.disabled = true;
         btn.setText(t('flashcard.aiQuerying'));
-        spinner.style.display = 'inline';
+        spinner.setCssStyles({ display: 'inline' });
         spinner.setText(' ...');
 
         try {
@@ -879,7 +888,7 @@ export class AddFlashcardModal extends Modal {
         } finally {
             btn.disabled = false;
             btn.setText(t('flashcard.aiFill'));
-            spinner.style.display = 'none';
+            spinner.setCssStyles({ display: 'none' });
         }
     }
 
@@ -980,14 +989,14 @@ export class AddFlashcardModal extends Modal {
             // Refresh the flashcard view if it's open
             const flashcardLeaf = this.app.workspace.getLeavesOfType('lme-flashcard-view')[0];
             if (flashcardLeaf) {
-                const view = flashcardLeaf.view as unknown;
+                const view = flashcardLeaf.view as FlashcardView;
                 if (existing) {
                     await view.render();
                 } else if (newEntry) {
                     await view.enqueueNewCard(newEntry);
                 }
             }
-        } catch (error) {
+        } catch (error: unknown) {
             console.error('[EME] Failed to save flashcard:', error);
             new Notice(t('flashcard.saveFailed', { error: error.message || t('common.unknownError') }));
         }

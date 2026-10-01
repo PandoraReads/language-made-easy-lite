@@ -8,7 +8,7 @@
 
 import { Notice, setIcon } from 'obsidian';
 import { t } from '../i18n';
-import type { TimestampBlock, PronunciationScore } from '../../models';
+import type { TimestampBlock, PronunciationScore } from '../models';
 
 // ── Public Types ──
 
@@ -40,6 +40,11 @@ export interface PracticeCallbacks {
 
 // ── Internal: Alternate playback phase ──
 type AlternatePhase = 'idle' | 'playingUser' | 'gap' | 'playingOriginal';
+
+// ── Internal: Minimal YouTube embed player API used by this module ──
+interface YouTubePlayerApi {
+    pauseVideo?: () => void;
+}
 
 // ── Main Class ──
 
@@ -124,7 +129,7 @@ export class ShadowingPractice {
         // Extract waveform from user's recording
         const blob = this.callbacks.getRecordedBlob();
         if (blob) {
-            this.extractWaveformFromBlob(blob).then(data => {
+            void this.extractWaveformFromBlob(blob).then(data => {
                 this.recordedWaveformData = data;
                 if (this.state === 'comparing') {
                     this.renderUserWaveform();
@@ -159,7 +164,7 @@ export class ShadowingPractice {
             if (currentTime >= this.practiceBlock.endSec) {
                 this.callbacks.pauseMedia();
                 // Also try to pause YouTube
-                const ytPlayer = this.callbacks.getYtPlayer();
+                const ytPlayer = this.callbacks.getYtPlayer() as YouTubePlayerApi | null;
                 if (ytPlayer && ytPlayer.pauseVideo) {
                     ytPlayer.pauseVideo();
                 }
@@ -223,9 +228,9 @@ export class ShadowingPractice {
         // Header row: LED + close button
         const header = panel.createDiv('lme-practice-header');
         const led = header.createDiv('lme-recorder-led');
-        led.style.marginBottom = '0';
-        const dot = led.createSpan({ cls: 'lme-recorder-dot is-recording' });
-        const status = led.createSpan({
+        led.setCssStyles({ marginBottom: '0' });
+        led.createSpan({ cls: 'lme-recorder-dot is-recording' });
+        led.createSpan({
             text: t('shadowing.practicePlayingOriginal'),
             cls: 'lme-recorder-status-text'
         });
@@ -246,11 +251,7 @@ export class ShadowingPractice {
             const preview = panel.createDiv({
                 cls: 'lme-practice-countdown-hint'
             });
-            preview.style.textAlign = 'center';
-            preview.style.marginTop = '8px';
-            preview.style.color = 'rgba(255,255,255,0.7)';
-            preview.style.fontSize = '13px';
-            preview.style.lineHeight = '1.4';
+            preview.setCssStyles({ textAlign: 'center', marginTop: '8px', color: 'rgba(255,255,255,0.7)', fontSize: '13px', lineHeight: '1.4' });
             const rawText = this.practiceBlock.text.replace(/\[\d{1,2}:\d{2}\]/, '').trim();
             preview.textContent = rawText.length > 80 ? rawText.slice(0, 80) + '...' : rawText;
         }
@@ -258,7 +259,7 @@ export class ShadowingPractice {
         // Progress bar
         const progress = panel.createDiv('lme-practice-progress');
         const bar = progress.createDiv('lme-practice-progress-bar');
-        bar.style.width = '0%';
+        bar.setCssStyles({ width: '0%' });
         this.startProgressTracking(bar);
     }
 
@@ -270,7 +271,7 @@ export class ShadowingPractice {
         if (!block) return;
 
         // Seek to start and play
-        this.callbacks.seekTo(block.startSec).then(() => {
+        void this.callbacks.seekTo(block.startSec).then(() => {
             this.startOriginalPoll();
         });
     }
@@ -314,9 +315,9 @@ export class ShadowingPractice {
         // Header row: LED + close button
         const header = panel.createDiv('lme-practice-header');
         const led = header.createDiv('lme-recorder-led');
-        led.style.marginBottom = '0';
-        const dot = led.createSpan({ cls: 'lme-recorder-dot is-recording' });
-        const status = led.createSpan({
+        led.setCssStyles({ marginBottom: '0' });
+        led.createSpan({ cls: 'lme-recorder-dot is-recording' });
+        led.createSpan({
             text: t('shadowing.practiceCountdown', { count: String(this.countdownValue) }),
             cls: 'lme-recorder-status-text'
         });
@@ -334,11 +335,11 @@ export class ShadowingPractice {
 
         // Large countdown number overlay
         const overlay = panel.createDiv('lme-practice-countdown');
-        const num = overlay.createSpan({
+        overlay.createSpan({
             text: String(this.countdownValue),
             cls: 'lme-practice-countdown-number'
         });
-        const hint = overlay.createSpan({
+        overlay.createSpan({
             text: t('shadowing.practiceCountdown', { count: '' }).replace('...', '').trim(),
             cls: 'lme-practice-countdown-hint'
         });
@@ -385,8 +386,8 @@ export class ShadowingPractice {
     private renderRecordingUI(panel: HTMLElement): void {
         // LED header
         const led = panel.createDiv('lme-recorder-led');
-        const dot = led.createSpan({ cls: 'lme-recorder-dot is-recording' });
-        const status = led.createSpan({
+        led.createSpan({ cls: 'lme-recorder-dot is-recording' });
+        led.createSpan({
             text: t('shadowing.practiceRecording'),
             cls: 'lme-recorder-status-text'
         });
@@ -401,7 +402,7 @@ export class ShadowingPractice {
         // Progress bar
         const progress = panel.createDiv('lme-practice-progress');
         const bar = progress.createDiv('lme-practice-progress-bar');
-        bar.style.width = '0%';
+        bar.setCssStyles({ width: '0%' });
         this.startRecordingProgress(bar, timer);
 
         // Stop button
@@ -428,7 +429,7 @@ export class ShadowingPractice {
             ? (block.endSec - block.startSec) * 1.5
             : 15;
 
-        this.callbacks.startRecordingForPractice().then((started) => {
+        void this.callbacks.startRecordingForPractice().then((started) => {
             if (!started) {
                 // Mic access was denied — abort back to idle
                 this.stopAutoStopTimer();
@@ -485,9 +486,9 @@ export class ShadowingPractice {
         const header = panel.createDiv('lme-practice-header');
 
         const led = header.createDiv('lme-recorder-led');
-        led.style.marginBottom = '0';
-        const dot = led.createSpan({ cls: 'lme-recorder-dot is-recorded' });
-        const status = led.createSpan({
+        led.setCssStyles({ marginBottom: '0' });
+        led.createSpan({ cls: 'lme-recorder-dot is-recorded' });
+        led.createSpan({
             text: t('shadowing.practiceComparing'),
             cls: 'lme-recorder-status-text'
         });
@@ -528,7 +529,7 @@ export class ShadowingPractice {
             // Defer render to next frame so canvas has dimensions
             window.requestAnimationFrame(() => this.renderOriginalWaveform());
         } else {
-            const placeholder = origTrack.createDiv({
+            origTrack.createDiv({
                 text: t('shadowing.practiceNoAudio'),
                 cls: 'lme-practice-no-waveform'
             });
@@ -577,7 +578,7 @@ export class ShadowingPractice {
         altBtn.createSpan({ text: t('shadowing.practiceAlternate') });
         altBtn.onclick = (e) => {
             e.stopPropagation();
-            this.alternatePlayback();
+            void this.alternatePlayback();
         };
 
         // ── AI Score button ──
@@ -589,7 +590,7 @@ export class ShadowingPractice {
         scoreBtn.createSpan({ text: t('shadowing.practiceScore') });
         scoreBtn.onclick = (e) => {
             e.stopPropagation();
-            this.triggerScoring();
+            void this.triggerScoring();
         };
 
         // ── Scoring result card ──
@@ -666,7 +667,7 @@ export class ShadowingPractice {
                 const channelData = audioBuffer.getChannelData(0);
                 return new Float32Array(channelData);
             } finally {
-                audioContext.close();
+                void audioContext.close();
             }
         } catch (err) {
             console.warn('[EME] Failed to extract waveform from recording:', err);
@@ -709,7 +710,7 @@ export class ShadowingPractice {
         } catch (err: unknown) {
             if (this.generation !== gen) return;
             this.scoringState = 'error';
-            this.scoringError = err.message || t('shadowing.practiceScoreError');
+            this.scoringError = (err instanceof Error ? err.message : '') || t('shadowing.practiceScoreError');
         }
 
         if (this.generation === gen) {
@@ -777,7 +778,7 @@ export class ShadowingPractice {
                 cls: 'lme-practice-score-comparison-label'
             });
             score.wordComparison.forEach(w => {
-                const span = comp.createSpan({
+                comp.createSpan({
                     text: w.word,
                     cls: `lme-practice-score-word is-${w.status}`
                 });
@@ -811,7 +812,7 @@ export class ShadowingPractice {
         if (!block) return;
 
         this.isPlayingOriginal = true;
-        this.callbacks.seekTo(block.startSec);
+        void this.callbacks.seekTo(block.startSec);
 
         // Auto-pause at endSec via rAF check
         const gen = this.generation;
@@ -820,7 +821,7 @@ export class ShadowingPractice {
             const current = this.callbacks.getMediaCurrentTime();
             if (current >= block.endSec) {
                 this.callbacks.pauseMedia();
-                const ytPlayer = this.callbacks.getYtPlayer();
+                const ytPlayer = this.callbacks.getYtPlayer() as YouTubePlayerApi | null;
                 if (ytPlayer && ytPlayer.pauseVideo) ytPlayer.pauseVideo();
                 this.isPlayingOriginal = false;
                 return;
@@ -943,7 +944,7 @@ export class ShadowingPractice {
         this.stopUserPlaybackAudio();
         // Pause media if it's playing
         this.callbacks.pauseMedia();
-        const ytPlayer = this.callbacks.getYtPlayer();
+        const ytPlayer = this.callbacks.getYtPlayer() as YouTubePlayerApi | null;
         if (ytPlayer && ytPlayer.pauseVideo) ytPlayer.pauseVideo();
     }
 

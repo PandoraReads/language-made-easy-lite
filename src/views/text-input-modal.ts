@@ -68,7 +68,7 @@ export class TextInputModal extends Modal {
                         }
                     });
                 }
-                text.inputEl.style.width = '100%';
+                text.inputEl.setCssStyles({ width: '100%' });
                 // Focus for immediate editing.
                 window.setTimeout(() => text.inputEl.focus(), 0);
             });

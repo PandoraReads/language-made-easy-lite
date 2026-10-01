@@ -3,9 +3,9 @@ import { Platform } from 'obsidian';
 let assert: unknown = null;
 try {
     if (Platform.isDesktop) {
-        assert = (window as unknown).require('assert');
+        assert = (window as unknown as { require: (id: string) => unknown }).require('assert');
     }
-} catch (e) {
+} catch {
     // Silent fail
 }
 

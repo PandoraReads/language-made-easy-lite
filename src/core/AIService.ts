@@ -4,6 +4,7 @@
 // Copyright (c) 2024-2026 PandoraReads | panrunrun@gmail.com
 
 import { requestUrl } from 'obsidian';
+import type { RequestUrlResponse } from 'obsidian';
 import type { LMESettings, AIProviderConfig, AIProviderKind, PronunciationScore } from '../models';
 import { t } from '../i18n';
 
@@ -30,6 +31,82 @@ export interface TranscriptSegment {
     start: number;
     end: number;
     text: string;
+}
+
+/** Gemini generateContent response as the lenient analysis path reads it (members may be absent). */
+interface GeminiGenerateContentResponse {
+    candidates?: Array<{
+        content?: {
+            parts?: Array<{ text?: string }>;
+        };
+    }>;
+}
+
+/** Gemini generateContent response as pronunciation scoring assumes it (strict chain). */
+interface GeminiScoringResponse {
+    candidates: Array<{
+        content: {
+            parts: Array<{ text: string }>;
+        };
+    }>;
+}
+
+/** Minimal OpenAI-compatible /chat/completions response shape this service reads. */
+interface ChatCompletionResponse {
+    choices: Array<{
+        message: {
+            content: string;
+            reasoning_content?: string;
+        };
+    }>;
+}
+
+/** JSON payload lookupWord asks the model to emit. */
+interface WordLookupJson {
+    phonetic?: string;
+    definition?: string;
+    example?: string;
+}
+
+/** Status union carried by PronunciationScore.wordComparison entries. */
+type WordComparisonStatus = PronunciationScore['wordComparison'][number]['status'];
+
+/** One wordComparison entry of the scoring JSON (fields best-effort from the model). */
+interface ScoredWordJson {
+    word?: string;
+    status?: unknown;
+}
+
+/** JSON payload the pronunciation-scoring prompt asks for (fields best-effort). */
+interface ScoringResponseJson {
+    overall?: unknown;
+    accuracy?: unknown;
+    fluency?: unknown;
+    completeness?: unknown;
+    recognizedText?: string;
+    summary?: string;
+    wordComparison?: unknown[];
+    tips?: unknown[];
+}
+
+/** Shape requestUrl may reject with (transport failure / non-2xx on some Obsidian versions). */
+interface RequestUrlFailure {
+    status?: number;
+    statusCode?: number;
+    text?: string;
+    body?: unknown;
+    message?: string;
+}
+
+/** Whisper verbose_json transcription response (fields best-effort). */
+interface TranscriptionResponse {
+    text?: string;
+    duration?: number;
+    segments?: Array<{
+        text?: string;
+        start?: number;
+        end?: number;
+    }>;
 }
 
 // PandoraReads — AI 服务
@@ -389,9 +466,10 @@ export class AIService {
             if (resp.status < 200 || resp.status >= 300) {
                 throw new Error(AIService.describeApiFailure(resp.status, resp.text || '', 'Gemini API 返回错误'));
             }
-            const text = resp.json?.candidates?.[0]?.content?.parts?.[0]?.text;
+            const json = resp.json as GeminiGenerateContentResponse | undefined;
+            const text = json?.candidates?.[0]?.content?.parts?.[0]?.text;
             if (!text) {
-                throw new Error('Gemini API 未返回有效内容: ' + JSON.stringify(resp.json || {}).slice(0, 400));
+                throw new Error('Gemini API 未返回有效内容: ' + JSON.stringify(json || {}).slice(0, 400));
             }
             return text.trim();
         } catch (err: unknown) {
@@ -471,7 +549,6 @@ export class AIService {
         };
         const langName = langNames[language] || language;
 
-        const responseLang = '中文';
         const phoneticSpec = language === 'japanese'
             ? '假名读音。汉字词优先用平假名，外来语可保留片假名；不要输出罗马音或 IPA'
             : '国际音标IPA';
@@ -500,10 +577,11 @@ export class AIService {
             throw new Error(t('errors.invalidJson'));
         }
 
+        const rec = parsed as WordLookupJson;
         return {
-            phonetic: parsed.phonetic || '',
-            definition: parsed.definition || '',
-            example: parsed.example || ''
+            phonetic: rec.phonetic || '',
+            definition: rec.definition || '',
+            example: rec.example || ''
         };
     }
 
@@ -595,7 +673,8 @@ If the audio is too quiet, unclear, or empty, still return a valid JSON with low
                 body: JSON.stringify(payload)
             }), AIService.AI_CHAT_TIMEOUT_MS, 'AI request timeout');
 
-            const rawText = resp.json.candidates[0].content.parts[0].text.trim();
+            const json = resp.json as GeminiScoringResponse;
+            const rawText = json.candidates[0].content.parts[0].text.trim();
             return AIService.parseScoringResponse(rawText);
         } catch (err: unknown) {
             console.error('[EME] Gemini pronunciation scoring error', err);
@@ -688,21 +767,22 @@ If the audio is too quiet, unclear, or empty, still return a valid JSON with low
             };
         }
 
+        const rec = parsed as ScoringResponseJson;
         return {
-            overall: AIService.clampScore(parsed.overall),
-            accuracy: AIService.clampScore(parsed.accuracy),
-            fluency: AIService.clampScore(parsed.fluency),
-            completeness: AIService.clampScore(parsed.completeness),
-            recognizedText: String(parsed.recognizedText || ''),
-            summary: String(parsed.summary || ''),
-            wordComparison: Array.isArray(parsed.wordComparison)
-                ? parsed.wordComparison.map((w: unknown) => ({
+            overall: AIService.clampScore(rec.overall),
+            accuracy: AIService.clampScore(rec.accuracy),
+            fluency: AIService.clampScore(rec.fluency),
+            completeness: AIService.clampScore(rec.completeness),
+            recognizedText: String(rec.recognizedText || ''),
+            summary: String(rec.summary || ''),
+            wordComparison: Array.isArray(rec.wordComparison)
+                ? rec.wordComparison.map((w: ScoredWordJson) => ({
                     word: String(w.word || ''),
-                    status: ['correct', 'wrong', 'missing', 'extra'].includes(w.status) ? w.status : 'wrong'
+                    status: ['correct', 'wrong', 'missing', 'extra'].includes(w.status as WordComparisonStatus) ? w.status as WordComparisonStatus : 'wrong'
                 }))
                 : [],
-            tips: Array.isArray(parsed.tips)
-                ? parsed.tips.map((t: unknown) => String(t)).slice(0, 3)
+            tips: Array.isArray(rec.tips)
+                ? rec.tips.map((t: unknown) => String(t)).slice(0, 3)
                 : []
         };
     }
@@ -746,7 +826,7 @@ If the audio is too quiet, unclear, or empty, still return a valid JSON with low
         url: string,
         apiKey: string,
         payload: unknown
-    ): Promise<{ ok: true; json: unknown } | { ok: false; status: number; body: string }> {
+    ): Promise<{ ok: true; json: ChatCompletionResponse } | { ok: false; status: number; body: string }> {
         try {
             const resp = await AIService.withTimeout(requestUrl({
                 url,
@@ -758,16 +838,17 @@ If the audio is too quiet, unclear, or empty, still return a valid JSON with low
                 body: JSON.stringify(payload)
             }), AIService.AI_CHAT_TIMEOUT_MS, 'AI request timeout');
             if (resp.status >= 200 && resp.status < 300) {
-                return { ok: true, json: resp.json };
+                return { ok: true, json: resp.json as ChatCompletionResponse };
             }
             return { ok: false, status: resp.status, body: typeof resp.text === 'string' ? resp.text : '' };
         } catch (err: unknown) {
             // requestUrl throws on network-level failures; on some Obsidian versions it
             // also rejects for HTTP error statuses, carrying status/body on the error.
-            const status = err?.status ?? err?.statusCode ?? 0;
-            const body = typeof err?.text === 'string'
-                ? err.text
-                : (typeof err?.message === 'string' ? err.message : String(err));
+            const reqErr = err as RequestUrlFailure;
+            const status = reqErr?.status ?? reqErr?.statusCode ?? 0;
+            const body = typeof reqErr?.text === 'string'
+                ? reqErr.text
+                : (typeof reqErr?.message === 'string' ? reqErr.message : String(err));
             return { ok: false, status, body };
         }
     }
@@ -782,7 +863,7 @@ If the audio is too quiet, unclear, or empty, still return a valid JSON with low
         apiKey: string,
         payload: unknown,
         errorPrefix: string
-    ): Promise<unknown> {
+    ): Promise<ChatCompletionResponse> {
         let lastStatus = 0;
         let lastBody = '';
         for (let attempt = 0; attempt <= AIService.MAX_RATE_LIMIT_RETRIES; attempt++) {
@@ -962,7 +1043,7 @@ If the audio is too quiet, unclear, or empty, still return a valid JSON with low
             data: audio,
         });
 
-        let resp: unknown;
+        let resp: RequestUrlResponse;
         try {
             resp = await AIService.withTimeout(requestUrl({
                 url,
@@ -975,13 +1056,14 @@ If the audio is too quiet, unclear, or empty, still return a valid JSON with low
                 body,
             }), AIService.AI_TRANSCRIBE_TIMEOUT_MS, 'AI request timeout');
         } catch (e: unknown) {
-            const status = e?.status || 0;
+            const reqErr = e as RequestUrlFailure;
+            const status = reqErr?.status || 0;
             let bodyText = '';
-            try { bodyText = typeof e?.body === 'string' ? e.body : JSON.stringify(e?.body || {}); } catch { /* non-serializable body */ }
+            try { bodyText = typeof reqErr?.body === 'string' ? reqErr.body : JSON.stringify(reqErr?.body || {}); } catch { /* non-serializable body */ }
             throw new Error(AIService.describeApiFailure(status, bodyText, t('transcribe.failed')));
         }
 
-        const data = resp?.json || {};
+        const data = (resp?.json || {}) as TranscriptionResponse;
         const segs = Array.isArray(data.segments) ? data.segments : [];
         const result: TranscriptSegment[] = [];
         for (const s of segs) {

@@ -24,6 +24,7 @@ import {
     resolveCoverSrc,
 } from '../utils/workshop-note';
 import type { NoteSource, WorkshopNoteProps } from '../utils/workshop-note';
+import { loadUiPref, saveUiPref } from '../utils/ui-prefs';
 
 export const WORKSHOP_CATALOG_VIEW_TYPE = 'lme-workshop-catalog';
 
@@ -41,14 +42,10 @@ type PracticeFilter = 'all' | 'practiced' | 'not';
 
 interface Opt { value: string; label: string }
 
-/** 来源 → Lucide 图标名(播放器在用的同一套识别)。 */
-function sourceIconName(s: NoteSource): string {
-    switch (s) {
-        case 'youtube': return 'youtube';
-        case 'bilibili': return 'film';
-        case 'local': return 'file-video';
-        default: return 'circle-help';
-    }
+/** Obsidian 设置面板容器(App.setting 未在公开类型中声明,运行时存在)。 */
+interface AppSettingContainer {
+    openTabById?: (tabId: string) => void;
+    openTab?: () => void;
 }
 
 /** 来源 → 本地化名称。 */
@@ -645,7 +642,7 @@ export class WorkshopCatalogView extends ItemView {
     /** 移到 Obsidian 垃圾桶(遵循用户「已删除文件」设置);列表经 vault delete 事件自动重渲。 */
     private async deleteNote(p: WorkshopNoteProps): Promise<void> {
         try {
-            await this.app.vault.trash(p.file);
+            await this.app.fileManager.trashFile(p.file);
         } catch (e) {
             console.warn('[LME] delete workshop note failed', e);
             new Notice(t('nav.workshopCatalogDeleteFailed'));
@@ -725,15 +722,11 @@ export class WorkshopCatalogView extends ItemView {
     }
 
     private readStoredViewMode(): 'grid' | 'list' {
-        try {
-            return localStorage.getItem(VIEW_MODE_KEY) === 'list' ? 'list' : 'grid';
-        } catch {
-            return 'grid';
-        }
+        return loadUiPref(this.app, VIEW_MODE_KEY) === 'list' ? 'list' : 'grid';
     }
 
     private writeStoredViewMode(mode: 'grid' | 'list'): void {
-        try { localStorage.setItem(VIEW_MODE_KEY, mode); } catch { /* localStorage 不可用时静默 */ }
+        saveUiPref(this.app, VIEW_MODE_KEY, mode);
     }
 
     // ── 卡片大小(小/中/大,持久化到 localStorage) ──
@@ -746,16 +739,12 @@ export class WorkshopCatalogView extends ItemView {
     }
 
     private readStoredCardSize(): 'small' | 'medium' | 'large' {
-        try {
-            const stored = localStorage.getItem(WorkshopCatalogView.CARD_SIZE_KEY);
-            return stored === 'small' || stored === 'large' ? stored : 'medium';
-        } catch {
-            return 'medium';
-        }
+        const stored = loadUiPref(this.app, WorkshopCatalogView.CARD_SIZE_KEY);
+        return stored === 'small' || stored === 'large' ? stored : 'medium';
     }
 
     private writeStoredCardSize(size: 'small' | 'medium' | 'large'): void {
-        try { localStorage.setItem(WorkshopCatalogView.CARD_SIZE_KEY, size); } catch { /* localStorage 不可用时静默 */ }
+        saveUiPref(this.app, WorkshopCatalogView.CARD_SIZE_KEY, size);
     }
 
     private toggleTag(tag: string): void {
@@ -897,7 +886,7 @@ export class WorkshopCatalogView extends ItemView {
     }
 
     private async listMarkdownFiles(folder: string): Promise<TFile[]> {
-        const adapter = this.app.vault.adapter as unknown;
+        const adapter = this.app.vault.adapter;
         try {
             if (!(await adapter.exists(folder))) return [];
         } catch { return []; }
@@ -911,7 +900,7 @@ export class WorkshopCatalogView extends ItemView {
         const empty = parent.createDiv('lme-catalog-empty');
         let missing = false;
         try {
-            missing = !(await (this.app.vault.adapter as unknown).exists(folder));
+            missing = !(await this.app.vault.adapter.exists(folder));
         } catch { /* 检查失败按"没有笔记"文案展示 */ }
         setIcon(empty.createDiv('lme-catalog-empty-icon'), missing ? 'folder-off' : 'folder-open');
         empty.createEl('p', {
@@ -954,7 +943,7 @@ export class WorkshopCatalogView extends ItemView {
 
     private openSettings(): void {
         try {
-            const setting = (this.app as unknown).setting;
+            const setting = (this.app as unknown as { setting?: AppSettingContainer }).setting;
             if (setting?.openTabById) {
                 setting.openTabById('language-made-easy');
             } else if (setting?.openTab) {

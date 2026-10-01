@@ -4,13 +4,13 @@
 // Copyright (c) 2024-2026 PandoraReads | panrunrun@gmail.com
 // ============================================================
 
-import { App, ItemView, WorkspaceLeaf, MarkdownView, Notice, MarkdownRenderer, setIcon, TFile, Platform, requestUrl, Modal, FuzzySuggestModal } from 'obsidian';
+import { App, ItemView, WorkspaceLeaf, MarkdownView, Notice, MarkdownRenderer, setIcon, TFile, Platform, requestUrl, FuzzySuggestModal } from 'obsidian';
 import type LanguageMadeEasyPlugin from '../main-unified-full';
-import type { TimestampBlock, PronunciationScore } from '../../models';
+import type { TimestampBlock, PronunciationScore, LMESettings } from '../models';
 import { AIService } from '../core/AIService';
 import { AI_ANALYSIS_VIEW_TYPE } from './ai-analysis-view';
+import type { AIAnalysisView } from './ai-analysis-view';
 import { ShadowingPractice } from './shadowing-practice';
-import type { PracticeCallbacks } from './shadowing-practice';
 import { BUILTIN_PROMPTS } from '../models';
 import type { PromptTemplate } from '../models';
 import { UpgradeModal } from '../ui/upgrade-modal';
@@ -28,15 +28,133 @@ declare global {
 }
 
 /**
+ * Minimal YouTube player shim surface used by this view. Two shapes share it:
+ * the desktop postMessage controller (attachYouTubeIframeController) and the
+ * mobile no-op shim (renderYouTubeMobile).
+ */
+interface YouTubePlayerLike {
+    getCurrentTime(): number;
+    getPlayerState(): number;
+    getDuration(): number;
+    playVideo(): void;
+    pauseVideo(): void;
+    seekTo(seconds: number, allowSeekAhead: boolean): void;
+    setPlaybackRate(rate: number): void;
+}
+
+/** Minimal Node https module surface used for desktop b23.tv redirect resolution. */
+interface NodeHttpsLike {
+    get(url: string, options: { headers: Record<string, string> }, callback: (res: NodeHttpResponseLike) => void): NodeClientRequestLike;
+}
+
+interface NodeClientRequestLike {
+    on(event: 'error', listener: (err: Error) => void): void;
+    setTimeout(timeout: number, callback: () => void): void;
+    destroy(): void;
+}
+
+interface NodeHttpResponseLike {
+    headers: { location?: string | string[] };
+    statusCode: number;
+    destroy(): void;
+}
+
+/** One stream format entry from the YouTube InnerTube player response. */
+interface YouTubeStreamFormat {
+    itag?: number;
+    url?: string;
+    mimeType?: string;
+}
+
+/** Subset of the YouTube InnerTube player response used for subtitle fetching. */
+interface YouTubePlayerResponse {
+    playabilityStatus?: {
+        status?: string;
+        reason?: string;
+        errorScreen?: { playerErrorMessageRenderer?: { subreason?: { runs?: { text?: string }[] } } };
+    };
+    captions?: { playerCaptionsTracklistRenderer?: { captionTracks?: YouTubeCaptionTrack[] } };
+}
+
+/** One caption track from the YouTube InnerTube player response. */
+interface YouTubeCaptionTrack {
+    baseUrl?: string;
+    languageCode?: string;
+    name?: { simpleText?: string };
+}
+
+/** Bilibili web-interface/view API response (video info: cid, title, pages). */
+interface BilibiliViewInfo {
+    code: number;
+    message?: string;
+    data: {
+        cid: number;
+        title: string;
+        pages?: BilibiliPageInfo[];
+    };
+}
+
+interface BilibiliPageInfo {
+    cid: number;
+}
+
+/** Bilibili player/playurl API response (progressive durl segments). */
+interface BilibiliPlayInfo {
+    code: number;
+    message?: string;
+    data?: {
+        durl?: BilibiliDurlSegment[];
+    };
+}
+
+interface BilibiliDurlSegment {
+    url?: string;
+    size?: number;
+    backup_url?: string[];
+}
+
+/** Bilibili dm/view or player/v2 API response (subtitle track list). */
+interface BilibiliSubtitleListResponse {
+    data?: { subtitle?: { subtitles?: BilibiliSubtitleTrack[] } };
+}
+
+/** One subtitle track from the Bilibili subtitle list API. */
+interface BilibiliSubtitleTrack {
+    lan?: string;
+    lan_doc?: string;
+    subtitle_url: string;
+}
+
+/** One subtitle line from the Bilibili subtitle JSON body. */
+interface BilibiliSubtitleBodyItem {
+    from?: number | string;
+    content?: string;
+}
+
+/** Internal Obsidian App surface used to read/patch the vault config (base theme). */
+interface ObsidianAppWithConfig {
+    vault?: { config?: { theme?: string; baseTheme?: string } };
+    setConfig?: (field: string, value: string) => void;
+}
+
+/** Settings fields read by this view that are runtime-provided and not (yet) on LMESettings. */
+interface ShadowingLegacySettings {
+    bookmarkShortcut?: string;
+    aiReportFolder?: string;
+}
+
+/**
  * Fetch with automatic retry on 429 (Too Many Requests).
  * Uses exponential backoff: 3s, 6s, 12s (max 3 retries).
  */
-async function fetchWithRetry(fn: () => Promise<unknown>, retries = 3, baseDelay = 3000): Promise<unknown> {
+async function fetchWithRetry<T>(fn: () => Promise<T>, retries = 3, baseDelay = 3000): Promise<T> {
     for (let attempt = 0; attempt <= retries; attempt++) {
         try {
             return await fn();
         } catch (e: unknown) {
-            const is429 = e?.status === 429 || (e?.message && e.message.includes('429'));
+            const errStatus = (e as { status?: unknown } | null | undefined)?.status;
+            const errMessage = (e as { message?: unknown } | null | undefined)?.message;
+            const is429 = errStatus === 429 || (typeof errMessage === 'string' && errMessage.includes('429'));
             if (!is429 || attempt === retries) throw e;
             const delay = baseDelay * Math.pow(2, attempt);
             console.debug(`[EME] 429 rate limited, retrying in ${delay / 1000}s (attempt ${attempt + 1}/${retries})`);
@@ -51,7 +169,9 @@ export class ShadowingView extends ItemView {
     private plugin: LanguageMadeEasyPlugin;
     private videoEl: HTMLVideoElement | null = null;
     private audioEl: HTMLAudioElement | null = null;
-    private ytPlayer: unknown = null;
+    private ytPlayer: YouTubePlayerLike | null = null;
+    /** Loader of the external YouTube iframe API script — removed with the remote-code cleanup; kept as an (undefined) call-site-compatible slot. */
+    private loadYouTubeIframeAPI: (() => void) | undefined = undefined;
     private ytMobileHandler: ((event: MessageEvent) => void) | null = null;
     private ytMobileTime: number = 0;
     private ytMobileState: number = -1;
@@ -144,7 +264,7 @@ export class ShadowingView extends ItemView {
         console.debug('[EME] ShadowingView.onOpen() triggered');
         this.renderInitial();
         // Delay detection slightly to ensure Workspace is ready and avoid initial jitter
-        window.setTimeout(() => this.autoDetectVideo(), 100);
+        window.setTimeout(() => { void this.autoDetectVideo(); }, 100);
 
 
         // Register bookmark keyboard shortcut
@@ -157,7 +277,7 @@ export class ShadowingView extends ItemView {
             this.app.workspace.on('editor-change', () => {
                 if (debounceTimer) window.clearTimeout(debounceTimer);
                 debounceTimer = window.setTimeout(() => {
-                    this.parseActiveNoteTimestamps();
+                    void this.parseActiveNoteTimestamps();
                 }, 500);
             })
         );
@@ -389,7 +509,7 @@ export class ShadowingView extends ItemView {
             if (bilibiliKey !== this.currentMediaSrc) {
                 // Extract full URL for multi-page parsing (?p=N)
                 const fullUrlMatch = content.match(/(?:https?:\/\/)?(?:www\.)?bilibili\.com\/video\/((?:BV[a-zA-Z0-9]{10})|(?:av[0-9]+))[^\s]*/i);
-                this.fetchBilibiliVideo(bvid, fullUrlMatch ? fullUrlMatch[0] : undefined);
+                void this.fetchBilibiliVideo(bvid, fullUrlMatch ? fullUrlMatch[0] : undefined);
             }
             return;
         }
@@ -419,7 +539,7 @@ export class ShadowingView extends ItemView {
                     // Continue with normal Bilibili flow
                     const bilibiliKey = `bilibili:${id}`;
                     if (bilibiliKey !== this.currentMediaSrc) {
-                        this.fetchBilibiliVideo(id, resolved);
+                        void this.fetchBilibiliVideo(id, resolved);
                     }
                     return;
                 }
@@ -436,7 +556,7 @@ export class ShadowingView extends ItemView {
             console.debug(`[EME] Detected YouTube video: ${videoId}`);
             const src = `https://www.youtube.com/embed/${videoId}`;
             if (src !== this.currentMediaSrc) {
-                this.loadMedia(src, 'youtube', true);
+                void this.loadMedia(src, 'youtube', true);
             }
             return;
         }
@@ -453,7 +573,7 @@ export class ShadowingView extends ItemView {
                 const isAudio = /\.(?:mp3|wav|m4a|ogg|flac|aac)$/i.test(fileName);
                 console.debug(`[EME] Detected Internal media: ${fileName}, resourcePath: ${src}, isAudio: ${isAudio}`);
                 if (src !== this.currentMediaSrc) {
-                    this.loadMedia(src, isAudio ? 'audio' : 'video', false);
+                    void this.loadMedia(src, isAudio ? 'audio' : 'video', false);
                 }
                 return;
             }
@@ -468,7 +588,7 @@ export class ShadowingView extends ItemView {
                 const videoId = ytIdMatch[1];
                 const ytSrc = `https://www.youtube.com/embed/${videoId}`;
                 if (ytSrc !== this.currentMediaSrc) {
-                    this.loadMedia(ytSrc, 'youtube', true);
+                    void this.loadMedia(ytSrc, 'youtube', true);
                 }
                 return;
             }
@@ -490,7 +610,7 @@ export class ShadowingView extends ItemView {
             if (isAudio || isVideo) {
                 console.debug(`[EME] Detected HTML5/Link media: ${src}, type: ${isAudio ? 'audio' : 'video'}`);
                 if (src !== this.currentMediaSrc) {
-                    this.loadMedia(src, isAudio ? 'audio' : 'video', false);
+                    void this.loadMedia(src, isAudio ? 'audio' : 'video', false);
                 }
                 return;
             }
@@ -527,9 +647,9 @@ export class ShadowingView extends ItemView {
         if (Platform.isDesktop) {
             try {
                 // eslint-disable-next-line @typescript-eslint/no-require-imports -- desktop-only lazy load behind a Platform.isDesktop guard (the no-nodejs-modules sanctioned pattern)
-                const https = require('https');
+                const https = require('https') as NodeHttpsLike;
                 const redirectUrl = await new Promise<string | null>((resolve) => {
-                    const req = https.get(targetUrl, { headers: { 'User-Agent': ua } }, (res: unknown) => {
+                    const req = https.get(targetUrl, { headers: { 'User-Agent': ua } }, (res: NodeHttpResponseLike) => {
                         const location = res.headers.location as string | undefined;
                         res.destroy();
                         if (location && [301, 302, 303, 307, 308].includes(res.statusCode)) {
@@ -686,9 +806,7 @@ export class ShadowingView extends ItemView {
             cls: 'lme-video-el'
         });
 
-        this.videoEl.style.width = '100%';
-        this.videoEl.style.height = '100%';
-        this.videoEl.style.display = 'block';
+        this.videoEl.setCssStyles({ width: '100%', height: '100%', display: 'block' });
 
         if (this.videoEl) {
             this.videoEl.playbackRate = this.plugin.settings.defaultPlaybackRate;
@@ -722,7 +840,7 @@ export class ShadowingView extends ItemView {
         audioPlayer.createDiv({ cls: 'lme-audio-player-icon' });
 
         const infoRow = audioPlayer.createDiv('lme-audio-player-info');
-        const titleEl = infoRow.createDiv({ cls: 'lme-audio-player-title', text: this.detectedMediaFileName || 'Audio' });
+        infoRow.createDiv({ cls: 'lme-audio-player-title', text: this.detectedMediaFileName || 'Audio' });
         const timeEl = infoRow.createDiv({ cls: 'lme-audio-player-time', text: '0:00' });
 
         const controlsRow = audioPlayer.createDiv('lme-audio-player-controls');
@@ -760,7 +878,7 @@ export class ShadowingView extends ItemView {
             e.stopPropagation();
             if (!this.audioEl) return;
             if (this.audioEl.paused) {
-                this.audioEl.play();
+                void this.audioEl.play();
                 setIcon(playBtn, 'pause');
             } else {
                 this.audioEl.pause();
@@ -812,7 +930,7 @@ export class ShadowingView extends ItemView {
 
     private playMedia(): void {
         const media = this.getCurrentMedia();
-        if (media) media.play();
+        if (media) void media.play();
     }
 
     private pauseMedia(): void {
@@ -855,7 +973,7 @@ export class ShadowingView extends ItemView {
             if (typeof event.data !== 'string' || !event.data.startsWith('{')) return;
             let msg: { event?: string; info?: Record<string, unknown> };
             try {
-                msg = JSON.parse(event.data);
+                msg = JSON.parse(event.data) as { event?: string; info?: Record<string, unknown> };
             } catch {
                 return;
             }
@@ -936,8 +1054,7 @@ export class ShadowingView extends ItemView {
             },
             cls: 'lme-video-iframe'
         });
-        iframe.style.width = '100%';
-        iframe.style.height = '100%';
+        iframe.setCssStyles({ width: '100%', height: '100%' });
 
         this.attachYouTubeIframeController(iframe);
     }
@@ -983,8 +1100,7 @@ export class ShadowingView extends ItemView {
             },
             cls: 'lme-video-iframe'
         });
-        iframe.style.width = '100%';
-        iframe.style.height = '100%';
+        iframe.setCssStyles({ width: '100%', height: '100%' });
 
         this.ytPlayer = {
             getCurrentTime: () => this.ytMobileTime,
@@ -1032,17 +1148,17 @@ export class ShadowingView extends ItemView {
             return null;
         }
 
-        const playerData = JSON.parse(playerResp.text);
+        const playerData = JSON.parse(playerResp.text) as { streamingData?: { formats?: YouTubeStreamFormat[] } };
         const formats = playerData?.streamingData?.formats;
         if (!formats || !Array.isArray(formats)) return null;
 
         // Prefer itag 18 (360p MP4 with audio) — ideal for mobile
-        const itag18 = formats.find((f: unknown) => f.itag === 18 && f.url);
-        if (itag18) return itag18.url;
+        const itag18 = formats.find(f => f.itag === 18 && f.url);
+        if (itag18) return itag18.url ?? null;
 
         // Fallback: any MP4 format with direct URL
-        const mp4 = formats.find((f: unknown) => f.url && f.mimeType?.startsWith('video/mp4'));
-        if (mp4) return mp4.url;
+        const mp4 = formats.find(f => f.url && f.mimeType?.startsWith('video/mp4'));
+        if (mp4) return mp4.url ?? null;
 
         return null;
     }
@@ -1062,23 +1178,27 @@ export class ShadowingView extends ItemView {
         contentEl.addClass('lme-shadowing-view');
 
         const loadingEl = contentEl.createDiv('lme-bilibili-loading');
-        loadingEl.style.textAlign = 'center';
-        loadingEl.style.padding = '40px 20px';
+        loadingEl.setCssStyles({ textAlign: 'center', padding: '40px 20px' });
         loadingEl.createEl('h3', { text: t('shadowing.loadingBilibili') });
         const statusText = loadingEl.createEl('p', { text: t('shadowing.checkingCache'), cls: 'lme-bilibili-status' });
 
         // Progress bar
         const progressWrap = loadingEl.createDiv('lme-progress-wrap');
-        progressWrap.style.cssText = 'max-width:320px;margin:16px auto 0;height:8px;background:var(--background-modifier-border);border-radius:4px;overflow:hidden;';
+        progressWrap.setCssStyles({ maxWidth: '320px', margin: '16px auto 0', height: '8px', background: 'var(--background-modifier-border)', borderRadius: '4px', overflow: 'hidden' });
         const progressBar = progressWrap.createDiv('lme-progress-bar');
-        progressBar.style.cssText = 'width:0%;height:100%;border-radius:4px;transition:width 0.4s ease;';
-        progressBar.style.background = 'linear-gradient(90deg, #6c5ce7, #a29bfe, #fd79a8)';
-        progressBar.style.backgroundSize = '200% 100%';
-        progressBar.style.animation = 'lme-progress-shimmer 2s linear infinite';
+        progressBar.setCssStyles({
+            width: '0%',
+            height: '100%',
+            borderRadius: '4px',
+            transition: 'width 0.4s ease',
+            background: 'linear-gradient(90deg, #6c5ce7, #a29bfe, #fd79a8)',
+            backgroundSize: '200% 100%',
+            animation: 'lme-progress-shimmer 2s linear infinite',
+        });
 
         // Step label
         const stepLabel = loadingEl.createEl('p', { text: '', cls: 'lme-bilibili-step' });
-        stepLabel.style.cssText = 'margin-top:10px;font-size:0.8em;color:var(--text-muted);';
+        stepLabel.setCssStyles({ marginTop: '10px', fontSize: '0.8em', color: 'var(--text-muted)' });
 
         const updateProgress = (percent: number, status: string, step: string) => {
             progressBar.style.width = percent + '%';
@@ -1107,7 +1227,7 @@ export class ShadowingView extends ItemView {
                 if (this.bilibiliBlobUrl) URL.revokeObjectURL(this.bilibiliBlobUrl);
                 this.bilibiliBlobUrl = blobUrl;
 
-                this.loadMedia(blobUrl, 'video', false);
+                void this.loadMedia(blobUrl, 'video', false);
                 new Notice(t('shadowing.loadedFromCache', { size: sizeMB }));
                 return;
             }
@@ -1124,7 +1244,7 @@ export class ShadowingView extends ItemView {
                 }
             });
 
-            const infoData = infoResp.json;
+            const infoData = infoResp.json as BilibiliViewInfo;
             if (infoData.code !== 0) {
                 throw new Error(infoData.message || t('shadowing.bilibiliApiError'));
             }
@@ -1149,7 +1269,7 @@ export class ShadowingView extends ItemView {
                 }
             });
 
-            const playData = playResp.json;
+            const playData = playResp.json as BilibiliPlayInfo;
             if (playData.code !== 0) {
                 throw new Error(playData.message || t('shadowing.noPlaybackUrl'));
             }
@@ -1159,7 +1279,7 @@ export class ShadowingView extends ItemView {
                 throw new Error(t('shadowing.noStreamUrl'));
             }
 
-            const totalSize = durls.reduce((sum: number, d: unknown) => sum + (d.size || 0), 0);
+            const totalSize = durls.reduce((sum: number, d: BilibiliDurlSegment) => sum + (d.size || 0), 0);
             console.debug(`[EME] Bilibili video: ${durls.length} segment(s), total ~${(totalSize / 1024 / 1024).toFixed(1)}MB`);
 
             // Step 3: Download all video segments
@@ -1236,14 +1356,13 @@ export class ShadowingView extends ItemView {
             this.bilibiliBlobUrl = blobUrl;
 
             console.debug(`[EME] Bilibili video loaded: ${(blob.size / 1024 / 1024).toFixed(1)}MB`);
-            this.loadMedia(blobUrl, 'video', false);
+            void this.loadMedia(blobUrl, 'video', false);
             new Notice(t('shadowing.downloaded', { title }));
 
         } catch (error) {
             console.error('[EME] Bilibili fetch failed:', error);
             loadingEl.empty();
-            loadingEl.style.padding = '40px 20px';
-            loadingEl.style.textAlign = 'center';
+            loadingEl.setCssStyles({ padding: '40px 20px', textAlign: 'center' });
 
             loadingEl.createEl('h3', { text: t('shadowing.bilibiliFailed') });
             loadingEl.createEl('p', {
@@ -1254,7 +1373,7 @@ export class ShadowingView extends ItemView {
 	            loadingEl.createEl('p', { text: t('errors.contactAuthor').trim(), cls: 'lme-bilibili-hint' });
 
             const retryBtn = loadingEl.createEl('button', { text: t('common.retry'), cls: 'mod-cta' });
-            retryBtn.style.marginTop = '12px';
+            retryBtn.setCssStyles({ marginTop: '12px' });
             retryBtn.onclick = () => this.fetchBilibiliVideo(bvid, fullUrl);
         }
     }
@@ -1439,7 +1558,7 @@ export class ShadowingView extends ItemView {
         subtitleBtn.onclick = (e) => {
             e.stopPropagation();
             subtitleBtn.addClass('is-pressed');
-            this.fetchAndInsertSubtitles();
+            void this.fetchAndInsertSubtitles();
             window.setTimeout(() => subtitleBtn.removeClass('is-pressed'), 300);
         };
         const subtitleSetPressed = () => subtitleBtn.addClass('is-pressed');
@@ -1465,7 +1584,7 @@ export class ShadowingView extends ItemView {
         aiBtn.onclick = (e) => {
             e.stopPropagation();
             aiBtn.addClass('is-pressed');
-            this.runAIAnalysis();
+            void this.runAIAnalysis();
             window.setTimeout(() => aiBtn.removeClass('is-pressed'), 300);
         };
         const aiSetPressed = () => aiBtn.addClass('is-pressed');
@@ -1595,11 +1714,11 @@ export class ShadowingView extends ItemView {
 
     private applySavedPlayerHeight(playerContainer: HTMLElement): void {
         if (this.isPhoneLayout()) return;
-        const saved = Number((this.plugin.settings as unknown).shadowingPlayerHeight || 0);
+        const saved = Number(this.plugin.settings.shadowingPlayerHeight || 0);
         if (!Number.isFinite(saved) || saved <= 0) return;
         const height = this.clampPlayerHeight(saved);
         playerContainer.style.height = `${height}px`;
-        playerContainer.style.aspectRatio = 'auto';
+        playerContainer.setCssStyles({ aspectRatio: 'auto' });
         this.syncPlayerWidthForHeight(height);
     }
 
@@ -1614,18 +1733,17 @@ export class ShadowingView extends ItemView {
         if (this.learningMode === 'dictation') {
             const height = this.getMinPlayerHeight();
             this.playerContainerEl.style.height = `${height}px`;
-            this.playerContainerEl.style.aspectRatio = 'auto';
+            this.playerContainerEl.setCssStyles({ aspectRatio: 'auto' });
             this.syncPlayerWidthForHeight(height);
             return;
         }
 
-        const saved = Number((this.plugin.settings as unknown).shadowingPlayerHeight || 0);
+        const saved = Number(this.plugin.settings.shadowingPlayerHeight || 0);
         if (Number.isFinite(saved) && saved > 0) {
             this.applySavedPlayerHeight(this.playerContainerEl);
         } else {
-            this.playerContainerEl.style.height = '';
-            this.playerContainerEl.style.aspectRatio = '';
-            if (this.playerOuterEl) this.playerOuterEl.style.maxWidth = '';
+            this.playerContainerEl.setCssStyles({ height: '', aspectRatio: '' });
+            if (this.playerOuterEl) this.playerOuterEl.setCssStyles({ maxWidth: '' });
         }
     }
 
@@ -1648,7 +1766,10 @@ export class ShadowingView extends ItemView {
         this.playerContainerEl.style.setProperty('height', `${height}px`, 'important');
         this.playerContainerEl.style.setProperty('max-height', `${height}px`, 'important');
         this.playerContainerEl.style.setProperty('max-width', `${width}px`, 'important');
-        this.playerContainerEl.style.setProperty('aspect-ratio', 'auto', 'important');
+        // setCssStyles cannot express '!important' priority (required to override the
+        // phone-layout !important CSS rules), so this stays on style.setProperty.
+        const autoAspect = 'auto';
+        this.playerContainerEl.style.setProperty('aspect-ratio', autoAspect, 'important');
         if (this.playerOuterEl) {
             this.playerOuterEl.style.setProperty('max-width', `${width}px`, 'important');
         }
@@ -1673,7 +1794,7 @@ export class ShadowingView extends ItemView {
             evt.preventDefault();
             const next = this.clampPlayerHeight(startHeight + evt.clientY - startY);
             playerContainer.style.height = `${next}px`;
-            playerContainer.style.aspectRatio = 'auto';
+            playerContainer.setCssStyles({ aspectRatio: 'auto' });
             this.syncPlayerWidthForHeight(next);
         };
 
@@ -1682,8 +1803,8 @@ export class ShadowingView extends ItemView {
             dragging = false;
             document.body.removeClass('lme-player-resizing');
             const finalHeight = Math.round(playerContainer.getBoundingClientRect().height);
-            (this.plugin.settings as unknown).shadowingPlayerHeight = this.clampPlayerHeight(finalHeight);
-            this.plugin.saveSettings();
+            this.plugin.settings.shadowingPlayerHeight = this.clampPlayerHeight(finalHeight);
+            void this.plugin.saveSettings();
         };
 
         handle.onpointerdown = (evt: PointerEvent) => {
@@ -1728,8 +1849,7 @@ export class ShadowingView extends ItemView {
         const targetWidth = Math.round(height * 16 / 9);
         const maxWidth = Math.min(Math.max(targetWidth, 920), 1320);
         this.playerOuterEl.style.maxWidth = `${maxWidth}px`;
-        this.playerOuterEl.style.marginLeft = 'auto';
-        this.playerOuterEl.style.marginRight = 'auto';
+        this.playerOuterEl.setCssStyles({ marginLeft: 'auto', marginRight: 'auto' });
     }
 
     private toggleFocusMode(): void {
@@ -1773,7 +1893,7 @@ export class ShadowingView extends ItemView {
     }
 
     private collapseWorkspaceSidebarsForFocus(): void {
-        const workspace = this.app.workspace as unknown;
+        const workspace = this.app.workspace;
         const leftSplit = workspace.leftSplit;
         const rightSplit = workspace.rightSplit;
         this.focusLeftSplitWasCollapsed = !!leftSplit?.collapsed;
@@ -1787,7 +1907,7 @@ export class ShadowingView extends ItemView {
     }
 
     private restoreWorkspaceSidebarsAfterFocus(): void {
-        const workspace = this.app.workspace as unknown;
+        const workspace = this.app.workspace;
         const leftSplit = workspace.leftSplit;
         const rightSplit = workspace.rightSplit;
         if (this.focusLeftSplitWasCollapsed === false && leftSplit && typeof leftSplit.expand === 'function') {
@@ -1801,7 +1921,7 @@ export class ShadowingView extends ItemView {
     }
 
     private switchObsidianToDarkForFocus(): void {
-        const obsidianApp = this.app as unknown;
+        const obsidianApp = this.app as ObsidianAppWithConfig;
         const vaultConfig = obsidianApp.vault?.config;
         const current = vaultConfig?.theme || vaultConfig?.baseTheme || (document.body.hasClass('theme-dark') ? 'dark' : 'light');
         this.focusPreviousBaseTheme = current || null;
@@ -1829,7 +1949,7 @@ export class ShadowingView extends ItemView {
             return;
         }
 
-        const obsidianApp = this.app as unknown;
+        const obsidianApp = this.app as ObsidianAppWithConfig;
         const vaultConfig = obsidianApp.vault?.config;
         try {
             if (typeof obsidianApp.setConfig === 'function') {
@@ -1874,8 +1994,11 @@ export class ShadowingView extends ItemView {
     private forceFocusBackground(): void {
         this.focusPreviousInlineBackground = this.contentEl.style.background;
         this.focusPreviousInlineBackgroundColor = this.contentEl.style.backgroundColor;
-        this.contentEl.style.setProperty('background', '#000', 'important');
-        this.contentEl.style.setProperty('background-color', '#000', 'important');
+        // setCssStyles cannot express '!important' priority (required to beat themed
+        // background rules), so these stay on style.setProperty.
+        const blackBackground = '#000';
+        this.contentEl.style.setProperty('background', blackBackground, 'important');
+        this.contentEl.style.setProperty('background-color', blackBackground, 'important');
     }
 
     private restoreFocusBackground(): void {
@@ -1940,7 +2063,7 @@ export class ShadowingView extends ItemView {
             if (shouldRefresh && this.learningMode === 'dictation') {
                 this.renderBlocks();
             }
-            this.seekTo(block.startSec);
+            void this.seekTo(block.startSec);
         }
     }
 
@@ -1970,7 +2093,7 @@ export class ShadowingView extends ItemView {
         this.dictationPausedBlock = null;
         this.highlightNoteLine(block.lineIndex);
         this.updateActiveBlockUI();
-        this.seekTo(block.startSec);
+        void this.seekTo(block.startSec);
     }
 
     // 播放快捷键:Space 播放/暂停(shadowing)、← 上一句、→ 下一句、R 重听当前句
@@ -2117,14 +2240,14 @@ export class ShadowingView extends ItemView {
 
         // ── Expanded panel (hidden initially) ──
         const expanded = wrap.createDiv('lme-recorder-panel');
-        expanded.style.display = 'none';
+        expanded.setCssStyles({ display: 'none' });
         this.recorderExpandedEl = expanded;
 
         // LED display screen
         const ledScreen = expanded.createDiv('lme-recorder-led');
-        const ledDot = ledScreen.createSpan({ cls: 'lme-recorder-dot' });
-        const ledStatus = ledScreen.createSpan({ text: t('shadowing.recorderReady'), cls: 'lme-recorder-status-text' });
-        const ledTimer = ledScreen.createSpan({ text: '00:00', cls: 'lme-recorder-timer' });
+        ledScreen.createSpan({ cls: 'lme-recorder-dot' });
+        ledScreen.createSpan({ text: t('shadowing.recorderReady'), cls: 'lme-recorder-status-text' });
+        ledScreen.createSpan({ text: '00:00', cls: 'lme-recorder-timer' });
 
         // Waveform canvas
         const canvas = expanded.createEl('canvas', {
@@ -2176,20 +2299,20 @@ export class ShadowingView extends ItemView {
     }
 
     private updateRecorderVisibilityForLearningMode(): void {
-        const recorderWrap = this.recorderPanelEl || this.contentEl.querySelector('.lme-recorder-wrap') as HTMLElement | null;
+        const recorderWrap = this.recorderPanelEl || this.contentEl.querySelector<HTMLElement>('.lme-recorder-wrap');
         if (!recorderWrap) return;
         recorderWrap.style.display = this.learningMode === 'dictation' ? 'none' : '';
     }
 
     private expandRecorder(): void {
-        if (this.recorderCollapsedBtn) this.recorderCollapsedBtn.style.display = 'none';
-        if (this.recorderExpandedEl) this.recorderExpandedEl.style.display = '';
+        if (this.recorderCollapsedBtn) this.recorderCollapsedBtn.setCssStyles({ display: 'none' });
+        if (this.recorderExpandedEl) this.recorderExpandedEl.setCssStyles({ display: '' });
     }
 
     private collapseRecorder(): void {
         this.stopRecordingCleanup();
-        if (this.recorderCollapsedBtn) this.recorderCollapsedBtn.style.display = '';
-        if (this.recorderExpandedEl) this.recorderExpandedEl.style.display = 'none';
+        if (this.recorderCollapsedBtn) this.recorderCollapsedBtn.setCssStyles({ display: '' });
+        if (this.recorderExpandedEl) this.recorderExpandedEl.setCssStyles({ display: 'none' });
     }
 
     private updateRecorderUI(): void {
@@ -2217,7 +2340,7 @@ export class ShadowingView extends ItemView {
                 setBtnContent(recordBtn, 'mic', t('shadowing.recorderRecord'));
                 if (recordBtn) recordBtn.className = 'lme-recorder-btn lme-recorder-btn-record';
                 if (playbackBtn) playbackBtn.disabled = true;
-                if (redoBtn) redoBtn.style.display = 'none';
+                if (redoBtn) redoBtn.setCssStyles({ display: 'none' });
                 break;
             case 'recording':
                 if (statusText) statusText.textContent = t('shadowing.recorderRecording');
@@ -2225,7 +2348,7 @@ export class ShadowingView extends ItemView {
                 setBtnContent(recordBtn, 'square', t('shadowing.recorderStop'));
                 if (recordBtn) recordBtn.className = 'lme-recorder-btn lme-recorder-btn-record is-active';
                 if (playbackBtn) playbackBtn.disabled = true;
-                if (redoBtn) redoBtn.style.display = 'none';
+                if (redoBtn) redoBtn.setCssStyles({ display: 'none' });
                 break;
             case 'recorded':
                 if (statusText) statusText.textContent = t('shadowing.recorderRecorded');
@@ -2233,7 +2356,7 @@ export class ShadowingView extends ItemView {
                 setBtnContent(recordBtn, 'mic', t('shadowing.recorderRecord'));
                 if (recordBtn) recordBtn.className = 'lme-recorder-btn lme-recorder-btn-record';
                 if (playbackBtn) playbackBtn.disabled = false;
-                if (redoBtn) redoBtn.style.display = '';
+                if (redoBtn) redoBtn.setCssStyles({ display: '' });
                 break;
         }
 
@@ -2378,7 +2501,7 @@ export class ShadowingView extends ItemView {
             this.analyserNode = null;
         }
         if (this.audioContext) {
-            this.audioContext.close();
+            void this.audioContext.close();
             this.audioContext = null;
         }
         // Clear canvas to flat line
@@ -2698,7 +2821,7 @@ export class ShadowingView extends ItemView {
 
                 return this.extractSegment(audioBuffer, startSec, endSec);
             } finally {
-                audioContext.close();
+                void audioContext.close();
             }
         } catch (err) {
             console.warn('[EME] Failed to decode audio segment:', err);
@@ -2728,11 +2851,11 @@ export class ShadowingView extends ItemView {
     }
 
     private async scoreRecording(blob: Blob, originalText: string): Promise<PronunciationScore | null> {
-        const settings = this.plugin.settings as unknown;
+        const settings = this.plugin.settings;
         const r = AIService.resolveProvider(settings, 'aiScoring');
         const model = r.model || AIService.DEFAULT_GEMINI_MODEL;
         const locale: 'en' | 'zh' = 'zh';
-        const geminiRec = (settings.aiProviders || []).find((p: unknown) => p.id === 'gemini');
+        const geminiRec = (settings.aiProviders || []).find(p => p.id === 'gemini');
         const geminiKey = (geminiRec && geminiRec.apiKey) || settings.geminiApiKey || '';
         const isGemini = r.kind === 'gemini' || r.baseUrl.includes('generativelanguage.googleapis.com');
 
@@ -2802,7 +2925,7 @@ export class ShadowingView extends ItemView {
         if (this.activeBlock) {
             // ── Single-sentence loop: seek back to start when block ends ──
             if (this.loopSingleBlock && currentTime >= this.activeBlock.endSec) {
-                this.seekTo(this.activeBlock.startSec);
+                void this.seekTo(this.activeBlock.startSec);
                 return;
             }
 
@@ -3066,7 +3189,7 @@ export class ShadowingView extends ItemView {
             const sourcePath = this.file ? this.file.path : '';
             const rawText = block.text.replace(/^[[{(]?\d{1,2}:\d{2}(?::\d{2})?(?:-\d{1,2}:\d{2}(?::\d{2})?)?[\]})]?\s*/, '').trim();
 
-            MarkdownRenderer.renderMarkdown(rawText, textContainer, sourcePath, this);
+            void MarkdownRenderer.render(this.app, rawText, textContainer, sourcePath, this);
 
             const seekHandler = (e: Event) => {
                 console.debug(`[EME] Seek to ${block.startSec}s requested via ${e.type}`);
@@ -3083,7 +3206,7 @@ export class ShadowingView extends ItemView {
                 this.highlightNoteLine(block.lineIndex);
                 this.updateActiveBlockUI();
 
-                this.seekTo(block.startSec);
+                void this.seekTo(block.startSec);
             };
 
             // Use onclick for all. On mobile, ontouchend provides faster response.
@@ -3149,8 +3272,8 @@ export class ShadowingView extends ItemView {
                     const selection = window.getSelection()?.toString().trim();
                     if (!selection) return;
                     const lookupPath = this.file ? this.file.path : '';
-                    this.plugin.triggerLookup(selection, contextText, lookupPath, lineIndex);
-                } catch (err) {
+                    void this.plugin.triggerLookup(selection, contextText, lookupPath, lineIndex);
+                } catch {
                     // Ignore transient selection errors from mobile/webview selection ranges.
                 }
             }, delay);
@@ -3234,7 +3357,7 @@ export class ShadowingView extends ItemView {
         input.value = answer;
         const resize = () => {
             const minFloor = window.innerWidth <= 860 ? 84 : 132;
-            input.style.height = 'auto';
+            input.setCssStyles({ height: 'auto' });
             input.style.height = `${Math.max(input.scrollHeight, minFloor)}px`;
         };
         window.setTimeout(() => {
@@ -3400,7 +3523,7 @@ export class ShadowingView extends ItemView {
         this.dictationPausedBlock = null;
         this.highlightNoteLine(this.activeBlock.lineIndex);
         this.renderBlocks();
-        if (play) this.seekTo(this.activeBlock.startSec);
+        if (play) void this.seekTo(this.activeBlock.startSec);
     }
 
     private submitDictationBlock(index: number, userInput: string): void {
@@ -3492,7 +3615,7 @@ export class ShadowingView extends ItemView {
         options: { lineIndex?: number; revealOriginal?: boolean; onRevealOriginal?: () => void } = {}
     ) {
         feedbackWrapper.empty();
-        const { score, origTokens, matchFlags, userTokens, userMatchFlags } = this.calcAccuracy(originalText, userInput);
+        const { score, matchFlags, userTokens, userMatchFlags } = this.calcAccuracy(originalText, userInput);
         const tier = score >= 80 ? 'excellent' : score >= 50 ? 'good' : 'poor';
         const wrongCount = matchFlags.filter(matched => !matched).length;
 
@@ -3545,7 +3668,7 @@ export class ShadowingView extends ItemView {
             const originalCard = feedbackWrapper.createDiv('lme-dictation-original-card');
             originalCard.createSpan({ text: t('shadowing.original'), cls: 'label' });
             const originalContent = originalCard.createDiv('content');
-            MarkdownRenderer.renderMarkdown(originalText, originalContent, '', this);
+            void MarkdownRenderer.render(this.app, originalText, originalContent, '', this);
             this.attachLookupHandlers(originalContent, originalText, options.lineIndex ?? 0);
         }
     }
@@ -3698,7 +3821,7 @@ export class ShadowingView extends ItemView {
     // ============================================================
 
     private registerBookmarkShortcut(): void {
-        const shortcut = this.plugin.settings.bookmarkShortcut || 'Ctrl+Shift+B';
+        const shortcut = (this.plugin.settings as LMESettings & ShadowingLegacySettings).bookmarkShortcut || 'Ctrl+Shift+B';
         const parts = shortcut.toLowerCase().split('+');
         const needCtrl = parts.includes('ctrl') || parts.includes('mod');
         const needShift = parts.includes('shift');
@@ -3949,23 +4072,24 @@ export class ShadowingView extends ItemView {
             throw new Error(t('shadowing.youtubePlayerApiFailed'));
         }
 
-        const playerData = JSON.parse(playerResp.text);
+        const playerData = JSON.parse(playerResp.text) as YouTubePlayerResponse;
 
         // Step 3: Check playability status
         this.checkYouTubePlayability(playerData);
 
         // Step 4: Extract caption tracks
         const captionsData = playerData?.captions?.playerCaptionsTracklistRenderer;
-        if (!captionsData?.captionTracks || captionsData.captionTracks.length === 0) {
+        const captionTracks = captionsData?.captionTracks;
+        if (!captionTracks || captionTracks.length === 0) {
             throw new Error(t('shadowing.youtubeNoSubtitles'));
         }
 
-        console.debug(`[EME] YouTube: found ${captionsData.captionTracks.length} caption track(s): ${
-            captionsData.captionTracks.map((t: unknown) => `${t.name?.simpleText || t.languageCode}(${t.languageCode})`).join(', ')
+        console.debug(`[EME] YouTube: found ${captionTracks.length} caption track(s): ${
+            captionTracks.map(t => `${t.name?.simpleText || t.languageCode}(${t.languageCode})`).join(', ')
         }`);
 
         // Select track by matching current active language, fallback to English, then first
-        const track = this.selectYouTubeTrack(captionsData.captionTracks);
+        const track = this.selectYouTubeTrack(captionTracks);
         const subtitleUrl = (track.baseUrl || '').replace(
             /\\u([0-9a-fA-F]{4})/g,
             (_match: string, hex: string) => String.fromCharCode(parseInt(hex, 16))
@@ -3999,7 +4123,7 @@ export class ShadowingView extends ItemView {
     }
 
     /** Check YouTube player response playability status. */
-    private checkYouTubePlayability(playerData: unknown): void {
+    private checkYouTubePlayability(playerData: YouTubePlayerResponse): void {
         const status = playerData?.playabilityStatus?.status;
         if (!status || status === 'OK') return;
 
@@ -4025,7 +4149,7 @@ export class ShadowingView extends ItemView {
         if (status === 'UNPLAYABLE') {
             const runs = playerData?.playabilityStatus?.errorScreen
                 ?.playerErrorMessageRenderer?.subreason?.runs || [];
-            const subreasons = runs.map((r: unknown) => r.text || '').join(' ');
+            const subreasons = runs.map(r => r.text || '').join(' ');
             throw new Error(t('shadowing.youtubeUnplayable', { reason: subreasons || reason || t('common.unknownError') }));
         }
     }
@@ -4081,7 +4205,7 @@ export class ShadowingView extends ItemView {
             throw new Error(t('shadowing.bilibiliApiFailed'));
         }
 
-        const infoData = infoResp.json;
+        const infoData = infoResp.json as BilibiliViewInfo;
         if (infoData.code !== 0) {
             throw new Error(infoData.message || t('shadowing.bilibiliApiError'));
         }
@@ -4113,7 +4237,7 @@ export class ShadowingView extends ItemView {
         }
 
         // Step 2: Get subtitle list — try multiple approaches
-        let subtitles: unknown[] | null = null;
+        let subtitles: BilibiliSubtitleTrack[] | null = null;
 
         // Approach 1: /x/v2/dm/view (original, works on desktop with cookies)
         try {
@@ -4122,7 +4246,7 @@ export class ShadowingView extends ItemView {
                 method: 'GET',
                 headers: commonHeaders
             }));
-            const dmData = dmResp.json;
+            const dmData = dmResp.json as BilibiliSubtitleListResponse;
             const subs = dmData?.data?.subtitle?.subtitles;
             if (subs && subs.length > 0) {
                 subtitles = subs;
@@ -4143,7 +4267,7 @@ export class ShadowingView extends ItemView {
                     method: 'GET',
                     headers: commonHeaders
                 }));
-                const playerData = playerResp.json;
+                const playerData = playerResp.json as BilibiliSubtitleListResponse;
                 const subs = playerData?.data?.subtitle?.subtitles;
                 if (subs && subs.length > 0) {
                     subtitles = subs;
@@ -4172,12 +4296,12 @@ export class ShadowingView extends ItemView {
                 const subtitleMatch = html.match(/"subtitle"\s*:\s*\{[^}]*"subtitles"\s*:\s*(\[[\s\S]*?\])\s*[\]}]/);
                 if (subtitleMatch) {
                     try {
-                        const parsed = JSON.parse(subtitleMatch[1]);
+                        const parsed = JSON.parse(subtitleMatch[1]) as BilibiliSubtitleTrack[];
                         if (Array.isArray(parsed) && parsed.length > 0) {
                             subtitles = parsed;
                             console.debug(`[EME] page scrape: found ${parsed.length} subtitle track(s)`);
                         }
-                    } catch (parseErr) {
+                    } catch {
                         console.warn('[EME] Failed to parse scraped subtitle JSON');
                     }
                 }
@@ -4201,7 +4325,7 @@ export class ShadowingView extends ItemView {
             throw new Error(hint);
         }
 
-        console.debug(`[EME] Found ${subtitles.length} subtitle track(s): ${subtitles.map((s: unknown) => `${s.lan_doc}(${s.lan})`).join(', ')}`);
+        console.debug(`[EME] Found ${subtitles.length} subtitle track(s): ${subtitles.map(s => `${s.lan_doc}(${s.lan})`).join(', ')}`);
 
         // Select subtitle by matching current active language, fallback to English, then first
         const subtitle = this.selectBilibiliSubtitle(subtitles);
@@ -4216,13 +4340,13 @@ export class ShadowingView extends ItemView {
 
         // Step 3: Fetch subtitle JSON
         const subResp = await requestUrl({ url: subtitleUrl, method: 'GET', headers: commonHeaders });
-        const subData = subResp.json;
+        const subData = subResp.json as { body?: BilibiliSubtitleBodyItem[] };
 
         // Parse JSON body: [{from: 0.27, to: 3.48, content: "text"}]
         const results: { startSec: number; text: string }[] = [];
         const body = subData.body || [];
         for (const item of body) {
-            const startSec = typeof item.from === 'number' ? item.from : parseFloat(item.from);
+            const startSec = typeof item.from === 'number' ? item.from : parseFloat(String(item.from));
             const rawText = item.content || '';
             const cleanText = this.cleanSubtitleHtml(rawText);
             if (cleanText.trim()) {
@@ -4244,7 +4368,7 @@ export class ShadowingView extends ItemView {
     }
 
     /** Select YouTube caption track matching current language, fallback to English, then first. */
-    private selectYouTubeTrack(tracks: unknown[]): unknown {
+    private selectYouTubeTrack(tracks: YouTubeCaptionTrack[]): YouTubeCaptionTrack {
         const target = this.getActiveLangCode();
         const exact = tracks.find(t => t.languageCode === target);
         if (exact) return exact;
@@ -4260,7 +4384,7 @@ export class ShadowingView extends ItemView {
     }
 
     /** Select Bilibili subtitle track matching current language, fallback to English, then first. */
-    private selectBilibiliSubtitle(subtitles: unknown[]): unknown {
+    private selectBilibiliSubtitle(subtitles: BilibiliSubtitleTrack[]): BilibiliSubtitleTrack {
         const target = this.getActiveLangCode();
         // Bilibili lan field: 'en', 'zh-CN', 'ja', 'ko', 'de', 'fr', etc.
         const exact = subtitles.find(s => s.lan === target);
@@ -4289,8 +4413,8 @@ export class ShadowingView extends ItemView {
             .replace(/&gt;/g, '>')
             .replace(/&#39;/g, "'")
             .replace(/&quot;/g, '"')
-            .replace(/&#(\d+);/g, (_, code) => String.fromCharCode(parseInt(code)))
-            .replace(/&#x([0-9a-fA-F]+);/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)))
+            .replace(/&#(\d+);/g, (_, code: string) => String.fromCharCode(parseInt(code)))
+            .replace(/&#x([0-9a-fA-F]+);/g, (_, hex: string) => String.fromCharCode(parseInt(hex, 16)))
             // Normalize whitespace
             .replace(/\s+/g, ' ')
             .trim();
@@ -4374,11 +4498,11 @@ export class ShadowingView extends ItemView {
 
         if (allPrompts.length === 1) {
             // Only one prompt available, run directly
-            this.executeAnalysis(allPrompts[0].content, { name: allPrompts[0].name, isBuiltIn: !!allPrompts[0].isBuiltIn });
+            void this.executeAnalysis(allPrompts[0].content, { name: allPrompts[0].name, isBuiltIn: !!allPrompts[0].isBuiltIn });
         } else {
             // Show prompt selection modal
             const modal = new PromptSelectModal(this.app, allPrompts, (selected) => {
-                this.executeAnalysis(selected.content, { name: selected.name, isBuiltIn: !!selected.isBuiltIn });
+                void this.executeAnalysis(selected.content, { name: selected.name, isBuiltIn: !!selected.isBuiltIn });
             });
             modal.open();
         }
@@ -4419,7 +4543,7 @@ export class ShadowingView extends ItemView {
             const leaves = this.app.workspace.getLeavesOfType(AI_ANALYSIS_VIEW_TYPE);
             console.debug('[EME] Found leaves of type', AI_ANALYSIS_VIEW_TYPE, ':', leaves.length);
             if (leaves.length > 0) {
-                const aiView = leaves[0].view as unknown;
+                const aiView = leaves[0].view as AIAnalysisView;
                 if (aiView.setResult) {
                     aiView.setResult(markdown, this.leaf, promptMeta);
                 }
@@ -4460,7 +4584,7 @@ export class ShadowingView extends ItemView {
 
         // Body - render markdown
         const body = panel.createDiv('lme-ai-panel-body');
-        MarkdownRenderer.render(this.app, markdown, body, '', this);
+        void MarkdownRenderer.render(this.app, markdown, body, '', this);
 
         // Make timestamps clickable
         this.makeTimestampsClickable(body);
@@ -4532,7 +4656,7 @@ export class ShadowingView extends ItemView {
         const file = this.file || this.app.workspace.getActiveFile();
         if (!file) return;
 
-        const settings = this.plugin.settings;
+        const settings = this.plugin.settings as LMESettings & ShadowingLegacySettings;
         const dateStr = new Date().toISOString().slice(0, 10);
 
         // Extract topic from markdown content (first heading or first line)

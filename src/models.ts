@@ -2,8 +2,6 @@
 // English Made Easy - Data Models
 // ============================================================
 
-import type { Card } from 'ts-fsrs';
-
 /**
  * FSRS scheduling data (mirrors ts-fsrs Card fields we need to persist)
  */

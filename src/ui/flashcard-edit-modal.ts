@@ -88,7 +88,7 @@ export class FlashcardEditModal extends Modal {
             new Notice(t('flashcardManager.editSaved'));
             this.onSaved();
             this.close();
-        } catch (e) {
+        } catch {
             new Notice(t('flashcardManager.editDuplicateWord'));
         }
     }

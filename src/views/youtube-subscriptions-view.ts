@@ -7,6 +7,7 @@ import type { YouTubeFeedItem, YouTubeSubscription } from '../services/youtube-r
 import { YOUTUBE_PLAYER_VIEW_TYPE, YouTubePlayerView, youtubePlayerStateFor } from './youtube-player-view';
 import { TextInputModal } from './text-input-modal';
 import { UpgradeModal } from '../ui/upgrade-modal';
+import { loadUiPref, saveUiPref } from '../utils/ui-prefs';
 
 export const YOUTUBE_SUBSCRIPTIONS_VIEW_TYPE = 'lme-youtube-subscriptions';
 
@@ -232,29 +233,21 @@ export class YouTubeSubscriptionsView extends ItemView {
     }
 
     private readStoredViewMode(): 'cards' | 'list' | 'grouped' {
-        try {
-            const stored = localStorage.getItem(YouTubeSubscriptionsView.VIEW_MODE_KEY);
-            return stored === 'list' || stored === 'grouped' ? stored : 'cards';
-        } catch {
-            return 'cards';
-        }
+        const stored = loadUiPref(this.app, YouTubeSubscriptionsView.VIEW_MODE_KEY);
+        return stored === 'list' || stored === 'grouped' ? stored : 'cards';
     }
 
     private writeStoredViewMode(mode: 'cards' | 'list' | 'grouped'): void {
-        try { localStorage.setItem(YouTubeSubscriptionsView.VIEW_MODE_KEY, mode); } catch { /* localStorage 不可用时静默 */ }
+        saveUiPref(this.app, YouTubeSubscriptionsView.VIEW_MODE_KEY, mode);
     }
 
     private readStoredCardSize(): 'small' | 'medium' | 'large' {
-        try {
-            const stored = localStorage.getItem(YouTubeSubscriptionsView.CARD_SIZE_KEY);
-            return stored === 'small' || stored === 'large' ? stored : 'medium';
-        } catch {
-            return 'medium';
-        }
+        const stored = loadUiPref(this.app, YouTubeSubscriptionsView.CARD_SIZE_KEY);
+        return stored === 'small' || stored === 'large' ? stored : 'medium';
     }
 
     private writeStoredCardSize(size: 'small' | 'medium' | 'large'): void {
-        try { localStorage.setItem(YouTubeSubscriptionsView.CARD_SIZE_KEY, size); } catch { /* localStorage 不可用时静默 */ }
+        saveUiPref(this.app, YouTubeSubscriptionsView.CARD_SIZE_KEY, size);
     }
 
     private renderItems(): void {
@@ -380,7 +373,7 @@ export class YouTubeSubscriptionsView extends ItemView {
         const thumb = thumbWrap.createEl('img', { cls: 'lme-youtube-rss-row-thumb', attr: { src: item.thumbnailUrl, alt: '' } });
         const playBadge = thumbWrap.createDiv('lme-youtube-rss-playbadge');
         setIcon(playBadge, 'play');
-        thumb.onerror = () => { thumb.style.display = 'none'; playBadge.style.display = 'none'; };
+        thumb.onerror = () => { thumb.setCssStyles({ display: 'none' }); playBadge.setCssStyles({ display: 'none' }); };
         if (this.selectionMode) this.applySelectionMode(row, thumbWrap, item);
         this.bindPreview(thumbWrap, item);
         const main = row.createDiv('lme-youtube-rss-row-main');
@@ -403,7 +396,7 @@ export class YouTubeSubscriptionsView extends ItemView {
         const thumb = thumbWrap.createEl('img', { cls: 'lme-youtube-rss-thumb', attr: { src: item.thumbnailUrl, alt: '' } });
         const playBadge = thumbWrap.createDiv('lme-youtube-rss-playbadge');
         setIcon(playBadge, 'play');
-        thumb.onerror = () => { thumb.style.display = 'none'; playBadge.style.display = 'none'; };
+        thumb.onerror = () => { thumb.setCssStyles({ display: 'none' }); playBadge.setCssStyles({ display: 'none' }); };
         if (this.selectionMode) this.applySelectionMode(card, thumbWrap, item);
         this.bindPreview(thumbWrap, item);
         const body = card.createDiv('lme-youtube-rss-card-body');
@@ -557,7 +550,7 @@ export class YouTubeSubscriptionsView extends ItemView {
             void leaf.setViewState({ type: YOUTUBE_PLAYER_VIEW_TYPE, active: true, state: youtubePlayerStateFor(item) });
         }
         if (workspace.rightSplit) workspace.rightSplit.expand();
-        workspace.revealLeaf(leaf);
+        void workspace.revealLeaf(leaf);
     }
 
     private formatDate(value: string): string {
@@ -737,7 +730,7 @@ export class YouTubeSubscriptionsView extends ItemView {
     private selectNav(selection: NavSelection): void {
         this.navSelection = selection;
         this.closeNav();
-        this.render();
+        void this.render();
     }
 
     private openNav(): void {
@@ -770,14 +763,17 @@ export class YouTubeSubscriptionsView extends ItemView {
             title: t('nav.youtubeCategoryNameTitle'),
             placeholder: t('nav.youtubeCategoryNamePlaceholder'),
             confirmText: t('nav.youtubeAddCategory'),
-        }, async (name) => {
-            try {
-                await this.service.addCategory(name);
-                await this.render();
-            } catch (error) {
-                new Notice(error instanceof Error ? error.message : t('nav.youtubeCategoryAddFailed'));
-            }
-        }).open();
+        }, (name) => { void this.addCategoryFromPrompt(name); }).open();
+    }
+
+    /** 新增分类并重渲;失败弹 Notice(供 promptAddCategory 以 void 包裹调用)。 */
+    private async addCategoryFromPrompt(name: string): Promise<void> {
+        try {
+            await this.service.addCategory(name);
+            await this.render();
+        } catch (error) {
+            new Notice(error instanceof Error ? error.message : t('nav.youtubeCategoryAddFailed'));
+        }
     }
 
     // ── 导航的全局事件:点外部收起 + 移动端左缘右滑展开/左滑收起 ──

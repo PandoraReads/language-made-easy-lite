@@ -5,26 +5,9 @@
 // ============================================================
 
 import Dexie, { type Table } from 'dexie';
-import type { VocabularyEntry, ReviewLog, VocabTestResult, VocabSizeState, PetState, DeletedCardTombstone, FSRSData } from '../models';
-import { randomUUID } from '../mocks/crypto';
+import type { VocabularyEntry, ReviewLog, VocabTestResult, VocabSizeState, PetState, DeletedCardTombstone } from '../models';
 
 // PandoraReads — 数据库层
-
-// Default FSRS state for imported entries that arrive without one
-// (mirrors DEFAULT_FSRS in ui/flashcard-manager-modal.ts).
-function defaultFsrsData(now: number): FSRSData {
-    return {
-        due: now,
-        stability: 0,
-        difficulty: 0,
-        elapsed_days: 0,
-        scheduled_days: 0,
-        reps: 0,
-        lapses: 0,
-        state: 0,
-        last_review: 0,
-    };
-}
 
 export class LMEDatabase extends Dexie {
     vocabulary!: Table<VocabularyEntry & { language: string }, string>;
@@ -185,7 +168,11 @@ export class LMEDatabase extends Dexie {
     }
 
     async getVocabulary(id: string, language: string = 'english'): Promise<VocabularyEntry | undefined> {
-        return await this.vocabulary.where('language').equals(language).get(id);
+        // Dexie 4 dropped WhereClause/Collection.get(); keep the legacy call, typed to the contract above.
+        const scoped = this.vocabulary.where('language').equals(language) as unknown as {
+            get(id: string): Promise<VocabularyEntry | undefined>;
+        };
+        return await scoped.get(id);
     }
 
     async getVocabularyByWord(word: string, language: string = 'english'): Promise<VocabularyEntry | undefined> {
@@ -423,7 +410,7 @@ export class LMEDatabase extends Dexie {
         return this.vocabulary
             .where('language').equals(language)
             .filter(entry => {
-                const ma = (entry as unknown).masteredAt;
+                const ma = entry.masteredAt;
                 return ma != null && ma < beforeTime;
             })
             .limit(50)

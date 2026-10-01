@@ -75,7 +75,7 @@ export class UpgradeModal extends Modal {
 		const wechat = body.createDiv('lme-upgrade-wechat');
 		wechat.createEl('img', {
 			cls: 'lme-upgrade-qr',
-			attr: { src: wechatQrUrl, alt: t('upgrade.wechatQrAlt') },
+			attr: { src: wechatQrUrl as string, alt: t('upgrade.wechatQrAlt') },
 		});
 		const wechatText = wechat.createDiv('lme-upgrade-wechat-text');
 		wechatText.createDiv('lme-upgrade-wechat-title').setText(t('upgrade.wechatTitle'));

@@ -23,7 +23,7 @@ export class HtmlGuideView extends ItemView {
 		const iframe = contentEl.createEl('iframe', {
 			cls: 'lme-html-guide-frame',
 			attr: {
-				srcdoc: guideHtml,
+				srcdoc: guideHtml as string,
 				sandbox: 'allow-same-origin allow-scripts allow-popups allow-forms',
 			}
 		});

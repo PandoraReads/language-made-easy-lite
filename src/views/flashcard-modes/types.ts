@@ -5,7 +5,7 @@
 // ============================================================
 
 import type { Rating } from 'ts-fsrs';
-import type { Component } from 'obsidian';
+import type { App, Component } from 'obsidian';
 import type { VocabularyEntry } from '../../models';
 
 /** 学习模式(免费版运行时恒为 flip,类型保留 audio/write 供切换条标签使用)。 */
@@ -13,6 +13,8 @@ export type StudyMode = 'flip' | 'audio' | 'write';
 
 /** 由 FlashcardView 提供给模式渲染器的上下文。 */
 export interface ModeContext {
+    /** MarkdownRenderer.render 所需的 App 实例。 */
+    app: App;
     /** 当前卡片。 */
     entry: VocabularyEntry;
     /** 当前语言（播音频/TTS 用）。 */

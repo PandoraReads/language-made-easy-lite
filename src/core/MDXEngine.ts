@@ -20,7 +20,7 @@ try {
         // eslint-disable-next-line @typescript-eslint/no-require-imports -- desktop-only lazy load behind a Platform.isDesktop guard (the no-nodejs-modules sanctioned pattern)
         jsMdict = require('js-mdict') as typeof import('js-mdict');
     }
-} catch (e) {
+} catch {
     console.warn('[EME] Node modules could not be pre-loaded, will retry on demand.');
 }
 
@@ -190,7 +190,7 @@ export class MDXEngine {
         let decodedPath = resourcePath;
         try {
             decodedPath = decodeURIComponent(resourcePath);
-        } catch (e) {
+        } catch {
             // If decode fails, use original path
         }
 
@@ -279,7 +279,7 @@ export class MDXEngine {
             if (result && result.definition) {
                 return Buffer.from(result.definition, 'base64');
             }
-        } catch (err) {
+        } catch {
             // Continue to next candidate
         }
         return null;

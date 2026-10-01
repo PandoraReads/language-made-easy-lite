@@ -17,6 +17,7 @@ import {
 	resolvePromptName,
 } from '../utils/ai-report';
 import { UpgradeModal } from '../ui/upgrade-modal';
+import { loadUiPref, saveUiPref } from '../utils/ui-prefs';
 
 export const AI_REPORT_CATALOG_VIEW_TYPE = 'lme-ai-report-catalog';
 const VIEW_MODE_KEY = 'lme-ai-report-catalog-view';
@@ -360,15 +361,11 @@ export class AIReportCatalogView extends ItemView {
 	}
 
 	private readStoredViewMode(): 'grid' | 'list' {
-		try {
-			return localStorage.getItem(VIEW_MODE_KEY) === 'list' ? 'list' : 'grid';
-		} catch {
-			return 'grid';
-		}
+		return loadUiPref(this.app, VIEW_MODE_KEY) === 'list' ? 'list' : 'grid';
 	}
 
 	private writeStoredViewMode(mode: 'grid' | 'list'): void {
-		try { localStorage.setItem(VIEW_MODE_KEY, mode); } catch { /* localStorage 不可用时静默 */ }
+		saveUiPref(this.app, VIEW_MODE_KEY, mode);
 	}
 
 	// ── 搜索 / 排序 / 分组 ─────────────────────────────────────

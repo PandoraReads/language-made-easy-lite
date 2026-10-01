@@ -7,6 +7,7 @@
 // header 渲染、历史菜单、时间戳点击 seek、门禁等状态相关逻辑。
 
 import { ItemView, WorkspaceLeaf, setIcon, Notice, Menu } from 'obsidian';
+import type { View } from 'obsidian';
 import type LanguageMadeEasyPlugin from '../main-unified-full';
 import type { AIAnalysisHistoryEntry } from '../models';
 import { t } from '../i18n';
@@ -20,6 +21,11 @@ import {
 import { UpgradeModal } from '../ui/upgrade-modal';
 
 export const AI_ANALYSIS_VIEW_TYPE = 'lme-ai-analysis-view';
+
+/** 跟读视图实例上暴露的跳转接口(ShadowingView.seekTo,基类 View 类型未声明)。 */
+interface SeekableShadowingView {
+	seekTo(sec: number): void;
+}
 
 export class AIAnalysisView extends ItemView {
 	private plugin: LanguageMadeEasyPlugin;
@@ -89,23 +95,71 @@ export class AIAnalysisView extends ItemView {
 
 		// -- Header bar (all inline styles to bypass any CSS override issues) --
 		const header = this.contentEl.createDiv();
-		header.style.cssText = 'display:flex;flex-direction:row;flex-wrap:nowrap;justify-content:space-between;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--background-modifier-border,rgba(0,0,0,0.08));position:sticky;top:0;z-index:10;background:var(--background-primary,#ffffff);';
+		header.setCssStyles({
+			display: 'flex',
+			flexDirection: 'row',
+			flexWrap: 'nowrap',
+			justifyContent: 'space-between',
+			alignItems: 'center',
+			gap: '8px',
+			padding: '12px 16px',
+			borderBottom: '1px solid var(--background-modifier-border,rgba(0,0,0,0.08))',
+			position: 'sticky',
+			top: '0',
+			zIndex: '10',
+			background: 'var(--background-primary,#ffffff)'
+		});
 
 		const titleEl = header.createDiv();
-		titleEl.style.cssText = 'display:inline-flex;flex-direction:row;align-items:center;gap:6px;font-weight:600;font-size:0.9em;color:var(--text-normal,#333);white-space:nowrap;flex:0 1 auto;';
+		titleEl.setCssStyles({
+			display: 'inline-flex',
+			flexDirection: 'row',
+			alignItems: 'center',
+			gap: '6px',
+			fontWeight: '600',
+			fontSize: '0.9em',
+			color: 'var(--text-normal,#333)',
+			whiteSpace: 'nowrap',
+			flex: '0 1 auto'
+		});
 		setIcon(titleEl, 'lightbulb');
 		titleEl.createSpan({ text: t('aiAnalysis.viewTitle') });
 
 		const actions = header.createDiv();
-		actions.style.cssText = 'display:inline-flex;flex-direction:row;flex-wrap:nowrap;align-items:center;gap:4px;flex:0 0 auto;';
+		actions.setCssStyles({
+			display: 'inline-flex',
+			flexDirection: 'row',
+			flexWrap: 'nowrap',
+			alignItems: 'center',
+			gap: '4px',
+			flex: '0 0 auto'
+		});
 
 		const mkBtn = (icon: string, text?: string): HTMLButtonElement => {
 			const btn = actions.createEl('button');
-			btn.style.cssText = 'display:inline-flex;flex-direction:row;flex-wrap:nowrap;align-items:center;gap:3px;padding:4px 8px;border-radius:5px;border:1px solid rgba(0,0,0,0.08);background:transparent;color:var(--text-muted,#888);cursor:pointer;font-size:0.8em;font-weight:500;white-space:nowrap;flex-shrink:0;line-height:1.2;transition:all 0.15s ease;';
+			btn.setCssStyles({
+				display: 'inline-flex',
+				flexDirection: 'row',
+				flexWrap: 'nowrap',
+				alignItems: 'center',
+				gap: '3px',
+				padding: '4px 8px',
+				borderRadius: '5px',
+				border: '1px solid rgba(0,0,0,0.08)',
+				background: 'transparent',
+				color: 'var(--text-muted,#888)',
+				cursor: 'pointer',
+				fontSize: '0.8em',
+				fontWeight: '500',
+				whiteSpace: 'nowrap',
+				flexShrink: '0',
+				lineHeight: '1.2',
+				transition: 'all 0.15s ease'
+			});
 			if (text) btn.createSpan({ text });
 			setIcon(btn, icon);
-			btn.onmouseenter = () => { btn.style.color = 'var(--text-accent)'; btn.style.borderColor = 'var(--text-accent)'; btn.style.background = 'rgba(0,0,0,0.03)'; };
-			btn.onmouseleave = () => { btn.style.color = 'var(--text-muted,#888)'; btn.style.borderColor = 'rgba(0,0,0,0.08)'; btn.style.background = 'transparent'; };
+			btn.onmouseenter = () => { btn.setCssStyles({ color: 'var(--text-accent)', borderColor: 'var(--text-accent)', background: 'rgba(0,0,0,0.03)' }); };
+			btn.onmouseleave = () => { btn.setCssStyles({ color: 'var(--text-muted,#888)', borderColor: 'rgba(0,0,0,0.08)', background: 'transparent' }); };
 			return btn;
 		};
 
@@ -115,7 +169,14 @@ export class AIAnalysisView extends ItemView {
 
 		// Separator dot
 		const sep = actions.createDiv();
-		sep.style.cssText = 'width:3px;height:3px;border-radius:50%;background:var(--text-muted,#888);opacity:0.35;flex-shrink:0;';
+		sep.setCssStyles({
+			width: '3px',
+			height: '3px',
+			borderRadius: '50%',
+			background: 'var(--text-muted,#888)',
+			opacity: '0.35',
+			flexShrink: '0'
+		});
 
 		// 社区免费版:导出笔记/长图/存为 HTML 为完整版功能,按钮保留,点击弹付费引导
 		const saveBtn = mkBtn('download', t('common.export'));
@@ -204,17 +265,23 @@ export class AIAnalysisView extends ItemView {
 	}
 
 	private seekInShadowingView(sec: number) {
-		if (this.shadowingLeaf && (this.shadowingLeaf.view as unknown).seekTo) {
-			(this.shadowingLeaf.view as unknown).seekTo(sec);
+		const trySeek = (view: View): boolean => {
+			const seekable = view as unknown as Partial<SeekableShadowingView>;
+			if (seekable.seekTo) {
+				seekable.seekTo(sec);
+				return true;
+			}
+			return false;
+		};
+		if (this.shadowingLeaf && trySeek(this.shadowingLeaf.view)) {
 			return;
 		}
 		const { workspace } = this.app;
 		const leaves = workspace.getLeavesOfType('lme-shadowing-view');
-		if (leaves.length > 0 && (leaves[0].view as unknown).seekTo) {
-			(leaves[0].view as unknown).seekTo(sec);
-		} else {
-			new Notice(t('aiAnalysis.noShadowingView'));
+		if (leaves.length > 0 && trySeek(leaves[0].view)) {
+			return;
 		}
+		new Notice(t('aiAnalysis.noShadowingView'));
 	}
 
 	loadMostRecent(): boolean {

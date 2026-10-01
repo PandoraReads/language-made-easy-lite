@@ -33,12 +33,12 @@ export function fillCardBack(back: HTMLElement, entry: VocabularyEntry, ctx: Mod
     };
 
     const defEl = back.createDiv('lme-card-definition');
-    MarkdownRenderer.renderMarkdown(entry.definition, defEl, entry.sourceNotePath || '', ctx.component);
+    void MarkdownRenderer.render(ctx.app, entry.definition, defEl, entry.sourceNotePath || '', ctx.component);
 
     if (entry.contextSnippet) {
         const ctxWrap = back.createDiv('lme-card-context');
         const ctxTextEl = ctxWrap.createDiv('lme-card-context-text');
-        MarkdownRenderer.renderMarkdown(entry.contextSnippet, ctxTextEl, entry.sourceNotePath || '', ctx.component);
+        void MarkdownRenderer.render(ctx.app, entry.contextSnippet, ctxTextEl, entry.sourceNotePath || '', ctx.component);
 
         if (entry.contextTranslation) {
             const transEl = ctxWrap.createDiv('lme-card-context-translation');

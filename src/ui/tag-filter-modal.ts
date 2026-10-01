@@ -52,7 +52,7 @@ export class TagFilterModal extends Modal {
         this.searchInput = searchWrap.createEl('input', {
             type: 'text',
             cls: 'lme-tagfilter-search-input',
-        }) as HTMLInputElement;
+        });
         this.searchInput.placeholder = t('nav.workshopTagFilterSearch');
         this.searchInput.addEventListener('input', () => this.renderGrid());
 

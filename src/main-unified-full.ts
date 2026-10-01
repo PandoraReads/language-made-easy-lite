@@ -12,18 +12,14 @@ import {
 	WorkspaceLeaf,
 	Notice,
 	Platform,
-	ItemView,
 	setIcon,
-	getIcon,
-	App,
-	TextComponent,
-	Modal,
-	StatusBarItem,
+	type DataAdapter,
+	WorkspaceWindow,
 	Menu,
 	MarkdownView
 } from 'obsidian';
 import { LMESettingTab, DEFAULT_SETTINGS } from './Settings';
-import type { LMESettings, PromptTemplate, MdxDictionary } from './models';
+import type { LMESettings, PromptTemplate, MdxDictionary, AIProviderConfig } from './models';
 import { BUILTIN_PROMPTS, BUILTIN_PROVIDERS } from './models';
 import { AIService } from './core/AIService';
 import { DictView, DICT_VIEW_TYPE } from './views/dict-view';
@@ -64,14 +60,13 @@ import { FlashcardManagerModal } from './ui/flashcard-manager-modal';
 import { UpgradeModal } from './ui/upgrade-modal';
 import { checkSubtitleWeeklyQuota } from './core/free-quota';
 import { WelcomeModal } from './ui/welcome-modal';
-import { randomUUID } from './mocks/crypto';
 import { initI18n, t } from './i18n';
 
 // PandoraReads — 插件核心入口
 export default class LanguageMadeEasyPlugin extends Plugin {
 	settings: LMESettings;
 	public youtubeRssService: YouTubeRssService;
-	private languageStatusBar: StatusBarItem | null = null;
+	private languageStatusBar: HTMLElement | null = null;
 	private lookupMenuEl: HTMLElement | null = null;
 	private reminderTimer: number | null = null;
 	private featuresInitialized = false;
@@ -116,7 +111,9 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 	}
 
 	private getVaultStorageKey(): string {
-		const adapter = this.app.vault.adapter as unknown;
+		// getBasePath only exists on the desktop FileSystemAdapter, not on the
+		// DataAdapter interface itself, hence the guarded optional member.
+		const adapter = this.app.vault.adapter as DataAdapter & { getBasePath?: () => string };
 		try {
 			if (typeof adapter.getBasePath === 'function') {
 				const basePath = adapter.getBasePath();
@@ -240,7 +237,7 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 					new Notice(t('errors.docEmpty'));
 					return;
 				}
-				(async () => {
+				void (async () => {
 					try {
 						const content = await this.app.vault.read(activeFile);
 						const blocks = contentToBlocks(content);
@@ -252,8 +249,8 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 						if (allPrompts.length === 1) {
 							await executeDocAnalysis(this, blocks, allPrompts[0].content, { name: allPrompts[0].name, isBuiltIn: !!allPrompts[0].isBuiltIn });
 						} else {
-							const promptModal = new PromptSelectModal(this.app, allPrompts, async (selected) => {
-								await executeDocAnalysis(this, blocks, selected.content, { name: selected.name, isBuiltIn: !!selected.isBuiltIn });
+							const promptModal = new PromptSelectModal(this.app, allPrompts, (selected) => {
+								void executeDocAnalysis(this, blocks, selected.content, { name: selected.name, isBuiltIn: !!selected.isBuiltIn });
 							});
 							promptModal.open();
 						}
@@ -274,7 +271,7 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 				await this.activateView(AI_ANALYSIS_VIEW_TYPE, 'right');
 				const leaves = this.app.workspace.getLeavesOfType(AI_ANALYSIS_VIEW_TYPE);
 				if (leaves.length > 0) {
-					const aiView = leaves[0].view as unknown;
+					const aiView = leaves[0].view as AIAnalysisView;
 					if (aiView.loadMostRecent) {
 						const loaded = aiView.loadMostRecent();
 						if (!loaded) {
@@ -313,7 +310,7 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 				callback: () => {
 					// 社区免费版:仅英语可切换,其他语种弹付费引导
 					if (lang.id === 'english') {
-						this.switchLanguage('english');
+						void this.switchLanguage('english');
 					} else {
 						new UpgradeModal(this.app, lang.name).open();
 					}
@@ -410,10 +407,10 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 							.setIcon('search')
 							.onClick(async () => {
 								console.debug('[LME] editor-menu lookup trigger: "' + selection + '"');
-								const containerEl = (view as unknown)?.containerEl || (document.activeElement as HTMLElement);
-								const leaf = (view as unknown)?.leaf;
+								const containerEl = (view as { containerEl?: HTMLElement; leaf?: WorkspaceLeaf })?.containerEl || (document.activeElement as HTMLElement);
+								const leaf = (view as { containerEl?: HTMLElement; leaf?: WorkspaceLeaf })?.leaf;
 								const context = await this.captureContext(selection, containerEl, leaf);
-								this.triggerLookup(selection, context.lineText, context.sourcePath, context.lineIndex);
+								void this.triggerLookup(selection, context.lineText, context.sourcePath, context.lineIndex);
 							});
 					});
 
@@ -471,7 +468,7 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 
 	public async refreshYouTubeSubscriptions(): Promise<void> {
 		for (const leaf of this.app.workspace.getLeavesOfType(YOUTUBE_SUBSCRIPTIONS_VIEW_TYPE)) {
-			const view = leaf.view as unknown;
+			const view = leaf.view as YouTubeSubscriptionsView;
 			if (typeof view.refresh === 'function') {
 				try { await view.refresh(); } catch (e) { console.warn('[LME] YouTube RSS view refresh failed:', e); }
 			}
@@ -514,7 +511,7 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 			if (!leaf) { new Notice(t('nav.videoNoteFailed')); return null; }
 			await leaf.setViewState({ type: SHADOWING_VIEW_TYPE, active: false });
 		}
-		const view = leaf.view as unknown;
+		const view = leaf.view as ShadowingView;
 		if (view?.createVideoNoteAndParse) {
 			return await view.createVideoNoteAndParse(normalizedUrl, true, options);
 		}
@@ -533,12 +530,14 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 		const note = await this.app.vault.create(notePath, `# ${title}\n\n## Subtitles\n\n`);
 		await this.app.workspace.getLeaf('tab').openFile(note);
 
-		new MediaFileSelectModal(this.app, async (media) => {
-			if (!(media instanceof TFile)) return;
-			const content = await this.app.vault.read(note);
-			const embed = `![[${media.path}]]`;
-			await this.app.vault.modify(note, content.replace('\n## Subtitles', `\n${embed}\n\n## Subtitles`));
-			await this.runTranscription(note, media);
+		new MediaFileSelectModal(this.app, (media) => {
+			void (async () => {
+				if (!(media instanceof TFile)) return;
+				const content = await this.app.vault.read(note);
+				const embed = `![[${media.path}]]`;
+				await this.app.vault.modify(note, content.replace('\n## Subtitles', `\n${embed}\n\n## Subtitles`));
+				await this.runTranscription(note, media);
+			})();
 		}).open();
 	}
 
@@ -547,26 +546,28 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 			new Notice(t('errors.aiKeyNotSet'));
 			return;
 		}
-		new FileSelectModal(this.app, async (file) => {
-			try {
-				const content = await this.app.vault.read(file);
-				const blocks = contentToBlocks(content);
-				if (blocks.length === 0) {
-					new Notice(t('errors.docEmpty'));
-					return;
+		new FileSelectModal(this.app, (file) => {
+			void (async () => {
+				try {
+					const content = await this.app.vault.read(file);
+					const blocks = contentToBlocks(content);
+					if (blocks.length === 0) {
+						new Notice(t('errors.docEmpty'));
+						return;
+					}
+					const allPrompts: PromptTemplate[] = [...BUILTIN_PROMPTS, ...(this.settings.aiPrompts || [])];
+					if (allPrompts.length === 1) {
+						await executeDocAnalysis(this, blocks, allPrompts[0].content, { name: allPrompts[0].name, isBuiltIn: !!allPrompts[0].isBuiltIn });
+					} else {
+						new PromptSelectModal(this.app, allPrompts, (selected) => {
+							void executeDocAnalysis(this, blocks, selected.content, { name: selected.name, isBuiltIn: !!selected.isBuiltIn });
+						}).open();
+					}
+				} catch (err) {
+					console.error('[LME] pickDocumentForAIAnalysis failed:', err);
+					new Notice(t('errors.docReadFailed'));
 				}
-				const allPrompts: PromptTemplate[] = [...BUILTIN_PROMPTS, ...(this.settings.aiPrompts || [])];
-				if (allPrompts.length === 1) {
-					await executeDocAnalysis(this, blocks, allPrompts[0].content, { name: allPrompts[0].name, isBuiltIn: !!allPrompts[0].isBuiltIn });
-				} else {
-					new PromptSelectModal(this.app, allPrompts, async (selected) => {
-						await executeDocAnalysis(this, blocks, selected.content, { name: selected.name, isBuiltIn: !!selected.isBuiltIn });
-					}).open();
-				}
-			} catch (err) {
-				console.error('[LME] pickDocumentForAIAnalysis failed:', err);
-				new Notice(t('errors.docReadFailed'));
-			}
+			})();
 		}).open();
 	}
 
@@ -658,7 +659,7 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 			if (delay > 0 && delay < 24 * 3600 * 1000) {
 				this.reminderTimer = window.setTimeout(() => {
 					this.reminderTimer = null;
-					this.maybeShowFlashcardReminder();
+					void this.maybeShowFlashcardReminder();
 				}, delay);
 			}
 		}
@@ -732,13 +733,13 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 			await resolveAndRun((embedded as unknown).TFile);
 		} else {
 			new Notice(t('transcribe.noMediaFound'));
-			new MediaFileSelectModal(this.app, async (media) => {
-				await resolveAndRun(media);
+			new MediaFileSelectModal(this.app, (media) => {
+				void resolveAndRun(media);
 			}).open();
 		}
 	}
 
-	private async runTranscription(noteFile: unknown, mediaFile: unknown): Promise<void> {
+	private async runTranscription(noteFile: TFile, mediaFile: unknown): Promise<void> {
 		try {
 			if (!(mediaFile instanceof TFile)) {
 				new Notice(t('transcribe.noMediaFound'));
@@ -783,15 +784,15 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 
 			// Refresh shadowing view if open so blocks reload
 			const leaf = this.app.workspace.getLeavesOfType(SHADOWING_VIEW_TYPE)[0];
-			if (leaf) (leaf.view as unknown).parseActiveNoteTimestamps?.();
+			if (leaf) void (leaf.view as { parseActiveNoteTimestamps?: () => Promise<void> }).parseActiveNoteTimestamps?.();
 		} catch (e: unknown) {
 			console.error('[LME] Transcription failed:', e);
-			new Notice((e?.message || t('transcribe.failed')));
+			new Notice((e instanceof Error ? e.message : '') || t('transcribe.failed'));
 		}
 	}
 
 	/** Insert timestamped lines into the note's `## Subtitles` section (replace or append). */
-	private async insertSubtitlesIntoActiveNote(noteFile: unknown, formatted: string): Promise<void> {
+	private async insertSubtitlesIntoActiveNote(noteFile: TFile, formatted: string): Promise<void> {
 		const content = await this.app.vault.read(noteFile);
 		const lines = content.split('\n');
 		const header = '## Subtitles';
@@ -812,7 +813,7 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 	}
 
 	/** `.srt` path alongside the note, same basename. */
-	private srtPathFor(noteFile: unknown): string {
+	private srtPathFor(noteFile: TFile): string {
 		const path: string = noteFile.path;
 		const slash = path.lastIndexOf('/');
 		const dir = slash >= 0 ? path.slice(0, slash) : '';
@@ -841,38 +842,40 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 			return;
 		}
 
-		new SrtFileSelectModal(this.app, async (srtFile) => {
-			try {
-				const content = await this.app.vault.read(srtFile);
-				const segs = parseSrt(content);
-				if (segs.length === 0) {
-					new Notice(t('srtToNote.noSegments'));
-					return;
-				}
+		new SrtFileSelectModal(this.app, (srtFile) => {
+			void (async () => {
+				try {
+					const content = await this.app.vault.read(srtFile);
+					const segs = parseSrt(content);
+					if (segs.length === 0) {
+						new Notice(t('srtToNote.noSegments'));
+						return;
+					}
 
-				const stem = srtFile.basename || 'subtitles';
-				const destPath = await this.resolveSubtitleNotePath(srtFile.path, stem);
-				if (!destPath) {
-					new Notice(t('srtToNote.emptyPath'));
-					return;
-				}
+					const stem = srtFile.basename || 'subtitles';
+					const destPath = await this.resolveSubtitleNotePath(srtFile.path, stem);
+					if (!destPath) {
+						new Notice(t('srtToNote.emptyPath'));
+						return;
+					}
 
-				const lines = segmentsToTimestampLines(segs);
-				const fullBody = buildSubtitleNoteBody(
-					t('srtToNote.title', { name: stem }),
-					t('srtToNote.hint', { count: segs.length }),
-					segs
-				);
-				await this.writeSubtitleNote(destPath, lines, fullBody);
+					const lines = segmentsToTimestampLines(segs);
+					const fullBody = buildSubtitleNoteBody(
+						t('srtToNote.title', { name: stem }),
+						t('srtToNote.hint', { count: segs.length }),
+						segs
+					);
+					await this.writeSubtitleNote(destPath, lines, fullBody);
 
-				new Notice(t('srtToNote.done', { count: segs.length, path: destPath }));
-				if (this.settings.autoOpenSubtitleNote !== false) {
-					await this.openNoteInTab(destPath);
+					new Notice(t('srtToNote.done', { count: segs.length, path: destPath }));
+					if (this.settings.autoOpenSubtitleNote !== false) {
+						await this.openNoteInTab(destPath);
+					}
+				} catch (e: unknown) {
+					console.error('[LME] SRT → subtitle note failed:', e);
+					new Notice(e?.message ? `${t('srtToNote.writeFailed')} (${e.message})` : t('srtToNote.writeFailed'));
 				}
-			} catch (e: unknown) {
-				console.error('[LME] SRT → subtitle note failed:', e);
-				new Notice(e?.message ? `${t('srtToNote.writeFailed')} (${e.message})` : t('srtToNote.writeFailed'));
-			}
+			})();
 		}).open();
 	}
 
@@ -948,60 +951,62 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 			return;
 		}
 
-		new SrtBatchSelectModal(this.app, srtFiles, async (selected) => {
-			if (selected.length === 0) {
-				new Notice(t('srtToNote.noSelection'));
-				return;
-			}
-
-			const folder = await this.resolveSubtitleNoteFolder();
-			if (!folder) {
-				new Notice(t('srtToNote.emptyPath'));
-				return;
-			}
-
-			const notice = new Notice(t('srtToNote.batchConfirm') + '…', 0);
-			let ok = 0;
-			let skipped = 0;
-			let failed = 0;
-			let lastPath = '';
-
-			for (const srtFile of selected) {
-				try {
-					const content = await this.app.vault.read(srtFile);
-					const segs = parseSrt(content);
-					if (segs.length === 0) {
-						skipped++;
-						continue;
-					}
-					const stem = srtFile.basename || 'subtitles';
-					const notePath = this.normalizeSubtitlePath(`${folder}/${stem}.md`);
-					const lines = segmentsToTimestampLines(segs);
-					const fullBody = buildSubtitleNoteBody(
-						t('srtToNote.title', { name: stem }),
-						t('srtToNote.hint', { count: segs.length }),
-						segs
-					);
-					await this.writeSubtitleNote(notePath, lines, fullBody);
-					lastPath = notePath;
-					ok++;
-				} catch (e: unknown) {
-					console.error('[LME] batch SRT → subtitle note failed:', srtFile.path, e);
-					failed++;
+		new SrtBatchSelectModal(this.app, srtFiles, (selected) => {
+			void (async () => {
+				if (selected.length === 0) {
+					new Notice(t('srtToNote.noSelection'));
+					return;
 				}
-			}
 
-			notice.hide();
-			if (ok === 0) {
-				new Notice(t('srtToNote.batchNone'));
-				return;
-			}
-			new Notice(t('srtToNote.batchDone', { ok, skipped, failed, folder }));
+				const folder = await this.resolveSubtitleNoteFolder();
+				if (!folder) {
+					new Notice(t('srtToNote.emptyPath'));
+					return;
+				}
 
-			// Auto-open only when a single note is produced (avoids tab flood).
-			if (this.settings.autoOpenSubtitleNote !== false && ok === 1) {
-				await this.openNoteInTab(lastPath);
-			}
+				const notice = new Notice(t('srtToNote.batchConfirm') + '…', 0);
+				let ok = 0;
+				let skipped = 0;
+				let failed = 0;
+				let lastPath = '';
+
+				for (const srtFile of selected) {
+					try {
+						const content = await this.app.vault.read(srtFile);
+						const segs = parseSrt(content);
+						if (segs.length === 0) {
+							skipped++;
+							continue;
+						}
+						const stem = srtFile.basename || 'subtitles';
+						const notePath = this.normalizeSubtitlePath(`${folder}/${stem}.md`);
+						const lines = segmentsToTimestampLines(segs);
+						const fullBody = buildSubtitleNoteBody(
+							t('srtToNote.title', { name: stem }),
+							t('srtToNote.hint', { count: segs.length }),
+							segs
+						);
+						await this.writeSubtitleNote(notePath, lines, fullBody);
+						lastPath = notePath;
+						ok++;
+					} catch (e: unknown) {
+						console.error('[LME] batch SRT → subtitle note failed:', srtFile.path, e);
+						failed++;
+					}
+				}
+
+				notice.hide();
+				if (ok === 0) {
+					new Notice(t('srtToNote.batchNone'));
+					return;
+				}
+				new Notice(t('srtToNote.batchDone', { ok, skipped, failed, folder }));
+
+				// Auto-open only when a single note is produced (avoids tab flood).
+				if (this.settings.autoOpenSubtitleNote !== false && ok === 1) {
+					await this.openNoteInTab(lastPath);
+				}
+			})();
 		}).open();
 	}
 
@@ -1054,9 +1059,9 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 		this.app.workspace.iterateAllLeaves((leaf) => {
 			const viewType = leaf.view.getViewType();
 			if (viewType === DICT_VIEW_TYPE) {
-				(leaf.view as unknown).render?.();
+				void (leaf.view as DictView).render?.();
 			} else if (viewType === FLASHCARD_VIEW_TYPE) {
-				(leaf.view as unknown).render?.();
+				void (leaf.view as FlashcardView).render?.();
 			}
 		});
 	}
@@ -1135,7 +1140,7 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 					// 社区免费版:仅英语可切换,其他语种弹付费引导
 					if (isActive) return;
 					if (lang.id === 'english') {
-						this.switchLanguage('english');
+						void this.switchLanguage('english');
 					} else {
 						new UpgradeModal(this.app, lang.name).open();
 					}
@@ -1149,7 +1154,7 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 		});
 	}
 
-	async onunload() {
+	onunload() {
 		// Clear pending flashcard reminder timer
 		if (this.reminderTimer !== null) {
 			window.clearTimeout(this.reminderTimer);
@@ -1177,7 +1182,7 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 			let selection = '';
 			try {
 				selection = doc.getSelection()?.toString().trim() || '';
-			} catch (err) {
+			} catch {
 				return;
 			}
 
@@ -1209,10 +1214,10 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 
 				// Trigger lookup directly
 				const context = await this.captureContext(capturedState.selection, target, leaf);
-				this.triggerLookup(capturedState.selection, context.lineText, context.sourcePath, context.lineIndex);
-			} catch (error) {
+				void this.triggerLookup(capturedState.selection, context.lineText, context.sourcePath, context.lineIndex);
+			} catch (error: unknown) {
 				console.error('[LME] Double-click lookup failed:', error);
-				new Notice(t('dict.lookupFailed', { error: error.message }));
+				new Notice(t('dict.lookupFailed', { error: error instanceof Error ? error.message : String(error) }));
 			} finally {
 				window.setTimeout(() => {
 					isProcessing = false;
@@ -1235,7 +1240,7 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 			let selection = '';
 			try {
 				selection = doc.getSelection()?.toString().trim() || '';
-			} catch (err) {
+			} catch {
 				return;
 			}
 
@@ -1266,10 +1271,10 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 
 				// Use captured state instead of accessing potentially stale objects
 				const context = await this.captureContext(capturedState.selection, target, leaf);
-				this.triggerLookup(capturedState.selection, context.lineText, context.sourcePath, context.lineIndex);
-			} catch (error) {
+				void this.triggerLookup(capturedState.selection, context.lineText, context.sourcePath, context.lineIndex);
+			} catch (error: unknown) {
 				console.error('[LME] Dictionary lookup failed:', error);
-				new Notice(t('dict.lookupFailed', { error: error.message }));
+				new Notice(t('dict.lookupFailed', { error: error instanceof Error ? error.message : String(error) }));
 			} finally {
 				// Reset flag after a short delay to prevent rapid-fire triggers
 				window.setTimeout(() => {
@@ -1286,12 +1291,12 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 		};
 
 		const setupSameOriginFrames = (doc: Document) => {
-			const frames = Array.from(doc.querySelectorAll('iframe, webview')) as HTMLElement[];
+			const frames = Array.from(doc.querySelectorAll('iframe, webview'));
 			for (const frame of frames) {
 				try {
 					const frameDoc = (frame as HTMLIFrameElement).contentDocument || (frame as HTMLIFrameElement).contentWindow?.document;
 					if (frameDoc) setupDocument(frameDoc);
-				} catch (err) {
+				} catch {
 					// Cross-origin HTML/webviews cannot expose their selection to plugins.
 				}
 			}
@@ -1322,33 +1327,33 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 	private initMobileSupport() {
 		const hideMenu = () => {
 			if (!this.lookupMenuEl) return;
-			this.lookupMenuEl.style.display = 'none';
+			this.lookupMenuEl.setCssStyles({ display: 'none' });
 		};
 
 		const applyFixedMenuLayout = (doc: Document) => {
 			if (!this.lookupMenuEl || this.lookupMenuEl.ownerDocument !== doc) return;
-			this.lookupMenuEl.style.position = 'fixed';
-			this.lookupMenuEl.style.zIndex = '2147483647';
-			this.lookupMenuEl.style.left = '0';
-			this.lookupMenuEl.style.right = '0';
-			this.lookupMenuEl.style.top = '20vh';
-			this.lookupMenuEl.style.bottom = 'auto';
-			this.lookupMenuEl.style.transform = 'none';
-			this.lookupMenuEl.style.justifyContent = 'center';
-			this.lookupMenuEl.style.pointerEvents = 'auto';
+			this.lookupMenuEl.setCssStyles({
+				position: 'fixed',
+				zIndex: '2147483647',
+				left: '0',
+				right: '0',
+				top: '20vh',
+				bottom: 'auto',
+				transform: 'none',
+				justifyContent: 'center',
+				pointerEvents: 'auto',
+			});
 		};
 
 		const applyAnchoredMenuLayout = (doc: Document, x: number, y: number, placement: 'above' | 'below') => {
 			if (!this.lookupMenuEl || this.lookupMenuEl.ownerDocument !== doc) return;
-			this.lookupMenuEl.style.position = 'fixed';
-			this.lookupMenuEl.style.zIndex = '2147483647';
+			this.lookupMenuEl.setCssStyles({ position: 'fixed', zIndex: '2147483647' });
 			this.lookupMenuEl.style.left = `${x}px`;
-			this.lookupMenuEl.style.right = 'auto';
+			this.lookupMenuEl.setCssStyles({ right: 'auto' });
 			this.lookupMenuEl.style.top = `${y}px`;
-			this.lookupMenuEl.style.bottom = 'auto';
+			this.lookupMenuEl.setCssStyles({ bottom: 'auto' });
 			this.lookupMenuEl.style.transform = placement === 'above' ? 'translate(-50%, -100%)' : 'translate(-50%, 12px)';
-			this.lookupMenuEl.style.justifyContent = 'center';
-			this.lookupMenuEl.style.pointerEvents = 'auto';
+			this.lookupMenuEl.setCssStyles({ justifyContent: 'center', pointerEvents: 'auto' });
 		};
 
 		const ensureMenu = (doc: Document) => {
@@ -1373,15 +1378,15 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 					if (!lookupText) return;
 					try {
 						const context = await this.captureContext(lookupText, document.activeElement as HTMLElement);
-						this.triggerLookup(lookupText, context.lineText, context.sourcePath, context.lineIndex);
+						void this.triggerLookup(lookupText, context.lineText, context.sourcePath, context.lineIndex);
 					} catch (err) {
 						console.error('[LME] Mobile lookup failed:', err);
 					}
 				};
 
-				btn.addEventListener('pointerdown', handle);
-				btn.addEventListener('touchstart', handle);
-				btn.addEventListener('mousedown', handle);
+				btn.addEventListener('pointerdown', (e) => { void handle(e); });
+				btn.addEventListener('touchstart', (e) => { void handle(e); });
+				btn.addEventListener('mousedown', (e) => { void handle(e); });
 			}
 
 			applyFixedMenuLayout(doc);
@@ -1430,7 +1435,7 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 
 				const menu = ensureMenu(doc);
 				menu.dataset.text = selection;
-				menu.style.display = 'flex';
+				menu.setCssStyles({ display: 'flex' });
 
 				const win = doc.defaultView || window;
 				const padding = 12;
@@ -1480,7 +1485,7 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 					if (anchored) return;
 					updateMenuPosition(doc);
 				});
-			} catch (err) { /* selection API unavailable in this frame */ }
+			} catch { /* selection API unavailable in this frame */ }
 		};
 
 		const setupDoc = (doc: Document) => {
@@ -1515,7 +1520,7 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 		};
 
 		setupDoc(document);
-		this.registerEvent(this.app.workspace.on('window-open', (win) => setupDoc((win as unknown).document)));
+		this.registerEvent(this.app.workspace.on('window-open', (win) => setupDoc((win as WorkspaceWindow & { document?: Document }).document)));
 
 		this.register(() => {
 			this.lookupMenuEl?.remove();
@@ -1523,7 +1528,7 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 		});
 	}
 
-	private async captureContext(selection: string, target?: HTMLElement, leaf?: WorkspaceLeaf): Promise<{ lineText: string, sourcePath: string, lineIndex: number }> {
+	private async captureContext(selection: string, target?: HTMLElement, leaf?: WorkspaceLeaf | null): Promise<{ lineText: string, sourcePath: string, lineIndex: number }> {
 		let lineText = '';
 		let sourcePath = '';
 		let lineIndex = 0;
@@ -1537,22 +1542,22 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 					if (l.view.containerEl.contains(target)) activeLeaf = l;
 				});
 			}
-			if (!activeLeaf) activeLeaf = this.app.workspace.activeLeaf;
+			if (!activeLeaf) activeLeaf = this.app.workspace.getMostRecentLeaf();
 
 			const view = activeLeaf?.view;
 			const isMarkdown = view?.getViewType() === 'markdown';
-			const mode = (view as unknown)?.getMode?.();
+			const mode = (view as MarkdownView | undefined)?.getMode?.() ?? '';
 			console.debug('[LME] captureContext view: ' + (view?.getViewType() || '') + ' | mode: ' + mode);
 
 			// 2. Resolve target file path
 			const activeFile = this.app.workspace.getActiveFile();
-			const file = (view as unknown)?.file || activeFile;
+			const file = (view as MarkdownView | undefined)?.file || activeFile;
 			sourcePath = file ? file.path : '';
 
 			// 3. Mode-specific extraction
 			if (isMarkdown && mode === 'source') {
 				// SOURCE MODE (Source / Live Preview)
-				const editor = (view as unknown).editor;
+				const editor = (view as MarkdownView | undefined)?.editor;
 				const cursor = editor.getCursor?.('from') || { line: 0, ch: 0 };
 				const currentLine = cursor.line;
 
@@ -1640,7 +1645,7 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 		await this.activateView(DICT_VIEW_TYPE, 'right');
 		const leaf = this.app.workspace.getLeavesOfType(DICT_VIEW_TYPE)[0];
 		if (leaf && leaf.view instanceof DictView) {
-			leaf.view.lookup(word, lineText, sourcePath, lineIndex);
+			void leaf.view.lookup(word, lineText, sourcePath, lineIndex);
 		}
 	}
 
@@ -1650,14 +1655,14 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 	/** 播种版本:v2 = 8 篇 TED-Ed 跟读笔记(带封面/链接),并清理 v1 无封面示例。 */
 	private static readonly WORKSHOP_SAMPLES_SEED_VERSION = 2;
 	private static readonly BUNDLED_WORKSHOP_SAMPLES: { name: string; content: string; since: number }[] = [
-		{ name: 'TED-Ed — 4 ways to tell a great story.md', content: tedGreatStory, since: 2 },
-		{ name: 'TED-Ed — What are tariffs, and how do they work.md', content: tedTariffs, since: 2 },
-		{ name: 'TED-Ed — Ever walk into a room and forget what you were doing.md', content: tedDoorway, since: 2 },
-		{ name: 'TED-Ed — Why do some people have a better sense of direction.md', content: tedDirection, since: 2 },
-		{ name: 'TED-Ed — How to explain something complicated.md', content: tedExplain, since: 2 },
-		{ name: 'TED-Ed — Everything you need to know about bird flu.md', content: tedBirdFlu, since: 2 },
-		{ name: 'TED-Ed — 4 ways to fix your attention span.md', content: tedAttention, since: 2 },
-		{ name: 'TED-Ed — Why magnets stumped scientists for so long.md', content: tedMagnets, since: 2 },
+		{ name: 'TED-Ed — 4 ways to tell a great story.md', content: tedGreatStory as string, since: 2 },
+		{ name: 'TED-Ed — What are tariffs, and how do they work.md', content: tedTariffs as string, since: 2 },
+		{ name: 'TED-Ed — Ever walk into a room and forget what you were doing.md', content: tedDoorway as string, since: 2 },
+		{ name: 'TED-Ed — Why do some people have a better sense of direction.md', content: tedDirection as string, since: 2 },
+		{ name: 'TED-Ed — How to explain something complicated.md', content: tedExplain as string, since: 2 },
+		{ name: 'TED-Ed — Everything you need to know about bird flu.md', content: tedBirdFlu as string, since: 2 },
+		{ name: 'TED-Ed — 4 ways to fix your attention span.md', content: tedAttention as string, since: 2 },
+		{ name: 'TED-Ed — Why magnets stumped scientists for so long.md', content: tedMagnets as string, since: 2 },
 	];
 
 	/** 目录页点卡片:打开笔记 + 启动跟读工坊(autoDetectVideo 自动读取该笔记)。 */
@@ -1690,7 +1695,7 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 		const seedVersion = this.settings.workshopCatalogSeedVersion
 			|| (this.settings.workshopCatalogSeeded ? 1 : 0);
 		if (seedVersion >= LanguageMadeEasyPlugin.WORKSHOP_SAMPLES_SEED_VERSION) return;
-		const adapter = this.app.vault.adapter as unknown;
+		const adapter = this.app.vault.adapter;
 		try {
 			if (!(await adapter.exists(folder))) {
 				// 全新用户:建文件夹写全部;老用户已删文件夹:只推进版本,不重建。
@@ -1809,7 +1814,7 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 	/** 目录页/外部刷新用:重新渲染已打开的目录视图(如设置改了文件夹后)。 */
 	public async refreshWorkshopCatalog(): Promise<void> {
 		for (const leaf of this.app.workspace.getLeavesOfType(WORKSHOP_CATALOG_VIEW_TYPE)) {
-			const view = leaf.view as unknown;
+			const view = leaf.view as WorkshopCatalogView;
 			if (typeof view.refresh === 'function') {
 				try { await view.refresh(); } catch (e) { console.warn('[LME] catalog refresh failed:', e); }
 			}
@@ -1819,7 +1824,7 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 	/** 新报告生成后刷新已打开的 AI 报告管理目录页。 */
 	public async refreshAiReportCatalog(): Promise<void> {
 		for (const leaf of this.app.workspace.getLeavesOfType(AI_REPORT_CATALOG_VIEW_TYPE)) {
-			const view = leaf.view as unknown;
+			const view = leaf.view as AIReportCatalogView;
 			if (typeof view.refresh === 'function') {
 				try { await view.refresh(); } catch (e) { console.warn('[LME] ai report catalog refresh failed:', e); }
 			}
@@ -1849,12 +1854,12 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 			this.app.workspace.leftSplit.expand();
 		}
 
-		workspace.revealLeaf(leaf);
+		void workspace.revealLeaf(leaf);
 		console.debug('[LME] Leaf revealed');
 	}
 
 	async loadSettings() {
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData()) as LMESettings;
 		if (!Array.isArray(this.settings.youtubeSubscriptions)) this.settings.youtubeSubscriptions = [];
 		if (!Array.isArray(this.settings.youtubeFeedItems)) this.settings.youtubeFeedItems = [];
 		if (!Array.isArray(this.settings.youtubeSubscriptionCategories)) this.settings.youtubeSubscriptionCategories = [];
@@ -1906,13 +1911,13 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 	 * users add them on-demand from the settings UI. Idempotent (skips once populated).
 	 */
 	private migrateAiProviders(): void {
-		const s = this.settings as unknown;
+		const s = this.settings;
 		if (Array.isArray(s.aiProviders) && s.aiProviders.length > 0) return;
 
-		const providers: unknown[] = [];
+		const providers: AIProviderConfig[] = [];
 
 		// 1. legacy custom providers → openai-compatible records
-		(s.customProviders || []).forEach((cp: unknown) => {
+		(s.customProviders || []).forEach((cp) => {
 			if (!cp || providers.some(p => p.id === cp.id)) return;
 			providers.push({
 				id: cp.id, name: cp.name, baseUrl: cp.baseUrl,
@@ -1968,7 +1973,7 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 			const current = this.settings.aiPrompts;
 			if (Array.isArray(current) && current.length > 0) return;
 			if (!(await this.app.vault.adapter.exists(this.aiPromptsBackupPath))) return;
-			const backup = JSON.parse(await this.app.vault.adapter.read(this.aiPromptsBackupPath));
+			const backup = JSON.parse(await this.app.vault.adapter.read(this.aiPromptsBackupPath)) as PromptTemplate[];
 			if (!Array.isArray(backup) || backup.length === 0) return;
 			this.settings.aiPrompts = backup;
 			await this.saveData(this.settings);
@@ -1979,7 +1984,8 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 	}
 
 	private async migrateToLocalDictionaries(): Promise<void> {
-		if (this.settings.localDictionaries && Object.keys(this.settings.localDictionaries).length > 0) {
+		const s = this.settings as LMESettings & { localDictionaries?: Record<string, MdxDictionary[]> };
+		if (s.localDictionaries && Object.keys(s.localDictionaries).length > 0) {
 			return;
 		}
 
@@ -2020,7 +2026,7 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 			}
 		}
 
-		this.settings.localDictionaries = migrated;
+		s.localDictionaries = migrated;
 		await this.saveSettings();
 	}
 
@@ -2112,7 +2118,7 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 		if (m) {
 			const sec = parseInt(m[1]) * 60 + parseInt(m[2]);
 			const leaf = this.app.workspace.getLeavesOfType(SHADOWING_VIEW_TYPE)[0];
-			if (leaf) (leaf.view as unknown).seekTo(sec);
+			if (leaf) void (leaf.view as ShadowingView).seekTo(sec);
 		}
 	}
 }
@@ -2160,7 +2166,7 @@ async function executeDocAnalysis(plugin: LanguageMadeEasyPlugin, blocks: { star
 		await plugin.activateView(AI_ANALYSIS_VIEW_TYPE, 'right');
 		const leaves = plugin.app.workspace.getLeavesOfType(AI_ANALYSIS_VIEW_TYPE);
 		if (leaves.length > 0) {
-			const aiView = leaves[0].view as unknown;
+			const aiView = leaves[0].view as AIAnalysisView;
 			if (aiView.setResult) aiView.setResult(markdown, undefined, promptMeta);
 		}
 		notice.hide();

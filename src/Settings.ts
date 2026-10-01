@@ -4,10 +4,7 @@
 
 import { App, PluginSettingTab, Setting, Platform, Notice, FuzzySuggestModal, Modal, setIcon } from 'obsidian';
 import type LanguageMadeEasyPlugin from './main-unified-full';
-import { DEFAULT_SETTINGS, type LMESettings, BUILTIN_PROMPTS, type PromptTemplate, type MdxDictionary, type AIProviderConfig, type LanguageId, BUILTIN_PROVIDERS } from './models';
-import { DICT_VIEW_TYPE } from './views/dict-view';
-import { FLASHCARD_VIEW_TYPE } from './views/flashcard-view';
-import { SHADOWING_VIEW_TYPE } from './views/shadowing-view';
+import { DEFAULT_SETTINGS, type LMESettings, BUILTIN_PROMPTS, type PromptTemplate, type AIProviderConfig, type LanguageId, BUILTIN_PROVIDERS } from './models';
 import { FlashcardManagerModal } from './ui/flashcard-manager-modal';
 import { UpgradeModal } from './ui/upgrade-modal';
 import { db } from './core/Database';
@@ -18,6 +15,45 @@ import { FREE_MDX_DICT_LIMIT } from './config/free-limits';
 
 export { DEFAULT_SETTINGS };
 export type { LMESettings };
+
+// models.ts 未导出 MdxDictionary,也未在 LMESettings 上声明 localDictionaries
+// (两者在 main-unified-full.ts / UnifiedDictionaryService.ts 中同样被裸引用)。
+// 以下按运行时真实形状补齐类型,仅供本文件做类型标注,不改变任何运行时行为。
+interface MdxDictionary {
+	id: string;
+	name: string;
+	mdxPath: string;
+	mddPath: string;
+	cssPath: string;
+	/** 移动端导入条目的来源标记(桌面路径条目无此字段) */
+	source?: string;
+}
+
+/** 运行时的 settings 还带 localDictionaries(3.x 迁移写入 data.json 的字段) */
+type SettingsWithLocalDicts = LMESettings & {
+	localDictionaries: Record<string, MdxDictionary[]>;
+};
+
+// Electron 渲染进程里 window.require 可用的最小形状(pickFileViaInput / autoDiscoverRelated)
+interface NodeRequireHost {
+	require: (moduleName: string) => unknown;
+}
+
+interface ElectronWebUtilsBridge {
+	webUtils?: {
+		getPathForFile?: (file: File) => string;
+	};
+}
+
+interface NodeFsBridge {
+	existsSync: (path: string) => boolean;
+}
+
+/** 旧版 Electron 的 File 对象直接带绝对路径(Electron 28+ 已移除) */
+interface LegacyPathFile extends File {
+	path?: string;
+	filepath?: string;
+}
 
 export class LMESettingTab extends PluginSettingTab {
 	plugin: LanguageMadeEasyPlugin;
@@ -152,7 +188,7 @@ export class LMESettingTab extends PluginSettingTab {
 			.setName(t(labelKey))
 			.addDropdown(drop => {
 				drop.addOption('', t('settings.aiFeatureDefault'));
-				providers.forEach(p => drop.addOption(p.id, p.name));
+				providers.forEach(p => { void drop.addOption(p.id, p.name); });
 				const cur = (this.plugin.settings[field] as string) || '';
 				drop.setValue(providers.some(p => p.id === cur) ? cur : '');
 				drop.onChange(async (v) => {
@@ -225,7 +261,7 @@ export class LMESettingTab extends PluginSettingTab {
 					}
 				});
 				t.inputEl.type = 'number';
-				t.inputEl.style.width = '80px';
+				t.inputEl.setCssStyles({ width: '80px' });
 			});
 
 		new Setting(containerEl)
@@ -266,7 +302,7 @@ export class LMESettingTab extends PluginSettingTab {
 					}
 				});
 				t.inputEl.type = 'number';
-				t.inputEl.style.width = '80px';
+				t.inputEl.setCssStyles({ width: '80px' });
 			});
 
 		new Setting(containerEl)
@@ -348,7 +384,7 @@ export class LMESettingTab extends PluginSettingTab {
 							this.plugin.settings.videoNoteFolder = v.trim();
 							await this.plugin.saveSettings();
 						});
-					text.inputEl.style.width = '100%';
+					text.inputEl.setCssStyles({ width: '100%' });
 				});
 
 			new Setting(containerEl)
@@ -363,7 +399,7 @@ export class LMESettingTab extends PluginSettingTab {
 						.onChange(async (v) => {
 							await this.plugin.setWorkshopFolder(v);
 						});
-					text.inputEl.style.width = '100%';
+					text.inputEl.setCssStyles({ width: '100%' });
 				});
 
 			new Setting(containerEl).setName("").setHeading();
@@ -409,32 +445,47 @@ export class LMESettingTab extends PluginSettingTab {
 					const prompts = [...BUILTIN_PROMPTS.filter(b => !customIds.has(b.id)), ...(this.plugin.settings.aiPrompts || [])];
 				prompts.forEach((p) => {
 					const item = promptListEl.createDiv('lme-prompt-item');
-					item.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:8px 12px;margin:4px 0;border:1px solid var(--background-modifier-border);border-radius:6px;';
+					item.setCssStyles({
+						display: 'flex',
+						alignItems: 'center',
+						justifyContent: 'space-between',
+						padding: '8px 12px',
+						margin: '4px 0',
+						border: '1px solid var(--background-modifier-border)',
+						borderRadius: '6px',
+					});
 
 					const info = item.createDiv();
-					info.style.cssText = 'flex:1;';
+					info.setCssStyles({ flex: '1' });
 					info.createSpan({ text: p.isBuiltIn ? t('prompts.' + p.name) : p.name });
 					if (p.isBuiltIn) {
 						const badge = info.createSpan({ text: ' ' + t('settings.builtin') });
-						badge.style.cssText = 'margin-left:8px;font-size:0.75em;background:var(--interactive-accent);color:var(--text-on-accent);padding:1px 6px;border-radius:3px;';
+						badge.setCssStyles({
+							marginLeft: '8px',
+							fontSize: '0.75em',
+							background: 'var(--interactive-accent)',
+							color: 'var(--text-on-accent)',
+							padding: '1px 6px',
+							borderRadius: '3px',
+						});
 					}
 
 					const actions = item.createDiv();
-					actions.style.cssText = 'display:flex;gap:6px;';
+					actions.setCssStyles({ display: 'flex', gap: '6px' });
 
 					const viewBtn = actions.createEl('button', { text: t('common.view') });
-					viewBtn.style.cssText = 'font-size:0.8em;';
+					viewBtn.setCssStyles({ fontSize: '0.8em' });
 					viewBtn.onclick = () => new PromptViewModal(this.app, p).open();
 
 					const editBtn = actions.createEl('button', { text: t('common.edit') });
-						editBtn.style.cssText = 'font-size:0.8em;';
+						editBtn.setCssStyles({ fontSize: '0.8em' });
 						// 社区免费版:编辑提示词为完整版功能,按钮禁用,不再逐次弹付费引导
 						editBtn.disabled = true;
 						editBtn.setAttr('title', t('settings.fullEditionNote'));
 
 						if (!p.isBuiltIn) {
 							const delBtn = actions.createEl('button', { text: t('common.delete') });
-							delBtn.style.cssText = 'font-size:0.8em;color:var(--text-error);';
+							delBtn.setCssStyles({ fontSize: '0.8em', color: 'var(--text-error)' });
 							delBtn.onclick = async () => {
 								this.plugin.settings.aiPrompts = (this.plugin.settings.aiPrompts || []).filter(x => x.id !== p.id);
 								await this.plugin.saveSettings();
@@ -502,7 +553,7 @@ export class LMESettingTab extends PluginSettingTab {
 						this.plugin.settings.transcriptionBaseUrl = v.trim();
 						await this.plugin.saveSettings();
 					});
-				t.inputEl.style.width = '100%';
+				t.inputEl.setCssStyles({ width: '100%' });
 			});
 
 		new Setting(containerEl)
@@ -528,7 +579,7 @@ export class LMESettingTab extends PluginSettingTab {
 						this.plugin.settings.transcriptionModel = v.trim();
 						await this.plugin.saveSettings();
 					});
-				t.inputEl.style.width = '100%';
+				t.inputEl.setCssStyles({ width: '100%' });
 			});
 
 		new Setting(containerEl)
@@ -541,7 +592,7 @@ export class LMESettingTab extends PluginSettingTab {
 						this.plugin.settings.subtitleNoteFolder = v.trim();
 						await this.plugin.saveSettings();
 					});
-				text.inputEl.style.width = '100%';
+				text.inputEl.setCssStyles({ width: '100%' });
 			});
 
 		new Setting(containerEl)
@@ -568,16 +619,6 @@ export class LMESettingTab extends PluginSettingTab {
 			japanese: '日本語',
 				chinese: '中文'
 		};
-		const langFlags: Record<LanguageId, string> = {
-			english: '🇬🇧',
-			german: '🇩🇪',
-			french: '🇫🇷',
-			spanish: '🇪🇸',
-			korean: '🇰🇷',
-			russian: '🇷🇺',
-			japanese: '🇯🇵',
-				chinese: '🇨🇳'
-		};
 		const langNamesEn: Record<LanguageId, string> = {
 			english: 'English',
 			german: 'German',
@@ -589,7 +630,6 @@ export class LMESettingTab extends PluginSettingTab {
 			chinese: 'Chinese'
 		};
 		const langName = langNames[language];
-		const langFlag = langFlags[language];
 		const langNameEn = langNamesEn[language];
 
 		// Title
@@ -679,10 +719,10 @@ export class LMESettingTab extends PluginSettingTab {
 
 			const renderDictList = () => {
 				dictListEl.empty();
-				if (!this.plugin.settings.localDictionaries) {
-					this.plugin.settings.localDictionaries = {};
+				if (!(this.plugin.settings as SettingsWithLocalDicts).localDictionaries) {
+					(this.plugin.settings as SettingsWithLocalDicts).localDictionaries = {};
 				}
-				const dicts = this.plugin.settings.localDictionaries[language] || [];
+				const dicts = (this.plugin.settings as SettingsWithLocalDicts).localDictionaries[language] || [];
 
 				if (dicts.length === 0) {
 					dictListEl.createEl('p', {
@@ -695,13 +735,13 @@ export class LMESettingTab extends PluginSettingTab {
 
 				const reorderDictionary = async (sourceId: string, targetId: string) => {
 					if (sourceId === targetId) return;
-					const current = this.plugin.settings.localDictionaries[language] || [];
+					const current = (this.plugin.settings as SettingsWithLocalDicts).localDictionaries[language] || [];
 					const from = current.findIndex(d => d.id === sourceId);
 					const to = current.findIndex(d => d.id === targetId);
 					if (from === -1 || to === -1) return;
 					const [moved] = current.splice(from, 1);
 					current.splice(to, 0, moved);
-					this.plugin.settings.localDictionaries[language] = current;
+					(this.plugin.settings as SettingsWithLocalDicts).localDictionaries[language] = current;
 					await this.plugin.saveSettings();
 					renderDictList();
 				};
@@ -735,8 +775,8 @@ export class LMESettingTab extends PluginSettingTab {
 					const delBtn = actions.createEl('button', { text: t('common.delete') });
 					delBtn.addClass('lme-mdx-dict-delete');
 					delBtn.onclick = async () => {
-						const current = this.plugin.settings.localDictionaries[language] || [];
-						this.plugin.settings.localDictionaries[language] = current.filter(d => d.id !== dict.id);
+						const current = (this.plugin.settings as SettingsWithLocalDicts).localDictionaries[language] || [];
+						(this.plugin.settings as SettingsWithLocalDicts).localDictionaries[language] = current.filter(d => d.id !== dict.id);
 						await this.plugin.saveSettings();
 						renderDictList();
 					};
@@ -761,11 +801,11 @@ export class LMESettingTab extends PluginSettingTab {
 					item.addEventListener('dragleave', () => {
 						item.removeClass('is-drop-target');
 					});
-					item.addEventListener('drop', async (event) => {
+					item.addEventListener('drop', (event) => {
 						event.preventDefault();
 						item.removeClass('is-drop-target');
 						const sourceId = event.dataTransfer?.getData('text/plain') || draggingId;
-						if (sourceId) await reorderDictionary(sourceId, dict.id);
+						if (sourceId) void reorderDictionary(sourceId, dict.id);
 					});
 				});
 			};
@@ -774,7 +814,7 @@ export class LMESettingTab extends PluginSettingTab {
 
 			// 社区免费版:本地词典上限(路径式+移动端导入合计),触顶加锁并弹付费引导
 			{
-				const dictCount = (this.plugin.settings.localDictionaries?.[language] || []).length;
+				const dictCount = ((this.plugin.settings as SettingsWithLocalDicts).localDictionaries?.[language] || []).length;
 				const atLimit = dictCount >= FREE_MDX_DICT_LIMIT;
 				const addSetting = new Setting(containerEl)
 					.setName(t('settings.addLocalDict'));
@@ -823,7 +863,7 @@ export class LMESettingTab extends PluginSettingTab {
 						await this.plugin.saveSettings();
 					}
 				});
-				text.inputEl.style.width = '110px';
+				text.inputEl.setCssStyles({ width: '110px' });
 			});
 	}
 
@@ -882,7 +922,7 @@ export class LMESettingTab extends PluginSettingTab {
 				this.input.value = item;
 				this.input.dispatchEvent(new Event('input'));
 				this.parent.plugin.settings.videoDownloadFolder = item;
-				this.parent.plugin.saveSettings();
+				void this.parent.plugin.saveSettings();
 			}
 		}(this, inputEl, folders);
 		modal.open();
@@ -1010,12 +1050,12 @@ export class LMESettingTab extends PluginSettingTab {
 
 class CustomProviderModal extends Modal {
 	private data: AIProviderConfig;
-	private onSubmit: (data: AIProviderConfig) => void;
+	private onSubmit: (data: AIProviderConfig) => void | Promise<void>;
 
 	constructor(
 		app: App,
 		existing: AIProviderConfig | null,
-		onSubmit: (data: AIProviderConfig) => void
+		onSubmit: (data: AIProviderConfig) => void | Promise<void>
 	) {
 		super(app);
 		this.data = existing ? { ...existing } : {
@@ -1056,7 +1096,7 @@ class CustomProviderModal extends Modal {
 				t.setPlaceholder('https://api.openai.com/v1')
 					.setValue(this.data.baseUrl)
 					.onChange(v => { this.data.baseUrl = v.trim(); });
-				t.inputEl.style.width = '100%';
+				t.inputEl.setCssStyles({ width: '100%' });
 				// Preset endpoints are fixed — lock to prevent breaking the provider.
 				if (this.data.isBuiltIn) t.setDisabled(true);
 			});
@@ -1090,7 +1130,7 @@ class CustomProviderModal extends Modal {
 						new Notice(t('customProvider.allFieldsRequired'));
 						return;
 					}
-					this.onSubmit(this.data);
+					void this.onSubmit(this.data);
 					this.close();
 				}));
 	}
@@ -1107,9 +1147,9 @@ class CustomProviderModal extends Modal {
 
 class CatalogPickerModal extends FuzzySuggestModal<AIProviderConfig> {
 	private readonly items: AIProviderConfig[];
-	private readonly onPick: (p: AIProviderConfig) => void;
+	private readonly onPick: (p: AIProviderConfig) => void | Promise<void>;
 
-	constructor(app: App, items: AIProviderConfig[], onPick: (p: AIProviderConfig) => void) {
+	constructor(app: App, items: AIProviderConfig[], onPick: (p: AIProviderConfig) => void | Promise<void>) {
 		super(app);
 		this.items = items;
 		this.onPick = onPick;
@@ -1125,7 +1165,7 @@ class CatalogPickerModal extends FuzzySuggestModal<AIProviderConfig> {
 	}
 
 	onChooseItem(p: AIProviderConfig): void {
-		this.onPick(p);
+		void this.onPick(p);
 	}
 }
 
@@ -1150,10 +1190,21 @@ class PromptViewModal extends Modal {
         });
         textarea.value = this.prompt.content;
         textarea.readOnly = true;
-        textarea.style.cssText = 'width:100%;min-height:400px;font-family:monospace;font-size:0.85em;padding:12px;border:1px solid var(--background-modifier-border);border-radius:6px;resize:vertical;background:var(--background-primary);color:var(--text-normal);';
+        textarea.setCssStyles({
+            width: '100%',
+            minHeight: '400px',
+            fontFamily: 'monospace',
+            fontSize: '0.85em',
+            padding: '12px',
+            border: '1px solid var(--background-modifier-border)',
+            borderRadius: '6px',
+            resize: 'vertical',
+            background: 'var(--background-primary)',
+            color: 'var(--text-normal)',
+        });
 
         const closeBtn = contentEl.createEl('button', { text: t('common.close'), cls: 'mod-cta' });
-        closeBtn.style.cssText = 'margin-top:12px;';
+        closeBtn.setCssStyles({ marginTop: '12px' });
         closeBtn.onclick = () => this.close();
     }
 
@@ -1198,7 +1249,7 @@ class MdxDictEditModal extends Modal {
                 this.mdxPathInput = text.inputEl;
                 text.setPlaceholder(t('mdxEdit.browsePlaceholder'));
                 text.setValue(this.existing?.mdxPath || '');
-                text.inputEl.style.width = '100%';
+                text.inputEl.setCssStyles({ width: '100%' });
                 // Editable so users can paste a local file path directly. The folder
                 // button is a convenience, not the only entry point — this matters
                 // when the native picker silently fails on some Windows setups.
@@ -1219,7 +1270,7 @@ class MdxDictEditModal extends Modal {
                 this.mddPathInput = text.inputEl;
                 text.setPlaceholder(t('mdxEdit.autoDiscover'));
                 text.setValue(this.existing?.mddPath || '');
-                text.inputEl.style.width = '100%';
+                text.inputEl.setCssStyles({ width: '100%' });
                 text.inputEl.addEventListener('change', () => this.normalizePathInput(this.mddPathInput));
             })
             .addButton(btn => {
@@ -1234,7 +1285,7 @@ class MdxDictEditModal extends Modal {
                 this.cssPathInput = text.inputEl;
                 text.setPlaceholder(t('mdxEdit.autoDiscover'));
                 text.setValue(this.existing?.cssPath || '');
-                text.inputEl.style.width = '100%';
+                text.inputEl.setCssStyles({ width: '100%' });
                 text.inputEl.addEventListener('change', () => this.normalizePathInput(this.cssPathInput));
             })
             .addButton(btn => {
@@ -1249,11 +1300,11 @@ class MdxDictEditModal extends Modal {
                 this.nameInput = text.inputEl;
                 text.setPlaceholder(t('mdxEdit.autoName'));
                 text.setValue(this.existing?.name || '');
-                text.inputEl.style.width = '100%';
+                text.inputEl.setCssStyles({ width: '100%' });
             });
 
         const btnRow = contentEl.createDiv();
-        btnRow.style.cssText = 'display:flex;gap:8px;margin-top:12px;';
+        btnRow.setCssStyles({ display: 'flex', gap: '8px', marginTop: '12px' });
 
         const saveBtn = btnRow.createEl('button', { text: t('common.save'), cls: 'mod-cta' });
         saveBtn.onclick = async () => {
@@ -1267,14 +1318,14 @@ class MdxDictEditModal extends Modal {
             const mddPath = this.mddPathInput.value.trim();
             const cssPath = this.cssPathInput.value.trim();
 
-            if (!this.plugin.settings.localDictionaries) {
-                this.plugin.settings.localDictionaries = {};
+            if (!(this.plugin.settings as SettingsWithLocalDicts).localDictionaries) {
+                (this.plugin.settings as SettingsWithLocalDicts).localDictionaries = {};
             }
-            if (!this.plugin.settings.localDictionaries[this.language]) {
-                this.plugin.settings.localDictionaries[this.language] = [];
+            if (!(this.plugin.settings as SettingsWithLocalDicts).localDictionaries[this.language]) {
+                (this.plugin.settings as SettingsWithLocalDicts).localDictionaries[this.language] = [];
             }
 
-            const dicts = this.plugin.settings.localDictionaries[this.language];
+            const dicts = (this.plugin.settings as SettingsWithLocalDicts).localDictionaries[this.language];
 
             if (this.existing) {
                 const idx = dicts.findIndex(d => d.id === this.existing!.id);
@@ -1357,9 +1408,7 @@ class MdxDictEditModal extends Modal {
         // Position off-screen instead of display:none. A display:none file input's
         // .click() is silently ignored on some Windows/Electron builds, so the
         // picker never opens (the "browse button no response" symptom).
-        input.style.position = 'fixed';
-        input.style.left = '-9999px';
-        input.style.top = '0';
+        input.setCssStyles({ position: 'fixed', left: '-9999px', top: '0' });
         document.body.appendChild(input);
 
         const cleanup = () => input.remove();
@@ -1377,7 +1426,7 @@ class MdxDictEditModal extends Modal {
             // real file paths from File objects in the renderer process.
             if (Platform.isDesktop) {
                 try {
-                    const electron = (window as unknown).require('electron');
+                    const electron = (window as unknown as NodeRequireHost).require('electron') as ElectronWebUtilsBridge | undefined;
                     if (electron?.webUtils?.getPathForFile) {
                         filePath = electron.webUtils.getPathForFile(file);
                     }
@@ -1386,7 +1435,7 @@ class MdxDictEditModal extends Modal {
 
             // Legacy fallback: file.path (removed in Electron 28+ but kept for older versions)
             if (!filePath) {
-                filePath = (file as unknown).path || (file as unknown).filepath || '';
+                filePath = (file as LegacyPathFile).path || (file as LegacyPathFile).filepath || '';
             }
 
             cleanup();
@@ -1417,7 +1466,7 @@ class MdxDictEditModal extends Modal {
 
         if (!this.mddPathInput.value.trim()) {
             try {
-                const fs = (window as unknown).require('fs');
+                const fs = (window as unknown as NodeRequireHost).require('fs') as NodeFsBridge;
                 const mddCandidate = `${dir}/${stem}.mdd`;
                 if (fs.existsSync(mddCandidate)) {
                     this.mddPathInput.value = mddCandidate;
@@ -1427,7 +1476,7 @@ class MdxDictEditModal extends Modal {
 
         if (!this.cssPathInput.value.trim()) {
             try {
-                const fs = (window as unknown).require('fs');
+                const fs = (window as unknown as NodeRequireHost).require('fs') as NodeFsBridge;
                 const cssCandidate = `${dir}/${stem}.css`;
                 if (fs.existsSync(cssCandidate)) {
                     this.cssPathInput.value = cssCandidate;

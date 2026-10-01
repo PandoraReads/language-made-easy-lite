@@ -26,17 +26,15 @@ export const flipMode: ModeRenderer = {
 
         // 评分栏（翻面前隐藏）
         const ratingBar = createRatingBar(parent, onGrade);
-        ratingBar.style.opacity = '0';
-        ratingBar.style.pointerEvents = 'none';
+        ratingBar.setCssStyles({ opacity: '0', pointerEvents: 'none' });
 
         let flipped = false;
         flipper.onclick = () => {
             if (flipped) return;
             flipped = true;
             inner.addClass('lme-flipped');
-            hint.style.opacity = '0';
-            ratingBar.style.opacity = '1';
-            ratingBar.style.pointerEvents = 'auto';
+            hint.setCssStyles({ opacity: '0' });
+            ratingBar.setCssStyles({ opacity: '1', pointerEvents: 'auto' });
             onFlip?.();
             playAudio(entry.word, language).catch(e => console.error('[FC] Auto-play failed:', e));
         };

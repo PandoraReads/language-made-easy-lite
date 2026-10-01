@@ -39,11 +39,12 @@ export function t(key: string, params?: Record<string, unknown>): string {
 
 	if (typeof result === 'string') {
 		if (params) {
-			return result.replace(/\{(\w+)\}/g, (match, paramKey) => {
+			return result.replace(/\{(\w+)\}/g, (match: string, paramKey: string): string => {
 				const v = params[paramKey];
 				if (v === undefined) return match;
 				if (v === null || typeof v === 'object' || typeof v === 'function') return JSON.stringify(v);
-				return String(v as string | number | bigint | boolean | symbol);
+				const primitive = v as string | number | bigint | boolean | symbol;
+				return String(primitive);
 			});
 		}
 		return result;

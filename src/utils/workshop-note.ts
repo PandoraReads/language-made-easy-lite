@@ -61,9 +61,10 @@ const PLACEHOLDER_RE = /REPLACE_WITH/i;
 /** Normalize a frontmatter `tags` value (string | array | scalar) into a clean lowercased list. */
 export function normalizeTags(raw: unknown): string[] {
     if (raw == null) return [];
+    const textual = raw as string | number | bigint | boolean | symbol;
     const rawStr = raw === null || typeof raw === 'object' || typeof raw === 'function'
         ? JSON.stringify(raw)
-        : String(raw as string | number | bigint | boolean | symbol);
+        : String(textual);
     const arr: unknown[] = Array.isArray(raw) ? raw : rawStr.split(',');
     const out: string[] = [];
     const seen = new Set<string>();
@@ -98,8 +99,9 @@ const COVER_IMAGE_RE = /\.(?:png|jpe?g|gif|webp|svg|bmp|avif)$/i;
  */
 export function normalizeCover(raw: unknown): string {
     if (raw == null) return '';
-    const first = Array.isArray(raw) ? raw[0] : raw;
-    const v = String(first ?? '').trim();
+    const first = Array.isArray(raw) ? (raw as unknown[])[0] : raw;
+    const nonNull: unknown = first ?? '';
+    const v = String(nonNull).trim();
     if (!v) return '';
     const wiki = v.match(/^!?\[\[([^|\]]+)(?:\|[^\]]*)?\]\]$/);
     if (wiki) return wiki[1].trim();
@@ -171,9 +173,10 @@ export async function parseWorkshopNote(
 
     // Channel: frontmatter 频道/channel, else ''.
     const rawChannel = fm['频道'] ?? fm.channel ?? '';
+    const channelText = rawChannel as string | number | bigint | boolean | symbol;
     const channel = (rawChannel === null || typeof rawChannel === 'object'
         ? JSON.stringify(rawChannel)
-        : String(rawChannel as string | number | bigint | boolean | symbol)).trim();
+        : String(channelText)).trim();
 
     return {
         file,

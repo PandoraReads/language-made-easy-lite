@@ -1,6 +1,13 @@
 import esbuild from "esbuild";
 import process from "process";
-import builtins from "builtin-modules";
+import { builtinModules } from "node:module";
+
+// node:module 的 builtinModules 只含不带前缀的名字(如 'fs'),
+// 而部分依赖(如 js-mdict)require 的是带前缀的 'node:fs',
+// 两种形式都必须 external,否则浏览器平台构建无法解析。
+const nodeBuiltinExternals = [...new Set(builtinModules.flatMap(m =>
+    m.startsWith('node:') ? [m, m.slice('node:'.length)] : [m, `node:${m}`]
+))];
 
 const banner =
 `/*
@@ -34,7 +41,7 @@ const context = await esbuild.context({
         '@lezer/common',
         '@lezer/highlight',
         '@lezer/lr',
-        ...builtins],
+        ...nodeBuiltinExternals],
     format: 'cjs',
     target: 'es2018',
     // 社区市场要求产物非压缩可读(政策:混淆/压缩视同闭源,case-by-case)。

@@ -6,10 +6,24 @@
  * @ts-nocheck
  */
 
-import { Platform, requestUrl, Notice } from 'obsidian';
-import type { DictResult, LMESettings, MdxDictionary } from '../models';
+import { Platform, requestUrl } from 'obsidian';
+import type { DictResult, LMESettings } from '../models';
 import { MDXEngine } from '../core/MDXEngine';
 import { t } from '../i18n';
+
+/**
+ * A configured local MDX dictionary (an entry of settings.localDictionaries).
+ * Mirrors what the settings UI and the legacy-path migration build.
+ */
+interface MdxDictionary {
+    id: string;
+    name: string;
+    mdxPath: string;
+    mddPath?: string;
+    cssPath?: string;
+    /** 'store' marks mobile OPFS-imported entries that may be missing locally. */
+    source?: string;
+}
 
 const ONLINE_DICT_TIMEOUT_MS = 8000;
 
@@ -26,9 +40,6 @@ async function requestUrlWithTimeout(options: Parameters<typeof requestUrl>[0], 
     }
 }
 
-// Cache for lemmatization results (improves performance)
-const LEMMA_CACHE = new Map<string, unknown[]>();
-
 // MDX Engine instances for each language
 const mdxEngines: Record<string, {
     engine: MDXEngine | null;
@@ -44,7 +55,8 @@ function getLanguageMDXPaths(language: string, settings: LMESettings): MdxDictio
     // 桌面路径条目(data.json)+ 移动端导入条目(每设备 localStorage 注册表)合并。
     // 注册表条目 missing(OPFS 数据被系统驱逐)时跳过,避免每次查词都弹丢失提示;
     // data.json 里偶发的 store 条目(3.2.0 遗留/同步时差)一并纳入,启动迁移会清掉。
-    const pathDicts = (settings.localDictionaries?.[language] || [])
+    const localDicts = (settings as LMESettings & { localDictionaries?: Record<string, MdxDictionary[]> }).localDictionaries;
+    const pathDicts = (localDicts?.[language] || [])
         .filter(d => d.mdxPath || d.source === 'store');
     if (pathDicts.length > 0) {
         return pathDicts;
@@ -52,12 +64,13 @@ function getLanguageMDXPaths(language: string, settings: LMESettings): MdxDictio
 
     // Fallback: read legacy flat fields
     const lang = language;
-    const mdxPath = (settings as unknown)[`${lang}MdxPath`] || '';
-    const mddPath = (settings as unknown)[`${lang}MddPath`] || '';
-    const cssPath = (settings as unknown)[`${lang}MdxCssPath`] || '';
-    const mdxPath2 = (settings as unknown)[`${lang}MdxPath2`] || '';
-    const mddPath2 = (settings as unknown)[`${lang}MddPath2`] || '';
-    const cssPath2 = (settings as unknown)[`${lang}MdxCssPath2`] || '';
+    const langSettings = settings as LMESettings & Record<string, string>;
+    const mdxPath = langSettings[`${lang}MdxPath`] || '';
+    const mddPath = langSettings[`${lang}MddPath`] || '';
+    const cssPath = langSettings[`${lang}MdxCssPath`] || '';
+    const mdxPath2 = langSettings[`${lang}MdxPath2`] || '';
+    const mddPath2 = langSettings[`${lang}MddPath2`] || '';
+    const cssPath2 = langSettings[`${lang}MdxCssPath2`] || '';
 
     const dicts: MdxDictionary[] = [];
     if (mdxPath) {
@@ -79,25 +92,6 @@ function getLanguageMDXPaths(language: string, settings: LMESettings): MdxDictio
         });
     }
     return dicts;
-}
-
-/**
- * Query MDX dictionary for a specific language
- * Tries all configured dictionaries, returns first successful result
- */
-async function queryMDX(word: string, language: string, settings: LMESettings): Promise<DictResult> {
-    const allDicts = getLanguageMDXPaths(language, settings);
-
-    for (let i = 0; i < allDicts.length; i++) {
-        try {
-            const result = await querySingleMDX(word, language, allDicts[i]);
-            if (result) return result;
-        } catch (e) {
-            console.warn(`[LME] ${allDicts[i].name} failed for "${word}":`, e.message);
-        }
-    }
-
-    throw new Error(t('errors.mdxNotFound', { word }));
 }
 
 /**
@@ -157,7 +151,7 @@ async function querySingleMDX(word: string, language: string, dict: MdxDictionar
  * If dictId is provided, search that specific engine first.
  * Fallback: try all loaded engines.
  */
-export async function getMDXResource(path: string, language: string = 'english', dictId?: string): Promise<unknown | null> {
+export async function getMDXResource(path: string, language: string = 'english', dictId?: string): Promise<Buffer | null> {
     // ── 桌面路径:精确 dictId 优先,再遍历全部已加载引擎 ──
     if (dictId && mdxEngines[dictId]?.engine) {
         const buffer = await mdxEngines[dictId].engine.getResource(path);
@@ -372,7 +366,7 @@ export async function playAudio(source: string, languageOrPath: string | boolean
             console.debug('[LME Audio] Starting playback...');
             const playPromise = audio.play();
 
-            if (playPromise) {
+            if (playPromise !== undefined) {
                 await playPromise.catch(e => {
                     console.error('[LME Audio] Play failed:', e);
                     throw e;
@@ -400,78 +394,6 @@ export async function playAudio(source: string, languageOrPath: string | boolean
 
     } catch (e) {
         console.error('[LME Audio] Exception:', e);
-    }
-}
-
-/**
- * Try using Web Speech API (browser built-in TTS)
- * Supports multiple languages without network requests
- * Returns true if successful, false otherwise
- */
-async function tryWebSpeechAPI(word: string, language: string): Promise<boolean> {
-    try {
-        // Check if SpeechSynthesis API is available
-        if (!('speechSynthesis' in window) && !('webkitSpeechSynthesis' in window)) {
-            console.debug('[LME Audio] Web Speech API not available in this browser');
-            return false;
-        }
-
-        const synth = window.speechSynthesis || (window as unknown).webkitSpeechSynthesis;
-        if (!synth) {
-            console.debug('[LME Audio] SpeechSynthesis not accessible');
-            return false;
-        }
-
-        // Map language codes for Web Speech API
-        const langCodes: Record<string, string> = {
-            english: 'en-US',
-        };
-
-        const langCode = langCodes[language] || 'en-US';
-        console.debug(`[LME Audio] Using Web Speech API with language: ${langCode}`);
-
-        // Create utterance
-        const utterance = new SpeechSynthesisUtterance(word);
-        utterance.lang = langCode;
-        utterance.rate = 0.9; // Slightly slower for better clarity
-        utterance.pitch = 1.0;
-        utterance.volume = 1.0;
-
-        // Try to select a voice that matches the language
-        const voices = synth.getVoices();
-        if (voices && voices.length > 0) {
-            // Find a voice matching the language
-            const matchingVoice = voices.find(voice => voice.lang.startsWith(langCode));
-            if (matchingVoice) {
-                utterance.voice = matchingVoice;
-                console.debug(`[LME Audio] Selected voice: ${matchingVoice.name} (${matchingVoice.lang})`);
-            }
-        }
-
-        // Create a promise to track completion
-        return new Promise<boolean>((resolve) => {
-            utterance.onend = () => {
-                console.debug('[LME Audio] ✅ Web Speech API playback completed');
-                resolve(true);
-            };
-
-            utterance.onerror = (event) => {
-                console.error('[LME Audio] Web Speech API error:', event);
-                resolve(false);
-            };
-
-            // Start speaking
-            synth.speak(utterance);
-
-            // Wait a bit and resolve (it's async but we want to return quickly)
-            window.setTimeout(() => {
-                resolve(true); // Assume success if no immediate error
-            }, 100);
-        });
-
-    } catch (e) {
-        console.error('[LME Audio] Web Speech API exception:', e);
-        return false;
     }
 }
 
@@ -576,6 +498,40 @@ export function lookupMulti(
     });
 }
 
+/** One translation entry inside a Youdao ec trs list ('tr' wraps an 'l.i' string array). */
+interface YoudaoTrItem {
+    tr?: Array<{ l?: { i?: string[] } }>;
+}
+
+/** A Youdao ec dictionary headword entry. */
+interface YoudaoEcWord {
+    usphone?: string;
+    ukphone?: string;
+    trs?: Array<string | YoudaoTrItem>;
+}
+
+/** Shape of dict.youdao.com/jsonapi responses (the parts this service reads). */
+interface YoudaoJsonApiResponse {
+    ec?: { word?: YoudaoEcWord[] };
+    simple?: { word?: Array<{ explain?: string }> };
+    blng_sents_part?: {
+        'sentence-pair'?: Array<{ sentence?: string; 'sentence-translation'?: string }>;
+    };
+    phrs?: {
+        phrs?: Array<{
+            phr?: {
+                headword?: { l?: { i?: string } };
+                trs?: Array<{ tr?: { l?: { i?: string } } }>;
+            };
+        }>;
+    };
+}
+
+/** Shape of dict.youdao.com/suggest responses. */
+interface YoudaoSuggestResponse {
+    data?: { entries?: Array<{ explain?: string }> };
+}
+
 /**
  * Youdao Free Dictionary (English only)
  * Uses /jsonapi for rich results: phonetic, POS, definitions, bilingual examples, web phrases
@@ -591,7 +547,7 @@ async function queryYoudaoFree(word: string, language: string): Promise<DictResu
 
     try {
         const resp = await requestUrlWithTimeout({ url, method: 'GET' });
-        const data = resp.json;
+        const data = resp.json as YoudaoJsonApiResponse;
 
         console.debug('[LME] Youdao jsonapi response keys:', data ? Object.keys(data) : 'null');
 
@@ -646,7 +602,7 @@ async function queryYoudaoFree(word: string, language: string): Promise<DictResu
         if (!mainDefinition) {
             const suggestUrl = `https://dict.youdao.com/suggest?q=${encodeURIComponent(word)}&num=1&doctype=json`;
             const suggestResp = await requestUrlWithTimeout({ url: suggestUrl, method: 'GET' });
-            const suggestData = suggestResp.json;
+            const suggestData = suggestResp.json as YoudaoSuggestResponse;
             if (suggestData?.data?.entries?.length > 0) {
                 const entry = suggestData.data.entries[0];
                 mainDefinition = entry.explain || '';
@@ -681,7 +637,7 @@ async function queryYoudaoFree(word: string, language: string): Promise<DictResu
                 const trs = item?.phr?.trs || [];
                 const meanings = trs
                     .slice(0, 2)
-                    .map((tr: unknown) => tr?.tr?.l?.i || '')
+                    .map((tr) => tr?.tr?.l?.i || '')
                     .filter(Boolean)
                     .join('; ');
                 if (headword && meanings) {
@@ -706,6 +662,21 @@ async function queryYoudaoFree(word: string, language: string): Promise<DictResu
     }
 }
 
+/** One [translation, original, ...] sentence slot in a Google Translate response. */
+type GoogleSentence = [string, ...unknown[]];
+
+/** One [pos, meanings] dictionary entry in a Google Translate response. */
+type GoogleDictEntry = [string, string[]];
+
+/**
+ * Shape of translate.googleapis.com/translate_a/single responses:
+ * [sentences, dictEntries, ...extra]. Either leading slot may be absent.
+ */
+type GoogleTranslateResponse = [
+    GoogleSentence[] | null,
+    GoogleDictEntry[] | null,
+];
+
 /**
  * Google Translation Free (multi-language support)
  * Simplified version based on original plugin
@@ -721,7 +692,7 @@ async function queryGoogleFree(word: string, language: string): Promise<DictResu
 
     try {
         const resp = await requestUrlWithTimeout({ url, method: 'GET' });
-        const data = resp.json;
+        const data = resp.json as GoogleTranslateResponse;
 
         if (!data || !data[0] || !data[0][0] || !data[0][0][0]) {
             throw new Error(t('errors.noDefinition'));
@@ -732,9 +703,9 @@ async function queryGoogleFree(word: string, language: string): Promise<DictResu
         const dictEntries = data[1] || [];
         const explains: string[] = [];
 
-        dictEntries.forEach((entry: unknown) => {
+        dictEntries.forEach((entry) => {
             const pos = entry[0];
-            const meanings = (entry[1] as string[]).slice(0, 3);
+            const meanings = entry[1].slice(0, 3);
             // Only include meanings that contain Chinese characters
             const zhMeanings = meanings.filter((m: string) => /[\u4e00-\u9fff]/.test(m));
             if (zhMeanings.length > 0) {
@@ -763,14 +734,18 @@ async function queryGoogleFree(word: string, language: string): Promise<DictResu
     }
 }
 
-/**
- * Bing Free Dictionary
- */
-async function queryBingFree(word: string, language: string): Promise<DictResult> {
-    // Placeholder - implement Bing lookup if needed
-    throw new Error(t('errors.bingNotSupported'));
+/** One MyMemory translation match. */
+interface MyMemoryMatch {
+    translation: string;
+    quality: number;
 }
 
+/** Shape of api.mymemory.translated.net/get responses (the parts this service reads). */
+interface MyMemoryResponse {
+    responseStatus: number;
+    responseData?: { translatedText?: string };
+    matches: MyMemoryMatch[];
+}
 
 /**
  * MyMemory Translation API (multi-language support, no API key required)
@@ -791,7 +766,7 @@ async function queryMyMemory(word: string, language: string): Promise<DictResult
 
     try {
         const resp = await requestUrlWithTimeout({ url, method: 'GET' });
-        const data = resp.json;
+        const data = resp.json as MyMemoryResponse;
 
         console.debug('[LME] MyMemory response:', data);
 
@@ -843,51 +818,6 @@ async function queryMyMemory(word: string, language: string): Promise<DictResult
 }
 
 /**
- * Get lemmatized candidates with caching
- * Returns array of form candidates (original + alternatives)
- */
-async function getLemmatizedCandidates(word: string, language: string): Promise<unknown[]> {
-    const trimmed = word.trim();
-    if (!trimmed) return [];
-
-    // Check cache first
-    const cacheKey = `${language}:${trimmed}`;
-    if (LEMMA_CACHE.has(cacheKey)) {
-        return LEMMA_CACHE.get(cacheKey)!;
-    }
-
-    const candidates: unknown[] = [];
-
-    try {
-        // 社区免费版:仅英语。英语走最小词形还原(原词直查)。
-        candidates.push({ word: trimmed, info: '' });
-    } catch (e) {
-        console.warn(`[LME] Lemmatization failed for "${trimmed}" (${language}):`, e.message);
-        // Fallback to original word
-        candidates.push({ word: trimmed, info: 'error' });
-    }
-
-    // Cache the results
-    LEMMA_CACHE.set(cacheKey, candidates);
-
-    return candidates;
-}
-
-/**
- * Legacy function for single-word lemmatization (kept for compatibility)
- */
-async function lemmatizeWord(word: string, language: string): Promise<string | null> {
-    const candidates = await getLemmatizedCandidates(word, language);
-    // Return first candidate that's different from input
-    for (const candidate of candidates) {
-        if (candidate.word && candidate.word !== word) {
-            return candidate.word;
-        }
-    }
-    return null;
-}
-
-/**
  * Extract sentence from context
  */
 export function extractSentence(text: string, word: string): string {
@@ -919,7 +849,7 @@ async function fetchPhoneticFromYoudao(word: string): Promise<string> {
     try {
         const url = `https://dict.youdao.com/jsonapi?q=${encodeURIComponent(word)}&le=en`;
         const resp = await requestUrlWithTimeout({ url, method: 'GET' });
-        const data = resp.json;
+        const data = resp.json as YoudaoJsonApiResponse;
 
         if (data?.ec?.word?.length > 0) {
             const w = data.ec.word[0];
@@ -933,7 +863,7 @@ async function fetchPhoneticFromYoudao(word: string): Promise<string> {
             }
         }
         return '';
-    } catch (e) {
+    } catch {
         return '';
     }
 }
@@ -959,7 +889,7 @@ export async function fetchCleanDefinition(word: string, language: string): Prom
         if (language === 'english') {
             const url = `https://dict.youdao.com/jsonapi?q=${encodeURIComponent(word)}&le=en`;
             const resp = await requestUrlWithTimeout({ url, method: 'GET' });
-            const data = resp.json;
+            const data = resp.json as YoudaoJsonApiResponse;
 
             // Try ec (English-Chinese) section first
             if (data?.ec?.word?.length > 0) {
@@ -967,7 +897,7 @@ export async function fetchCleanDefinition(word: string, language: string): Prom
                 if (wordData?.trs?.length > 0) {
                     const trs = wordData.trs
                         .slice(0, 3)
-                        .map((tr: unknown) => (typeof tr === 'string' ? tr : tr.tr?.[0]?.l?.i?.[0] || ''))
+                        .map((tr) => (typeof tr === 'string' ? tr : tr.tr?.[0]?.l?.i?.[0] || ''))
                         .filter(Boolean);
                     if (trs.length > 0) return trs.join('; ');
                 }
@@ -987,14 +917,14 @@ export async function fetchCleanDefinition(word: string, language: string): Prom
         const sourceLang = langCodes[language] || 'en';
         const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${sourceLang}&tl=zh&dt=t&q=${encodeURIComponent(word)}`;
         const resp = await requestUrlWithTimeout({ url, method: 'GET' });
-        const data = resp.json;
+        const data = resp.json as GoogleTranslateResponse;
 
         if (data?.[0]?.[0]?.[0]) {
             return data[0][0][0];
         }
 
         return '';
-    } catch (e) {
+    } catch {
         return '';
     }
 }
