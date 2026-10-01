@@ -1,0 +1,8 @@
+{
+  "compilerOptions": {
+    "module": "ESNext", "target": "ES6", "strictNullChecks": true,
+    "moduleResolution": "node", "skipLibCheck": true, "esModuleInterop": true,
+    "lib": ["ES6"]
+  },
+  "include": ["src/**/*.ts"]
+}

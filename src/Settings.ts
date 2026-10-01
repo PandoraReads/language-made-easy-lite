@@ -55,6 +55,19 @@ interface LegacyPathFile extends File {
 	filepath?: string;
 }
 
+/** Obsidian 1.13+ 声明式设置搜索条目的本地结构化类型(obsidian 1.12 typings 尚未提供)。 */
+interface LmeSettingDefinitionItem {
+	name: string;
+	desc?: string;
+	aliases?: string[];
+	control?: {
+		type: 'toggle' | 'dropdown' | 'text' | 'textarea' | 'number' | 'file' | 'folder' | 'slider' | 'color';
+		key: string;
+		defaultValue?: unknown;
+		options?: { value: string; label: string }[];
+	};
+}
+
 export class LMESettingTab extends PluginSettingTab {
 	plugin: LanguageMadeEasyPlugin;
 	currentSettingsTab: 'general' | 'english' | 'german' | 'french' | 'spanish' | 'korean' | 'russian' | 'japanese' | 'chinese' = 'general';
@@ -196,6 +209,45 @@ export class LMESettingTab extends PluginSettingTab {
 					await this.plugin.saveSettings();
 				});
 			});
+	}
+
+	// ── 1.13+ 声明式设置搜索 ────────────────────────────────
+	// obsidian 1.12 typings 尚无此 API,这里用本地结构化类型;运行在 1.13+ 时
+	// Obsidian 读取这些定义把设置纳入全局设置搜索。仅服务搜索定位,不改变
+	// 本页既有渲染逻辑(display 不受影响)。
+
+	public getSettingDefinitions(): LmeSettingDefinitionItem[] {
+		return [
+			{ name: t('settings.currentLanguageName'), desc: t('settings.currentLanguageDesc'), control: { type: 'dropdown', key: 'activeLanguage', defaultValue: 'english', options: [{ value: 'english', label: 'English' }] } },
+			{ name: t('settings.uiStyleName'), desc: t('settings.uiStyleDesc'), control: { type: 'dropdown', key: 'uiStyle', defaultValue: 'paper-ink', options: [{ value: 'paper-ink', label: 'Paper & Ink' }] } },
+			{ name: t('settings.doubleClickLookup'), desc: t('settings.doubleClickLookupDesc'), control: { type: 'toggle', key: 'doubleClickLookupEnabled', defaultValue: true } },
+			{ name: t('settings.dailyLimit'), desc: t('settings.dailyLimitDesc'), control: { type: 'number', key: 'dailyReviewLimit', defaultValue: 0 } },
+			{ name: t('settings.flashcardStudyMode'), desc: t('settings.flashcardStudyModeDesc'), control: { type: 'dropdown', key: 'flashcardStudyMode', defaultValue: 'flip', options: [{ value: 'flip', label: t('settings.flashcardStudyModeFlip') }] } },
+			{ name: t('settings.autoCleanup'), desc: t('settings.autoCleanupDesc'), control: { type: 'toggle', key: 'autoCleanupMastered', defaultValue: false } },
+			{ name: t('settings.cleanupDelay'), desc: t('settings.cleanupDelayDesc'), control: { type: 'number', key: 'cleanupDelayDays', defaultValue: 30 } },
+			{ name: t('settings.videoNoteFolder'), desc: t('settings.videoNoteFolderDesc'), control: { type: 'folder', key: 'videoNoteFolder', defaultValue: '' } },
+			{ name: t('settings.videoDownload'), desc: t('settings.videoDownloadDesc'), control: { type: 'folder', key: 'videoDownloadFolder', defaultValue: '' } },
+			{ name: t('settings.subtitleNoteFolder'), desc: t('settings.subtitleNoteFolderDesc'), control: { type: 'folder', key: 'subtitleNoteFolder', defaultValue: '' } },
+			{ name: t('settings.autoOpenSubtitleNote'), desc: t('settings.autoOpenSubtitleNoteDesc'), control: { type: 'toggle', key: 'autoOpenSubtitleNote', defaultValue: false } },
+			{ name: t('settings.languageLevel'), desc: t('settings.languageLevelDesc'), control: { type: 'dropdown', key: 'englishLevel', defaultValue: 'intermediate', options: [
+				{ value: 'beginner', label: 'Beginner' }, { value: 'intermediate', label: 'Intermediate' }, { value: 'advanced', label: 'Advanced' }, { value: 'native', label: 'Native' },
+			] } },
+			{ name: t('settings.transcriptionBaseUrl'), desc: t('settings.transcriptionBaseUrlDesc'), control: { type: 'text', key: 'transcriptionBaseUrl', defaultValue: '' } },
+			{ name: t('settings.transcriptionApiKey'), desc: t('settings.transcriptionApiKeyDesc'), control: { type: 'text', key: 'transcriptionApiKey', defaultValue: '' } },
+			{ name: t('settings.transcriptionModel'), desc: t('settings.transcriptionModelDesc'), control: { type: 'text', key: 'transcriptionModel', defaultValue: '' } },
+			{ name: t('settings.youtubeRssInterval'), desc: t('settings.youtubeRssIntervalDesc'), control: { type: 'number', key: 'youtubeRssCheckIntervalMin', defaultValue: 60 } },
+			{ name: t('settings.youtubeRssNotifications'), desc: t('settings.youtubeRssNotificationsDesc'), control: { type: 'toggle', key: 'youtubeRssNotifications', defaultValue: false } },
+		];
+	}
+
+	public getControlValue(key: string): unknown {
+		return (this.plugin.settings as unknown as Record<string, unknown>)[key];
+	}
+
+	public async setControlValue(key: string, value: unknown): Promise<void> {
+		(this.plugin.settings as unknown as Record<string, unknown>)[key] = value;
+		await this.plugin.saveSettings();
+		this.display();
 	}
 
 	private renderGeneralSettings(containerEl: HTMLElement) {

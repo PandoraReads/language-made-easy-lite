@@ -1,6 +1,30 @@
 // @ts-nocheck
 import { Platform } from 'obsidian';
-import type { MDX, MDD } from 'js-mdict';
+
+/**
+ * js-mdict 的本地结构化类型:官方扫描环境的 TS 程序解析不到 node_modules 里
+ * js-mdict 的 .d.ts(error type 级联成上百条 unsafe-* 警告),因此这里按实际
+ * 用到的表面写死结构,不依赖跨包类型解析。字段与 js-mdict 6.x 声明一致。
+ */
+export interface MdxKeyWordItem {
+    keyText: string;
+}
+export interface MdxLookupResult {
+    keyText?: string;
+    definition: string | null;
+}
+export interface MdxDictionaryLike {
+    lookup(word: string): MdxLookupResult | { keyText?: string; definition: string | null } | null | undefined;
+}
+export interface MddResourceLike {
+    keywordList?: MdxKeyWordItem[];
+    locate(resourceKey: string): { keyText?: string; definition: string | null } | null;
+    lookupRecordByKeyBlock(item: MdxKeyWordItem): Uint8Array;
+}
+export interface JsMdictModuleLike {
+    MDX: new (path: string) => MdxDictionaryLike;
+    MDD: new (path: string) => MddResourceLike;
+}
 
 /** Minimal Node fs surface the dictionary engine depends on (desktop only). */
 interface NodeFsLike {
@@ -11,23 +35,23 @@ interface NodeFsLike {
 
 // Dynamic requires for Node-only modules to prevent load failures on mobile
 let fs: NodeFsLike | null = null;
-let jsMdict: typeof import('js-mdict') | null = null;
+let jsMdict: JsMdictModuleLike | null = null;
 
 try {
     if (Platform.isDesktop) {
         // eslint-disable-next-line @typescript-eslint/no-require-imports -- desktop-only lazy load behind a Platform.isDesktop guard (the no-nodejs-modules sanctioned pattern)
         fs = require('fs') as NodeFsLike;
         // eslint-disable-next-line @typescript-eslint/no-require-imports -- desktop-only lazy load behind a Platform.isDesktop guard (the no-nodejs-modules sanctioned pattern)
-        jsMdict = require('js-mdict') as typeof import('js-mdict');
+        jsMdict = require('js-mdict') as JsMdictModuleLike;
     }
 } catch {
     console.warn('[EME] Node modules could not be pre-loaded, will retry on demand.');
 }
 
 export class MDXEngine {
-    private mdx: MDX | null = null;
+    private mdx: MdxDictionaryLike | null = null;
     // Multiple MDD files: main + numbered (.1.mdd, .2.mdd, ...)
-    private mdds: MDD[] = [];
+    private mdds: MddResourceLike[] = [];
     private mdxPath: string;
     private mddPath: string;
     private cssPath: string;
@@ -273,7 +297,7 @@ export class MDXEngine {
     /**
      * Try to locate a resource in a specific MDD using binary search.
      */
-    private locateInMdd(mdd: MDD, key: string): Buffer | null {
+    private locateInMdd(mdd: MddResourceLike, key: string): Buffer | null {
         try {
             const result = mdd.locate(key);
             if (result && result.definition) {
@@ -288,7 +312,7 @@ export class MDXEngine {
     /**
      * Linear scan through a specific MDD's keys (handles case/path mismatches).
      */
-    private linearScanInMdd(mdd: MDD, rawPath: string): Buffer | null {
+    private linearScanInMdd(mdd: MddResourceLike, rawPath: string): Buffer | null {
         const list = mdd.keywordList;
         if (!list || list.length === 0) return null;
 

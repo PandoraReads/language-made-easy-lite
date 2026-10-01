@@ -113,7 +113,7 @@ function sanitizeItem(raw: unknown): YouTubeFeedItem | null {
 function sanitizeNumberMap(raw: unknown): Record<string, number> {
     const out: Record<string, number> = {};
     if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return out;
-    for (const [key, value] of Object.entries(raw as Record<string, unknown>)) {
+    for (const [key, value] of Object.entries(raw)) {
         if (typeof value === 'number' && Number.isFinite(value)) out[key] = value;
     }
     return out;

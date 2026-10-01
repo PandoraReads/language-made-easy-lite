@@ -443,7 +443,7 @@ export class DictView extends ItemView {
             // res.definition is the entry HTML from the user's own local .mdx
             // dictionary file (desktop-only feature), rendered inside an
             // isolated shadow root. It is trusted local content by design.
-            // eslint-disable-next-line no-unsanitized/property -- trusted local content: entry HTML from the user's own .mdx dictionary file
+            // eslint-disable-next-line no-unsanitized/property -- trusted local content: entry HTML from the user's own .mdx dictionary file, rendered inside an isolated shadow root
             contentDiv.innerHTML = res.definition;
             contentDiv.setCssStyles({ userSelect: 'text' });
             shadowRoot.appendChild(contentDiv);

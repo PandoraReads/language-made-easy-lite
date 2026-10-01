@@ -1419,7 +1419,7 @@ export class ShadowingView extends ItemView {
                     await this.app.vault.adapter.mkdir(dir);
                 }
             }
-            await this.app.vault.adapter.writeBinary(cachePath, data.buffer as ArrayBuffer);
+            await this.app.vault.adapter.writeBinary(cachePath, data.buffer);
             console.debug(`[EME] Cached: ${cachePath} (${(data.length / 1024 / 1024).toFixed(1)}MB)`);
         } catch (e) {
             console.warn('[EME] Cache write failed:', e);
