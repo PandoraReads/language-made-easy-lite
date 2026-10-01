@@ -77,7 +77,7 @@ export default {
 		flashcardCardModeCloze: '挖空例句面（正面显示原文例句，目标词挖空）',
 		flashcardStudyMode: '默认学习模式',
 		flashcardStudyModeDesc: '打开复习界面时的默认学习模式（顶部可随时切换），下拉框显示当前使用的模式。',
-		fullEditionStudyModeNote: '完整版还包含「听力（听音辨词）」与「填空（看挖空例句填词）」两种模式。',
+		fullEditionStudyModeNote: '免费版锁定为翻卡模式；完整版还包含「听力（听音辨词）」与「填空（看挖空例句填词）」。',
 		flashcardStudyModeFlip: '翻卡（看词回想释义）',
 		flashcardStudyModeAudio: '听力（听音辨词）',
 		flashcardStudyModeWrite: '填空（看挖空例句填词）',

@@ -71,20 +71,6 @@ interface LegacyPathFile extends File {
 	filepath?: string;
 }
 
-/** Obsidian 1.13+ 声明式设置搜索条目的本地结构化类型(obsidian 1.12 typings 尚未提供)。 */
-interface LmeSettingDefinitionItem {
-	name: string;
-	desc?: string;
-	aliases?: string[];
-	control?: {
-		type: 'toggle' | 'dropdown' | 'text' | 'textarea' | 'number' | 'file' | 'folder' | 'slider' | 'color';
-		key: string;
-		defaultValue?: unknown;
-		/** dropdown 专用:value -> label 映射(官方 1.13 schema 是 Record,不是数组)。 */
-		options?: Record<string, string>;
-	};
-}
-
 export class LMESettingTab extends PluginSettingTab {
 	plugin: LanguageMadeEasyPlugin;
 	currentSettingsTab: 'general' | 'english' | 'german' | 'french' | 'spanish' | 'korean' | 'russian' | 'japanese' | 'chinese' = 'general';
@@ -261,44 +247,13 @@ export class LMESettingTab extends PluginSettingTab {
 			}));
 	}
 
-	// ── 1.13+ 声明式设置搜索 ────────────────────────────────
-	// obsidian 1.12 typings 尚无此 API,这里用本地结构化类型;运行在 1.13+ 时
-	// Obsidian 读取这些定义把设置纳入全局设置搜索。仅服务搜索定位,不改变
-	// 本页既有渲染逻辑(display 不受影响)。
-
-	public getSettingDefinitions(): LmeSettingDefinitionItem[] {
-		return [
-			{ name: t('settings.currentLanguageName'), desc: `${t('settings.currentLanguageDesc')}\n${t('settings.fullEditionLangNote')}`, control: { type: 'dropdown', key: 'activeLanguage', defaultValue: 'english', options: { english: SETTINGS_LANGUAGE_LABELS.english } } },
-			{ name: t('settings.uiStyleName'), desc: `${t('settings.uiStyleDesc')}\n${t('settings.fullEditionThemeNote')}`, control: { type: 'dropdown', key: 'uiStyle', defaultValue: 'paper-ink', options: { 'paper-ink': UI_THEME_LABELS['paper-ink'] } } },
-			{ name: t('settings.doubleClickLookup'), desc: t('settings.doubleClickLookupDesc'), control: { type: 'toggle', key: 'doubleClickLookupEnabled', defaultValue: true } },
-			{ name: t('settings.dailyLimit'), desc: t('settings.dailyLimitDesc'), control: { type: 'number', key: 'dailyReviewLimit', defaultValue: 0 } },
-			{ name: t('settings.flashcardStudyMode'), desc: `${t('settings.flashcardStudyModeDesc')}\n${t('settings.fullEditionStudyModeNote')}`, control: { type: 'dropdown', key: 'flashcardStudyMode', defaultValue: 'flip', options: { flip: t('settings.flashcardStudyModeFlip') } } },
-			{ name: t('settings.autoCleanup'), desc: t('settings.autoCleanupDesc'), control: { type: 'toggle', key: 'autoCleanupMastered', defaultValue: false } },
-			{ name: t('settings.cleanupDelay'), desc: t('settings.cleanupDelayDesc'), control: { type: 'number', key: 'cleanupDelayDays', defaultValue: 30 } },
-			{ name: t('settings.videoNoteFolder'), desc: t('settings.videoNoteFolderDesc'), control: { type: 'folder', key: 'videoNoteFolder', defaultValue: '' } },
-			{ name: t('settings.videoDownload'), desc: t('settings.videoDownloadDesc'), control: { type: 'folder', key: 'videoDownloadFolder', defaultValue: '' } },
-			{ name: t('settings.subtitleNoteFolder'), desc: t('settings.subtitleNoteFolderDesc'), control: { type: 'folder', key: 'subtitleNoteFolder', defaultValue: '' } },
-			{ name: t('settings.autoOpenSubtitleNote'), desc: t('settings.autoOpenSubtitleNoteDesc'), control: { type: 'toggle', key: 'autoOpenSubtitleNote', defaultValue: false } },
-			{ name: t('settings.languageLevel'), desc: t('settings.languageLevelDesc'), control: { type: 'dropdown', key: 'englishLevel', defaultValue: 'intermediate', options: {
-				beginner: t('settings.levelBeginner'), intermediate: t('settings.levelIntermediate'), advanced: t('settings.levelAdvanced'), native: t('settings.levelNative'),
-			} } },
-			{ name: t('settings.transcriptionBaseUrl'), desc: t('settings.transcriptionBaseUrlDesc'), control: { type: 'text', key: 'transcriptionBaseUrl', defaultValue: '' } },
-			{ name: t('settings.transcriptionApiKey'), desc: t('settings.transcriptionApiKeyDesc'), control: { type: 'text', key: 'transcriptionApiKey', defaultValue: '' } },
-			{ name: t('settings.transcriptionModel'), desc: t('settings.transcriptionModelDesc'), control: { type: 'text', key: 'transcriptionModel', defaultValue: '' } },
-			{ name: t('settings.youtubeRssInterval'), desc: t('settings.youtubeRssIntervalDesc'), control: { type: 'number', key: 'youtubeRssCheckIntervalMin', defaultValue: 60 } },
-			{ name: t('settings.youtubeRssNotifications'), desc: t('settings.youtubeRssNotificationsDesc'), control: { type: 'toggle', key: 'youtubeRssNotifications', defaultValue: false } },
-		];
-	}
-
-	public getControlValue(key: string): unknown {
-		return (this.plugin.settings as unknown as Record<string, unknown>)[key];
-	}
-
-	public async setControlValue(key: string, value: unknown): Promise<void> {
-		(this.plugin.settings as unknown as Record<string, unknown>)[key] = value;
-		await this.plugin.saveSettings();
-		this.display();
-	}
+	// ── 关于 1.13+ 声明式设置 ────────────────────────────────
+	// 故意不实现 getSettingDefinitions():官方 typings 明确 display() 在其返回
+	// 非空数组时不会被调用——整个设置页会被这些定义以"素颜"渲染接管(失去
+	// 本页的 tab 导航 / 词典管理 / AI 模型列表等全部自定义 UI),且控制项变化
+	// 会经 setControlValue 反复触发整页重绘(输入路径时页面样式来回跳)。
+	// 本页完全自定义、又需支持 1.11-,保持 display() 渲染;1.13 全局设置搜索
+	// 暂不参与,待整体迁移声明式时再启用。
 
 	private renderGeneralSettings(containerEl: HTMLElement) {
 		// ── Current Language Selection ─────────────────────────
@@ -306,7 +261,7 @@ export class LMESettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName(t('settings.currentLanguageName'))
-			.setDesc(`${t('settings.currentLanguageDesc')}\n${t('settings.fullEditionLangNote')}`)
+			.setDesc(t('settings.fullEditionLangNote'))
 			.addDropdown(drop => {
 				// 社区免费版:语种锁定为免费值,下拉框展示当前学习语言;完整版语种见描述说明
 				const current = this.plugin.settings.activeLanguage || 'english';
@@ -324,7 +279,7 @@ export class LMESettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName(t('settings.uiStyleName'))
-			.setDesc(`${t('settings.uiStyleDesc')}\n${t('settings.fullEditionThemeNote')}`)
+			.setDesc(t('settings.fullEditionThemeNote'))
 			.addDropdown(drop => {
 				// 社区免费版:主题锁定为当前免费值,下拉框展示当前主题;完整版主题见描述说明
 				const current = this.plugin.settings.uiStyle || 'paper-ink';
@@ -370,7 +325,7 @@ export class LMESettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName(t('settings.flashcardStudyMode'))
-			.setDesc(`${t('settings.flashcardStudyModeDesc')}\n${t('settings.fullEditionStudyModeNote')}`)
+			.setDesc(t('settings.fullEditionStudyModeNote'))
 			.addDropdown(drop => {
 				// 社区免费版:学习模式锁定为当前免费值,下拉框展示当前模式;完整版模式见描述说明
 				const modeLabels: Record<LMESettings['flashcardStudyMode'], string> = {
@@ -379,7 +334,7 @@ export class LMESettingTab extends PluginSettingTab {
 					write: t('settings.flashcardStudyModeWrite'),
 				};
 				const current = this.plugin.settings.flashcardStudyMode || 'flip';
-				drop.addOption(current, modeLabels[current])
+				drop.addOption(current, modeLabels[current] ?? current)
 					.setValue(current)
 					.onChange(async () => {
 						this.plugin.settings.flashcardStudyMode = 'flip';
