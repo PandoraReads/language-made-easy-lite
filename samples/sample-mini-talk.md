@@ -4,6 +4,9 @@ tags:
   - public-speaking
   - communication
   - voice
+封面: "https://i.ytimg.com/vi_webp/eIho2S0ZahI/maxresdefault.webp"
+来源: "https://www.youtube.com/watch?v=eIho2S0ZahI"
+频道: "TED"
 ---
 
 # Mini Talk — How to Speak So People Listen

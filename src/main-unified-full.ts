@@ -44,6 +44,14 @@ import {
 import { AIReportCatalogView, AI_REPORT_CATALOG_VIEW_TYPE } from './views/ai-report-catalog-view';
 import sampleEveryday from '../samples/sample-everyday-english.md';
 import sampleMiniTalk from '../samples/sample-mini-talk.md';
+import tedGreatStory from '../samples/ted-ed-great-story.md';
+import tedTariffs from '../samples/ted-ed-tariffs.md';
+import tedDoorway from '../samples/ted-ed-doorway-effect.md';
+import tedDirection from '../samples/ted-ed-sense-of-direction.md';
+import tedExplain from '../samples/ted-ed-explain-complicated.md';
+import tedBirdFlu from '../samples/ted-ed-bird-flu.md';
+import tedAttention from '../samples/ted-ed-attention-span.md';
+import tedMagnets from '../samples/ted-ed-magnets.md';
 import { AIAnalysisView, AI_ANALYSIS_VIEW_TYPE } from './views/ai-analysis-view';
 import { NavigationPanelView, NAVIGATION_VIEW_TYPE } from './views/navigation-panel-view';
 import { HtmlGuideView, HTML_GUIDE_VIEW_TYPE } from './views/html-guide-view';
@@ -1639,9 +1647,19 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 	}
 
 	// ── Shadowing Workshop 目录页 ── 自带 sample(seeding 用,仅缺时写入,绝不覆盖)
-	private static readonly BUNDLED_WORKSHOP_SAMPLES: { name: string; content: string }[] = [
-		{ name: 'Sample - Everyday English.md', content: sampleEveryday },
-		{ name: 'Sample - Mini Talk.md', content: sampleMiniTalk },
+	/** 播种版本:v2 追加 8 篇 TED-Ed 跟读笔记(带封面/链接)。老用户按版本增量补齐。 */
+	private static readonly WORKSHOP_SAMPLES_SEED_VERSION = 2;
+	private static readonly BUNDLED_WORKSHOP_SAMPLES: { name: string; content: string; since: number }[] = [
+		{ name: 'Sample - Everyday English.md', content: sampleEveryday, since: 1 },
+		{ name: 'Sample - Mini Talk.md', content: sampleMiniTalk, since: 1 },
+		{ name: 'TED-Ed — 4 ways to tell a great story.md', content: tedGreatStory, since: 2 },
+		{ name: 'TED-Ed — What are tariffs, and how do they work.md', content: tedTariffs, since: 2 },
+		{ name: 'TED-Ed — Ever walk into a room and forget what you were doing.md', content: tedDoorway, since: 2 },
+		{ name: 'TED-Ed — Why do some people have a better sense of direction.md', content: tedDirection, since: 2 },
+		{ name: 'TED-Ed — How to explain something complicated.md', content: tedExplain, since: 2 },
+		{ name: 'TED-Ed — Everything you need to know about bird flu.md', content: tedBirdFlu, since: 2 },
+		{ name: 'TED-Ed — 4 ways to fix your attention span.md', content: tedAttention, since: 2 },
+		{ name: 'TED-Ed — Why magnets stumped scientists for so long.md', content: tedMagnets, since: 2 },
 	];
 
 	/** 目录页点卡片:打开笔记 + 启动跟读工坊(autoDetectVideo 自动读取该笔记)。 */
@@ -1669,19 +1687,31 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 	 * 升级路径:文件夹已存在(老用户/自建)时直接标记已播种,不补任何文件,保留其既有内容。
 	 */
 	public async ensureWorkshopSamples(folder: string): Promise<void> {
-		if (this.settings.workshopCatalogSeeded) return;
+		// 播种按版本增量推进:老用户(v1 只播了 2 篇)在 v2 只补新增文件,
+		// 已存在的文件一律不覆盖;整个文件夹被删则跳过(删除自由交给用户)。
+		const seedVersion = this.settings.workshopCatalogSeedVersion
+			|| (this.settings.workshopCatalogSeeded ? 1 : 0);
+		if (seedVersion >= LanguageMadeEasyPlugin.WORKSHOP_SAMPLES_SEED_VERSION) return;
 		const adapter = this.app.vault.adapter as unknown;
 		try {
-			if (await adapter.exists(folder)) {
-				this.settings.workshopCatalogSeeded = true;
-				await this.saveSettings();
-				return;
+			if (!(await adapter.exists(folder))) {
+				// 全新用户:建文件夹写全部;老用户已删文件夹:只推进版本,不重建。
+				if (!this.settings.workshopCatalogSeeded) {
+					await adapter.mkdir(folder);
+				}
 			}
-			await adapter.mkdir(folder);
-			for (const s of LanguageMadeEasyPlugin.BUNDLED_WORKSHOP_SAMPLES) {
-				await adapter.write(`${folder}/${s.name}`, s.content);
+			if (await adapter.exists(folder)) {
+				for (const s of LanguageMadeEasyPlugin.BUNDLED_WORKSHOP_SAMPLES) {
+					if ((s.since || 1) > seedVersion) {
+						const path = `${folder}/${s.name}`;
+						if (!(await adapter.exists(path))) {
+							await adapter.write(path, s.content);
+						}
+					}
+				}
 			}
 			this.settings.workshopCatalogSeeded = true;
+			this.settings.workshopCatalogSeedVersion = LanguageMadeEasyPlugin.WORKSHOP_SAMPLES_SEED_VERSION;
 			await this.saveSettings();
 		} catch (e) {
 			console.warn('[LME] ensureWorkshopSamples failed:', e);

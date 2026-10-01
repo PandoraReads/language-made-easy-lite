@@ -4,6 +4,9 @@ tags:
   - conversation
   - food-ordering
   - daily-life
+封面: "https://i.ytimg.com/vi_webp/BeU0JoSaKAI/maxresdefault.webp"
+来源: "https://www.youtube.com/watch?v=BeU0JoSaKAI"
+频道: "Everyday English"
 ---
 
 # Everyday English — At a Coffee Shop

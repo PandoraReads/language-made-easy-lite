@@ -312,6 +312,11 @@ export interface LMESettings {
     transcriptionApiKey: string;
     transcriptionModel: string;         // e.g. 'whisper-1', 'whisper-large-v3'
 
+    // Workshop catalog seeding: 0/absent = never; 1 = legacy (2 samples); 2 = +8 TED-Ed notes
+    workshopCatalogSeedVersion?: number;
+    // YouTube subscriptions default-channel seeding: 0/absent = not yet; 1 = TED-Ed + BBC Learning English
+    youtubeSubsSeedVersion?: number;
+
     // SRT → subtitle note conversion
     subtitleNoteFolder: string;         // default output folder for generated subtitle notes ('' = ask each run)
     autoOpenSubtitleNote: boolean;      // auto-open the generated note after conversion

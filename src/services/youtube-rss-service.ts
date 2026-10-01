@@ -91,6 +91,12 @@ export class YouTubeRssService {
     /** 串行化读-合-写,防刷新/标记/增删并发交错。 */
     private writeQueue: Promise<void> = Promise.resolve();
 
+    /** 预置订阅频道(channelId 均经 YouTube 页面 canonical/externalId 双源核实)。 */
+    private static readonly DEFAULT_CHANNELS: { channelId: string; channelName: string; channelUrl: string }[] = [
+        { channelId: 'UCsooa4yRKGN_zEE8iknghZA', channelName: 'TED-Ed', channelUrl: 'https://www.youtube.com/@TEDEd' },
+        { channelId: 'UCHaHD477h-FeBbVh9Sh7syA', channelName: 'BBC Learning English', channelUrl: 'https://www.youtube.com/@bbclearningenglish' },
+    ];
+
     constructor(private readonly plugin: LanguageMadeEasyPlugin) {}
 
     private get storePath(): string {
@@ -158,6 +164,29 @@ export class YouTubeRssService {
         };
         const migrated = migrateFromSettings(fileStore, legacy);
         this.store = pruneTombstones(migrated.store);
+
+        // 预置订阅(TED-Ed / BBC Learning English):一次性按版本补充。
+        // 已在列表的跳过;墓碑(用户删过该频道)永久跳过;之后不再重复添加。
+        if (!this.plugin.settings.youtubeSubsSeedVersion) {
+            const now = Date.now();
+            const known = new Set(this.store.subscriptions.map((sub) => sub.channelId));
+            for (const ch of YouTubeRssService.DEFAULT_CHANNELS) {
+                if (known.has(ch.channelId)) continue;
+                if (this.store.removed.subscriptions[ch.channelId] !== undefined) continue;
+                this.store.subscriptions.push({
+                    id: ch.channelId,
+                    channelId: ch.channelId,
+                    channelName: ch.channelName,
+                    channelUrl: ch.channelUrl,
+                    feedUrl: `https://www.youtube.com/feeds/videos.xml?channel_id=${ch.channelId}`,
+                    createdAt: now,
+                    lastCheckedAt: 0,
+                });
+                needsWrite = true;
+            }
+            this.plugin.settings.youtubeSubsSeedVersion = 1;
+            try { await this.plugin.saveSettings(); } catch (e) { console.warn('[LME] 预置订阅版本落盘失败', e); }
+        }
 
         if (migrated.changed || needsWrite) {
             try {
