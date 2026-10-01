@@ -56,6 +56,21 @@ export type AIProviderKind = 'openai' | 'gemini';
 // Learning languages supported by flashcard decks and AI features
 export type LanguageId = 'english' | 'german' | 'french' | 'spanish' | 'korean' | 'russian' | 'japanese' | 'chinese';
 
+// UI theme id -> display name (single source; settings dropdown, theme-cycle
+// command and switch notice all read this so names never drift apart)
+export const UI_THEME_LABELS: Record<LMESettings['uiStyle'], string> = {
+    'paper-ink': 'Paper & Ink (经典纸墨)',
+    'mint-coach': 'Mint Atelier (薄荷雅境)',
+    'rose-blush': 'Rose Blush (蔷薇柔粉)',
+    'lavender-dream': 'Lavender Dream (紫藤之梦)',
+    'candy-pop': 'Candy Pop (糖果派对)',
+    'mindful-oasis': 'Mindful Oasis (童心绿洲)',
+    'coral-warmth': 'Coral Warmth (珊瑚暖阳)',
+    'ocean-glass': 'Ocean Glass (海洋之心)',
+    'aurora-prism': 'Aurora Prism (极光棱镜)',
+    'neon-lime': 'Dark Lemon (暗夜柠檬)',
+};
+
 export interface AIProviderConfig {
     id: string;          // preset ids are stable ('openai'/'deepseek'/...); custom = 'custom-<ts>'
     name: string;        // display name

@@ -52,11 +52,13 @@ export default {
 		currentLanguageName: '当前学习语言',
 	fullEditionNote: '更多选项为高级版功能,当前锁定为免费版可用设置',
 		currentLanguageDesc: '选择当前学习的语言（切换后所有功能将使用新语言）',
+		fullEditionLangNote: '免费版锁定为英语；完整版可切换德语 / 法语 / 西班牙语 / 韩语 / 俄语 / 日语 / 中文，全部 8 种语言。',
 
 		// UI Style
 		uiStyle: '界面风格 / UI Style',
 		uiStyleName: 'UI 主题风格',
-		uiStyleDesc: '选择界面视觉风格（切换后立即生效）。免费版仅经典纸墨，其余主题包含在完整版中。',
+		uiStyleDesc: '选择界面视觉风格（切换后立即生效），下拉框显示当前使用的主题。',
+		fullEditionThemeNote: '免费版锁定为经典纸墨；完整版另含 9 款主题：薄荷雅境、蔷薇柔粉、紫藤之梦、糖果派对、童心绿洲、珊瑚暖阳、海洋之心、极光棱镜、暗夜柠檬。',
 
 		// Double-click Lookup
 		lookupSection: '查词设置',
@@ -74,7 +76,8 @@ export default {
 		flashcardCardModeWord: '单词面（正面显示单词）',
 		flashcardCardModeCloze: '挖空例句面（正面显示原文例句，目标词挖空）',
 		flashcardStudyMode: '默认学习模式',
-		flashcardStudyModeDesc: '打开复习界面时的默认学习模式（顶部可随时切换）。',
+		flashcardStudyModeDesc: '打开复习界面时的默认学习模式（顶部可随时切换），下拉框显示当前使用的模式。',
+		fullEditionStudyModeNote: '完整版还包含「听力（听音辨词）」与「填空（看挖空例句填词）」两种模式。',
 		flashcardStudyModeFlip: '翻卡（看词回想释义）',
 		flashcardStudyModeAudio: '听力（听音辨词）',
 		flashcardStudyModeWrite: '填空（看挖空例句填词）',
@@ -121,6 +124,11 @@ export default {
 			videoNoteFolderPlaceholder: '例如: Videos/Notes',
 			workshopFolder: '跟读目录文件夹',
 			workshopFolderDesc: '跟读工坊目录页读取的文件夹。留空 = 默认「LME Workshop」(自带示例)。',
+			// 文件夹选择器置顶「留空/恢复默认」项文案(各设置留空语义不同,按处给文案)
+			pickFolderEmptyRoot: '（留空：仓库根目录）',
+			pickFolderEmptyWorkshopDefault: '（留空：默认「LME Workshop」）',
+			pickFolderEmptyAskEachRun: '（留空：每次运行时手动选择）',
+			pickFolderEmptyCurrentNote: '（留空：当前笔记所在文件夹）',
 			youtubeRssSection: 'YouTube 频道订阅',
 			youtubeRssInterval: '检查间隔（分钟）',
 			youtubeRssIntervalDesc: '仅在 Obsidian 运行时检查频道 Feed。',

@@ -4,9 +4,10 @@
 
 import { App, PluginSettingTab, Setting, Platform, Notice, FuzzySuggestModal, Modal, setIcon } from 'obsidian';
 import type LanguageMadeEasyPlugin from './main-unified-full';
-import { DEFAULT_SETTINGS, type LMESettings, BUILTIN_PROMPTS, type PromptTemplate, type AIProviderConfig, type LanguageId, BUILTIN_PROVIDERS } from './models';
+import { DEFAULT_SETTINGS, type LMESettings, BUILTIN_PROMPTS, type PromptTemplate, type AIProviderConfig, type LanguageId, BUILTIN_PROVIDERS, UI_THEME_LABELS } from './models';
 import { FlashcardManagerModal } from './ui/flashcard-manager-modal';
 import { UpgradeModal } from './ui/upgrade-modal';
+import { VaultFolderSuggestModal } from './ui/vault-folder-suggest';
 import { db } from './core/Database';
 import { randomUUID } from './mocks/crypto';
 import { t } from './i18n';
@@ -15,6 +16,21 @@ import { FREE_MDX_DICT_LIMIT } from './config/free-limits';
 
 export { DEFAULT_SETTINGS };
 export type { LMESettings };
+
+/** 设置页语种展示名(带旗标):顶部 tab 导航与「当前学习语言」下拉共用。 */
+const SETTINGS_LANGUAGE_LABELS: Record<LanguageId, string> = {
+	english: '🇬🇧 English',
+	german: '🇩🇪 Deutsch',
+	french: '🇫🇷 Français',
+	spanish: '🇪🇸 Español',
+	korean: '🇰🇷 한국어',
+	russian: '🇷🇺 Русский',
+	japanese: '🇯🇵 日本語',
+	chinese: '🇨🇳 中文',
+};
+
+/** 设置页语种 tab 顺序(general 在前,由调用方拼接)。 */
+const LANGUAGE_TAB_ORDER: LanguageId[] = ['english', 'german', 'french', 'spanish', 'korean', 'russian', 'japanese', 'chinese'];
 
 // models.ts 未导出 MdxDictionary,也未在 LMESettings 上声明 localDictionaries
 // (两者在 main-unified-full.ts / UnifiedDictionaryService.ts 中同样被裸引用)。
@@ -64,7 +80,8 @@ interface LmeSettingDefinitionItem {
 		type: 'toggle' | 'dropdown' | 'text' | 'textarea' | 'number' | 'file' | 'folder' | 'slider' | 'color';
 		key: string;
 		defaultValue?: unknown;
-		options?: { value: string; label: string }[];
+		/** dropdown 专用:value -> label 映射(官方 1.13 schema 是 Record,不是数组)。 */
+		options?: Record<string, string>;
 	};
 }
 
@@ -88,15 +105,8 @@ export class LMESettingTab extends PluginSettingTab {
 		const tabNav = containerEl.createDiv('lme-settings-tabnav');
 
 		const tabs = [
-			{ id: 'general', name: t('settings.generalTab'), icon: '⚙️' },
-			{ id: 'english', name: '🇬🇧 English', icon: '' },
-			{ id: 'german', name: '🇩🇪 Deutsch', icon: '' },
-			{ id: 'french', name: '🇫🇷 Français', icon: '' },
-			{ id: 'spanish', name: '🇪🇸 Español', icon: '' },
-			{ id: 'korean', name: '🇰🇷 한국어', icon: '' },
-			{ id: 'russian', name: '🇷🇺 Русский', icon: '' },
-			{ id: 'japanese', name: '🇯🇵 日本語', icon: '' },
-			{ id: 'chinese', name: '🇨🇳 中文', icon: '' }
+			{ id: 'general' as const, name: t('settings.generalTab') },
+			...LANGUAGE_TAB_ORDER.map(id => ({ id, name: SETTINGS_LANGUAGE_LABELS[id] })),
 		];
 
 		tabs.forEach(tab => {
@@ -211,6 +221,46 @@ export class LMESettingTab extends PluginSettingTab {
 			});
 	}
 
+	/**
+	 * 路径类设置的统一构建:文本输入框 + 右侧「浏览」文件夹按钮。
+	 * 浏览打开 vault 文件夹模糊选择器(置顶一项「留空/恢复默认」,文案按处给定),
+	 * 选中后写回输入框并经 setValue 持久化;手动输入路径仍走同一 setValue。
+	 */
+	private addFolderSetting(
+		containerEl: HTMLElement,
+		name: string,
+		desc: string,
+		placeholder: string,
+		getValue: () => string,
+		setValue: (v: string) => void | Promise<void>,
+		emptyLabel: string,
+	): void {
+		const setting = new Setting(containerEl).setName(name).setDesc(desc);
+		let inputEl: HTMLInputElement | null = null;
+		setting.addText(text => {
+			inputEl = text.inputEl;
+			text.setPlaceholder(placeholder)
+				.setValue(getValue())
+				.onChange(v => { void setValue(v.trim()); });
+			text.inputEl.setCssStyles({ flex: '1 1 180px' });
+		});
+		setting.addButton(btn => btn
+			.setIcon('folder-open')
+			.setTooltip(t('common.browse'))
+			.onClick(() => {
+				const input = inputEl;
+				if (!input) return;
+				new VaultFolderSuggestModal(this.app, {
+					current: getValue(),
+					emptyLabel,
+					onPick: folder => {
+						input.value = folder;
+						return setValue(folder);
+					},
+				}).open();
+			}));
+	}
+
 	// ── 1.13+ 声明式设置搜索 ────────────────────────────────
 	// obsidian 1.12 typings 尚无此 API,这里用本地结构化类型;运行在 1.13+ 时
 	// Obsidian 读取这些定义把设置纳入全局设置搜索。仅服务搜索定位,不改变
@@ -218,20 +268,20 @@ export class LMESettingTab extends PluginSettingTab {
 
 	public getSettingDefinitions(): LmeSettingDefinitionItem[] {
 		return [
-			{ name: t('settings.currentLanguageName'), desc: t('settings.currentLanguageDesc'), control: { type: 'dropdown', key: 'activeLanguage', defaultValue: 'english', options: [{ value: 'english', label: 'English' }] } },
-			{ name: t('settings.uiStyleName'), desc: t('settings.uiStyleDesc'), control: { type: 'dropdown', key: 'uiStyle', defaultValue: 'paper-ink', options: [{ value: 'paper-ink', label: 'Paper & Ink' }] } },
+			{ name: t('settings.currentLanguageName'), desc: `${t('settings.currentLanguageDesc')}\n${t('settings.fullEditionLangNote')}`, control: { type: 'dropdown', key: 'activeLanguage', defaultValue: 'english', options: { english: SETTINGS_LANGUAGE_LABELS.english } } },
+			{ name: t('settings.uiStyleName'), desc: `${t('settings.uiStyleDesc')}\n${t('settings.fullEditionThemeNote')}`, control: { type: 'dropdown', key: 'uiStyle', defaultValue: 'paper-ink', options: { 'paper-ink': UI_THEME_LABELS['paper-ink'] } } },
 			{ name: t('settings.doubleClickLookup'), desc: t('settings.doubleClickLookupDesc'), control: { type: 'toggle', key: 'doubleClickLookupEnabled', defaultValue: true } },
 			{ name: t('settings.dailyLimit'), desc: t('settings.dailyLimitDesc'), control: { type: 'number', key: 'dailyReviewLimit', defaultValue: 0 } },
-			{ name: t('settings.flashcardStudyMode'), desc: t('settings.flashcardStudyModeDesc'), control: { type: 'dropdown', key: 'flashcardStudyMode', defaultValue: 'flip', options: [{ value: 'flip', label: t('settings.flashcardStudyModeFlip') }] } },
+			{ name: t('settings.flashcardStudyMode'), desc: `${t('settings.flashcardStudyModeDesc')}\n${t('settings.fullEditionStudyModeNote')}`, control: { type: 'dropdown', key: 'flashcardStudyMode', defaultValue: 'flip', options: { flip: t('settings.flashcardStudyModeFlip') } } },
 			{ name: t('settings.autoCleanup'), desc: t('settings.autoCleanupDesc'), control: { type: 'toggle', key: 'autoCleanupMastered', defaultValue: false } },
 			{ name: t('settings.cleanupDelay'), desc: t('settings.cleanupDelayDesc'), control: { type: 'number', key: 'cleanupDelayDays', defaultValue: 30 } },
 			{ name: t('settings.videoNoteFolder'), desc: t('settings.videoNoteFolderDesc'), control: { type: 'folder', key: 'videoNoteFolder', defaultValue: '' } },
 			{ name: t('settings.videoDownload'), desc: t('settings.videoDownloadDesc'), control: { type: 'folder', key: 'videoDownloadFolder', defaultValue: '' } },
 			{ name: t('settings.subtitleNoteFolder'), desc: t('settings.subtitleNoteFolderDesc'), control: { type: 'folder', key: 'subtitleNoteFolder', defaultValue: '' } },
 			{ name: t('settings.autoOpenSubtitleNote'), desc: t('settings.autoOpenSubtitleNoteDesc'), control: { type: 'toggle', key: 'autoOpenSubtitleNote', defaultValue: false } },
-			{ name: t('settings.languageLevel'), desc: t('settings.languageLevelDesc'), control: { type: 'dropdown', key: 'englishLevel', defaultValue: 'intermediate', options: [
-				{ value: 'beginner', label: 'Beginner' }, { value: 'intermediate', label: 'Intermediate' }, { value: 'advanced', label: 'Advanced' }, { value: 'native', label: 'Native' },
-			] } },
+			{ name: t('settings.languageLevel'), desc: t('settings.languageLevelDesc'), control: { type: 'dropdown', key: 'englishLevel', defaultValue: 'intermediate', options: {
+				beginner: t('settings.levelBeginner'), intermediate: t('settings.levelIntermediate'), advanced: t('settings.levelAdvanced'), native: t('settings.levelNative'),
+			} } },
 			{ name: t('settings.transcriptionBaseUrl'), desc: t('settings.transcriptionBaseUrlDesc'), control: { type: 'text', key: 'transcriptionBaseUrl', defaultValue: '' } },
 			{ name: t('settings.transcriptionApiKey'), desc: t('settings.transcriptionApiKeyDesc'), control: { type: 'text', key: 'transcriptionApiKey', defaultValue: '' } },
 			{ name: t('settings.transcriptionModel'), desc: t('settings.transcriptionModelDesc'), control: { type: 'text', key: 'transcriptionModel', defaultValue: '' } },
@@ -256,11 +306,12 @@ export class LMESettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName(t('settings.currentLanguageName'))
-			.setDesc(`${t('settings.currentLanguageDesc')}\n${t('settings.fullEditionNote')}`)
+			.setDesc(`${t('settings.currentLanguageDesc')}\n${t('settings.fullEditionLangNote')}`)
 			.addDropdown(drop => {
-				// 社区免费版:语种入口固定为英语,不再逐次弹付费引导
-				drop.addOption('english', '🇬🇧 English')
-					.setValue('english')
+				// 社区免费版:语种锁定为免费值,下拉框展示当前学习语言;完整版语种见描述说明
+				const current = this.plugin.settings.activeLanguage || 'english';
+				drop.addOption(current, SETTINGS_LANGUAGE_LABELS[current] || current)
+					.setValue(current)
 					.onChange(async () => {
 						await this.plugin.switchLanguage('english');
 						this.display();
@@ -273,11 +324,12 @@ export class LMESettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName(t('settings.uiStyleName'))
-			.setDesc(`${t('settings.uiStyleDesc')}\n${t('settings.fullEditionNote')}`)
+			.setDesc(`${t('settings.uiStyleDesc')}\n${t('settings.fullEditionThemeNote')}`)
 			.addDropdown(drop => {
-				// 社区免费版:主题入口固定为经典纸墨,不再逐次弹付费引导
-				drop.addOption('paper-ink', 'Paper & Ink (经典纸墨)')
-					.setValue('paper-ink')
+				// 社区免费版:主题锁定为当前免费值,下拉框展示当前主题;完整版主题见描述说明
+				const current = this.plugin.settings.uiStyle || 'paper-ink';
+				drop.addOption(current, UI_THEME_LABELS[current] || current)
+					.setValue(current)
 					.onChange(async () => {
 						this.plugin.settings.uiStyle = 'paper-ink';
 						await this.plugin.saveSettings();
@@ -318,11 +370,17 @@ export class LMESettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName(t('settings.flashcardStudyMode'))
-			.setDesc(`${t('settings.flashcardStudyModeDesc')}\n${t('settings.fullEditionNote')}`)
+			.setDesc(`${t('settings.flashcardStudyModeDesc')}\n${t('settings.fullEditionStudyModeNote')}`)
 			.addDropdown(drop => {
-				// 社区免费版:学习模式入口固定为翻卡,不再逐次弹付费引导
-				drop.addOption('flip', t('settings.flashcardStudyModeFlip'))
-					.setValue('flip')
+				// 社区免费版:学习模式锁定为当前免费值,下拉框展示当前模式;完整版模式见描述说明
+				const modeLabels: Record<LMESettings['flashcardStudyMode'], string> = {
+					flip: t('settings.flashcardStudyModeFlip'),
+					audio: t('settings.flashcardStudyModeAudio'),
+					write: t('settings.flashcardStudyModeWrite'),
+				};
+				const current = this.plugin.settings.flashcardStudyMode || 'flip';
+				drop.addOption(current, modeLabels[current])
+					.setValue(current)
 					.onChange(async () => {
 						this.plugin.settings.flashcardStudyMode = 'flip';
 						await this.plugin.saveSettings();
@@ -403,56 +461,46 @@ export class LMESettingTab extends PluginSettingTab {
 			cls: 'lme-settings-hint'
 		});
 
-		new Setting(containerEl)
-			.setName(t('settings.videoFolder'))
-			.setDesc(t('settings.videoFolderDesc'))
-			.addText(t => {
-				t.setPlaceholder('Videos/Bilibili')
-					.setValue(this.plugin.settings.videoDownloadFolder || '')
-					.onChange(async (v) => {
-						this.plugin.settings.videoDownloadFolder = v.trim();
-						await this.plugin.saveSettings();
-					});
-				})
-				.addButton(btn => btn
-					.setButtonText(t('common.browse'))
-					.onClick(() => {
-						const folders = this.getAllFolders();
-						const suggestions = folders.length > 0 ? folders : [];
+		this.addFolderSetting(
+			containerEl,
+			t('settings.videoFolder'),
+			t('settings.videoFolderDesc'),
+			'Videos/Bilibili',
+			() => this.plugin.settings.videoDownloadFolder || '',
+			async (v) => {
+				this.plugin.settings.videoDownloadFolder = v;
+				await this.plugin.saveSettings();
+			},
+			t('settings.pickFolderEmptyCurrentNote'),
+		);
 
-						const contentEl = btn.buttonEl.closest('.setting-item')?.querySelector('input');
-						if (contentEl && suggestions.length > 0) {
-							this.showFolderSuggest(contentEl, suggestions);
-						}
-					}));
+		this.addFolderSetting(
+			containerEl,
+			t('settings.videoNoteFolder'),
+			t('settings.videoNoteFolderDesc'),
+			t('settings.videoNoteFolderPlaceholder'),
+			() => this.plugin.settings.videoNoteFolder || '',
+			async (v) => {
+				this.plugin.settings.videoNoteFolder = v;
+				await this.plugin.saveSettings();
+			},
+			t('settings.pickFolderEmptyRoot'),
+		);
 
-			new Setting(containerEl)
-				.setName(t('settings.videoNoteFolder'))
-				.setDesc(t('settings.videoNoteFolderDesc'))
-				.addText(text => {
-					text.setPlaceholder(t('settings.videoNoteFolderPlaceholder'))
-						.setValue(this.plugin.settings.videoNoteFolder || '')
-						.onChange(async (v) => {
-							this.plugin.settings.videoNoteFolder = v.trim();
-							await this.plugin.saveSettings();
-						});
-					text.inputEl.setCssStyles({ width: '100%' });
-				});
-
-			new Setting(containerEl)
-				.setName(t('settings.workshopFolder'))
-				.setDesc(t('settings.workshopFolderDesc'))
-				.addText(text => {
-					// 走 sidecar 存储(setWorkshopFolder 内部会镜像回 data.json 兼容旧版并刷新目录页):
-					// 直接读写 settings.workshopCatalogFolder 会被另一端的旧快照覆写,
-					// 手机端目录页就会一直回落到默认 LME Workshop
-					text.setPlaceholder('LME Workshop')
-						.setValue(this.plugin.getWorkshopFolderRaw())
-						.onChange(async (v) => {
-							await this.plugin.setWorkshopFolder(v);
-						});
-					text.inputEl.setCssStyles({ width: '100%' });
-				});
+		// 走 sidecar 存储(setWorkshopFolder 内部会镜像回 data.json 兼容旧版并刷新目录页):
+		// 直接读写 settings.workshopCatalogFolder 会被另一端的旧快照覆写,
+		// 手机端目录页就会一直回落到默认 LME Workshop
+		this.addFolderSetting(
+			containerEl,
+			t('settings.workshopFolder'),
+			t('settings.workshopFolderDesc'),
+			'LME Workshop',
+			() => this.plugin.getWorkshopFolderRaw(),
+			async (v) => {
+				await this.plugin.setWorkshopFolder(v);
+			},
+			t('settings.pickFolderEmptyWorkshopDefault'),
+		);
 
 			new Setting(containerEl).setName("").setHeading();
 			new Setting(containerEl)
@@ -634,18 +682,18 @@ export class LMESettingTab extends PluginSettingTab {
 				t.inputEl.setCssStyles({ width: '100%' });
 			});
 
-		new Setting(containerEl)
-			.setName(t('settings.subtitleNoteFolder'))
-			.setDesc(t('settings.subtitleNoteFolderDesc'))
-			.addText(text => {
-				text.setPlaceholder(t('settings.subtitleNoteFolderPlaceholder'))
-					.setValue(this.plugin.settings.subtitleNoteFolder || '')
-					.onChange(async (v) => {
-						this.plugin.settings.subtitleNoteFolder = v.trim();
-						await this.plugin.saveSettings();
-					});
-				text.inputEl.setCssStyles({ width: '100%' });
-			});
+		this.addFolderSetting(
+			containerEl,
+			t('settings.subtitleNoteFolder'),
+			t('settings.subtitleNoteFolderDesc'),
+			t('settings.subtitleNoteFolderPlaceholder'),
+			() => this.plugin.settings.subtitleNoteFolder || '',
+			async (v) => {
+				this.plugin.settings.subtitleNoteFolder = v;
+				await this.plugin.saveSettings();
+			},
+			t('settings.pickFolderEmptyAskEachRun'),
+		);
 
 		new Setting(containerEl)
 			.setName(t('settings.autoOpenSubtitleNote'))
@@ -693,16 +741,18 @@ export class LMESettingTab extends PluginSettingTab {
 		const vocabFolderKey = `${language}VocabNoteFolder` as keyof LMESettings;
 		const vocabFileNameKey = `${language}VocabNoteFileName` as keyof LMESettings;
 
-		new Setting(containerEl)
-			.setName(t('settings.vocabFolder'))
-			.setDesc(t('settings.vocabFolderDesc'))
-			.addText(t => t
-				.setPlaceholder(`${langNameEn}/Vocabulary`)
-				.setValue(this.plugin.settings[vocabFolderKey] as string || '')
-				.onChange(async (v) => {
-					(this.plugin.settings[vocabFolderKey] as string) = v.trim();
-					await this.plugin.saveSettings();
-				}));
+		this.addFolderSetting(
+			containerEl,
+			t('settings.vocabFolder'),
+			t('settings.vocabFolderDesc'),
+			`${langNameEn}/Vocabulary`,
+			() => (this.plugin.settings[vocabFolderKey] as string) || '',
+			async (v) => {
+				(this.plugin.settings[vocabFolderKey] as string) = v;
+				await this.plugin.saveSettings();
+			},
+			t('settings.pickFolderEmptyRoot'),
+		);
 
 		new Setting(containerEl)
 			.setName(t('settings.vocabFileName'))
@@ -937,47 +987,6 @@ export class LMESettingTab extends PluginSettingTab {
 			btn.setButtonText(t('settings.mobileDictImport'))
 				.setDisabled(true);
 		});
-	}
-
-
-	private getAllFolders(): string[] {
-		const folders = new Set<string>();
-		this.app.vault.getAllFolders().forEach(f => {
-			if (f.path !== '/') folders.add(f.path);
-		});
-		return Array.from(folders).sort();
-	}
-
-	private showFolderSuggest(inputEl: HTMLInputElement, folders: string[]): void {
-		const modal = new class extends FuzzySuggestModal<string> {
-			private parent: LMESettingTab;
-			private input: HTMLInputElement;
-			private allFolders: string[];
-
-			constructor(parent: LMESettingTab, input: HTMLInputElement, allFolders: string[]) {
-				super(parent.app);
-				this.parent = parent;
-				this.input = input;
-				this.allFolders = allFolders;
-				this.setPlaceholder(t('common.search'));
-			}
-
-			getItems(): string[] {
-				return this.allFolders;
-			}
-
-			getItemText(item: string): string {
-				return item;
-			}
-
-			onChooseItem(item: string): void {
-				this.input.value = item;
-				this.input.dispatchEvent(new Event('input'));
-				this.parent.plugin.settings.videoDownloadFolder = item;
-				void this.parent.plugin.saveSettings();
-			}
-		}(this, inputEl, folders);
-		modal.open();
 	}
 
 		// ── Custom AI Provider Modals ─────────────────────────

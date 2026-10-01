@@ -20,7 +20,7 @@ import {
 } from 'obsidian';
 import { LMESettingTab, DEFAULT_SETTINGS } from './Settings';
 import type { LMESettings, PromptTemplate, MdxDictionary, AIProviderConfig } from './models';
-import { BUILTIN_PROMPTS, BUILTIN_PROVIDERS } from './models';
+import { BUILTIN_PROMPTS, BUILTIN_PROVIDERS, UI_THEME_LABELS } from './models';
 import { AIService } from './core/AIService';
 import { DictView, DICT_VIEW_TYPE } from './views/dict-view';
 import { FlashcardView, FLASHCARD_VIEW_TYPE, AddFlashcardModal } from './views/flashcard-view';
@@ -323,30 +323,18 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 				id: 'cycle-theme',
 				name: t('commands.cycleTheme'),
 				callback: () => {
-					const themes = ['paper-ink', 'coral-warmth', 'candy-pop', 'lavender-dream', 'mint-coach', 'rose-blush', 'mindful-oasis', 'ocean-glass', 'aurora-prism', 'neon-lime'];
-					const themeNames: Record<string, string> = {
-						'paper-ink': 'Paper Ink (经典纸墨)',
-						'mint-coach': 'Mint Atelier (薄荷雅境)',
-						'rose-blush': 'Rose Blush (蔷薇柔粉)',
-						'lavender-dream': 'Lavender Dream (紫藤之梦)',
-						'candy-pop': 'Candy Pop (糖果派对)',
-						'mindful-oasis': 'Mindful Oasis (童心绿洲)',
-						'coral-warmth': 'Coral Warmth (珊瑚暖阳)',
-						'ocean-glass': 'Ocean Glass (海洋之心)',
-						'aurora-prism': 'Aurora Prism (极光棱镜)',
-						'neon-lime': 'Dark Lemon (暗夜柠檬)',
-					};
+					const themes: LMESettings['uiStyle'][] = ['paper-ink', 'coral-warmth', 'candy-pop', 'lavender-dream', 'mint-coach', 'rose-blush', 'mindful-oasis', 'ocean-glass', 'aurora-prism', 'neon-lime'];
 					const current = this.settings.uiStyle || 'paper-ink';
 					const idx = themes.indexOf(current);
 					const next = themes[(idx + 1) % themes.length];
 					if (next !== 'paper-ink') {
-						new UpgradeModal(this.app, themeNames[next] || next).open();
+						new UpgradeModal(this.app, UI_THEME_LABELS[next] || next).open();
 						return;
 					}
 					this.settings.uiStyle = next;
 					this.applyUiTheme();
 					void this.saveSettings();
-					new Notice(t('notifications.themeSwitched', { name: themeNames[next] || next }));
+					new Notice(t('notifications.themeSwitched', { name: UI_THEME_LABELS[next] || next }));
 				}
 			});
 
@@ -575,19 +563,7 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 		this.settings.uiStyle = theme as unknown;
 		await this.saveSettings();
 		this.applyUiTheme();
-		const names: Record<string, string> = {
-			'paper-ink': 'Paper & Ink (经典纸墨)',
-			'mint-coach': 'Mint Atelier (薄荷雅境)',
-			'rose-blush': 'Rose Blush (蔷薇柔粉)',
-			'lavender-dream': 'Lavender Dream (紫藤之梦)',
-			'candy-pop': 'Candy Pop (糖果派对)',
-			'mindful-oasis': 'Mindful Oasis (童心绿洲)',
-			'coral-warmth': 'Coral Warmth (珊瑚暖阳)',
-			'ocean-glass': 'Ocean Glass (海洋之心)',
-			'aurora-prism': 'Aurora Prism (极光棱镜)',
-			'neon-lime': 'Dark Lemon (暗夜柠檬)',
-		};
-		new Notice(t('notifications.themeSwitched', { name: names[theme] || theme }));
+		new Notice(t('notifications.themeSwitched', { name: UI_THEME_LABELS[theme as LMESettings['uiStyle']] || theme }));
 	}
 
 	private buildGeneratedNoteTitle(prefix: string): string {
