@@ -492,11 +492,15 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 		if (!checkSubtitleWeeklyQuota(this.app)) return null;
 		const normalizedUrl = url.trim().startsWith('http') ? url.trim() : `https://${url.trim()}`;
 		// 不再把跟读工坊切到前台:后台复用已有工坊叶做创建/下载,
-		// 没有工坊叶时在右侧边栏静默建一个(不聚焦),最终只弹出笔记自己的标签页。
-		let leaf = this.app.workspace.getLeavesOfType(SHADOWING_VIEW_TYPE)[0];
+		// 最终只弹出笔记自己的标签页。工坊叶统一放在中间栏:
+		// 旧版流程把它建在右侧边栏,遇到时迁到中间栏(独立窗口里的不动)。
+		const { workspace } = this.app;
+		let leaf = workspace.getLeavesOfType(SHADOWING_VIEW_TYPE).find((l) => l.getRoot() === workspace.rootSplit);
 		if (!leaf) {
-			leaf = this.app.workspace.getRightLeaf(false);
-			if (!leaf) { new Notice(t('nav.videoNoteFailed')); return null; }
+			for (const stale of workspace.getLeavesOfType(SHADOWING_VIEW_TYPE)) {
+				if (stale.getRoot() === workspace.rightSplit) stale.detach();
+			}
+			leaf = workspace.getLeaf('tab');
 			await leaf.setViewState({ type: SHADOWING_VIEW_TYPE, active: false });
 		}
 		const view = leaf.view as ShadowingView;
