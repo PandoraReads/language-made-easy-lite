@@ -9818,6 +9818,20 @@ body.lme-shadowing-focus-active .view-content {
     position: relative;
 }
 
+/* Fully hide the view-level scrollbars (scrolling still works) */
+.lme-navigation-view,
+.lme-flashcard-view {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and old Edge */
+}
+
+.lme-navigation-view::-webkit-scrollbar,
+.lme-flashcard-view::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+}
+
 .theme-dark .lme-navigation-view {
     --lme-nav-bg:
         radial-gradient(circle at 50% -12%, rgba(var(--lme-nav-accent-rgb), 0.20), transparent 36%),
@@ -10046,6 +10060,17 @@ body.lme-shadowing-focus-active .view-content {
 .lme-nav-stat small {
     color: var(--text-faint);
     font-size: var(--font-ui-smaller);
+    white-space: nowrap;
+}
+
+/* Long-word locales: value on top, single-line label below (no hint).
+   Wider column gaps keep the nowrap labels from colliding. */
+.lme-nav-stats-grid.is-compact {
+    gap: 6px 18px;
+    width: min(560px, 100%);
+}
+
+.lme-nav-stat.is-compact span {
     white-space: nowrap;
 }
 
@@ -10294,7 +10319,9 @@ body.lme-shadowing-focus-active .view-content {
     display: block;
     max-width: 100%;
     text-align: center;
-    white-space: nowrap;
+    /* Wrap instead of overflowing the card when a line is still too long. */
+    white-space: normal;
+    overflow-wrap: anywhere;
 }
 
 @container (max-width: 760px) {

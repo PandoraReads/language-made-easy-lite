@@ -1,0 +1,253 @@
+<title>Fine Press 调色对照</title>
+<link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    color-scheme:dark;
+    --serif:"Merriweather","Songti SC","Noto Serif CJK SC",Georgia,serif;
+    --mono:"JetBrains Mono",ui-monospace,monospace;
+    /* OLD palette */
+    --o-cream:#FEF9E7;--o-mist:#F5F1E8;--o-aged:#EDE4D8;--o-edge:#E0D9CC;
+    --o-ink:#2C2416;--o-brown:#4A4036;--o-spine:#6B5D4E;--o-gold:#C5A059;
+    --o-green:#3D6B35;--o-seal:#8B3A3A;--o-blue:#4A5D6F;
+    --o-shadow:0 2px 8px rgba(44,40,30,.1);
+    --o-glass:rgba(255,255,255,.65);--o-glassb:rgba(0,0,0,.1);
+    /* NEW palette */
+    --n-cream:#FBF8F2;--n-mist:#F5F1EA;--n-aged:#EDE6DA;--n-edge:#E1DACF;
+    --n-ink:#26201A;--n-brown:#463D33;--n-spine:#665947;--n-gold:#A5814A;
+    --n-green:#37592F;--n-seal:#7E3436;--n-blue:#46586B;
+    --n-shadow:0 1px 2px rgba(38,30,22,.05),0 4px 14px rgba(38,30,22,.08);
+    --n-glass:rgba(251,248,242,.72);--n-glassb:rgba(38,30,22,.09);
+    /* OLD dark */
+    --od-cream:#1e1c1a;--od-ink:#e4ddd2;--od-brown:#b5a898;--od-gold:#d4b06a;
+    --od-seal:#c95c5c;--od-green:#5a9b50;--od-blue:#6a8da0;--od-edge:#3a3530;
+    --od-glass:rgba(0,0,0,.35);
+    /* NEW dark */
+    --nd-cream:#211E1A;--nd-ink:#EAE3D8;--nd-brown:#BCB0A2;--nd-gold:#C9A96A;
+    --nd-seal:#C86A66;--nd-green:#5C9455;--nd-blue:#6E90A4;--nd-edge:#403A33;
+    --nd-glass:rgba(24,21,18,.55);
+  }
+  *{box-sizing:border-box;margin:0}
+  body{background:#141210;color:#EAE3D8;font-family:var(--serif);padding:40px 20px 80px}
+  .wrap{max-width:1180px;margin:0 auto}
+  header{margin-bottom:36px}
+  .kicker{font-family:var(--mono);font-size:11px;letter-spacing:.35em;color:#A5814A;text-transform:uppercase}
+  h1{font-size:30px;font-weight:900;margin:10px 0 6px;letter-spacing:.01em}
+  .sub{color:#BCB0A2;font-size:14px;font-style:italic;max-width:640px;line-height:1.7}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+  @media(max-width:860px){.grid{grid-template-columns:1fr}}
+  .panel{border-radius:14px;overflow:hidden;border:1px solid rgba(234,227,216,.12)}
+  .panel-title{display:flex;justify-content:space-between;align-items:baseline;padding:10px 18px;font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;background:rgba(0,0,0,.35);color:#97897B}
+  .panel-title b{color:#EAE3D8;font-weight:600}
+  .stage{padding:26px 22px;display:flex;flex-direction:column;gap:18px}
+  /* palette stages */
+  .old-l{background:var(--o-cream);color:var(--o-ink)}
+  .new-l{background:var(--n-cream);color:var(--n-ink)}
+  .old-d{background:#1e1c1a;color:var(--od-ink)}
+  .new-d{background:#1B1916;color:var(--nd-ink)}
+  /* component mocks */
+  .search{display:flex;align-items:center;gap:10px;padding:8px 8px 8px 20px;border-radius:50px;max-width:380px}
+  .old-l .search{background:var(--o-cream);border:1px solid var(--o-edge);box-shadow:var(--o-shadow)}
+  .new-l .search{background:var(--n-cream);border:1px solid var(--n-edge);box-shadow:var(--n-shadow)}
+  .old-d .search,.new-d .search{background:var(--od-cream);border:1px solid var(--od-edge);box-shadow:0 2px 8px rgba(0,0,0,.4)}
+  .new-d .search{background:var(--nd-cream);border-color:var(--nd-edge);box-shadow:0 1px 2px rgba(0,0,0,.25),0 6px 20px rgba(0,0,0,.35)}
+  .search svg{width:15px;height:15px;opacity:.5;flex:none}
+  .search .ph{font-size:13px;opacity:.5;font-style:italic;flex:1}
+  .go{border:none;border-radius:40px;padding:8px 20px;font-size:12px;font-weight:700;cursor:default;font-family:var(--serif)}
+  .old-l .go{background:var(--o-ink);color:var(--o-cream)}
+  .new-l .go{background:var(--n-ink);color:var(--n-cream)}
+  .old-d .go{background:var(--od-ink);color:var(--od-cream)}
+  .new-d .go{background:var(--nd-ink);color:var(--nd-cream)}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .btn{border:none;border-radius:4px;padding:9px 20px;font-size:12.5px;font-weight:700;color:#fff;cursor:default;display:inline-flex;align-items:center;gap:7px}
+  .old-l .btn,.old-d .btn{background:var(--o-green)}
+  .new-l .btn,.new-d .btn{background:var(--n-green)}
+  .old-l .btn{box-shadow:var(--o-shadow)}
+  .new-l .btn{box-shadow:var(--n-shadow)}
+  .btn-subtle{background:transparent;border:1px solid;border-radius:6px;padding:7px 14px;font-size:12px;cursor:default}
+  .old-l .btn-subtle{border-color:var(--o-glassb);color:var(--o-brown)}
+  .new-l .btn-subtle{border-color:var(--n-glassb);color:var(--n-brown)}
+  .old-d .btn-subtle{border-color:rgba(255,255,255,.08);color:var(--od-brown)}
+  .new-d .btn-subtle{border-color:rgba(234,227,216,.09);color:var(--nd-brown)}
+  .card{border-radius:12px;padding:18px 20px;position:relative}
+  .old-l .card{background:#fff;border:1px solid var(--o-edge);box-shadow:var(--o-shadow)}
+  .new-l .card{background:#fff;border:1px solid var(--n-edge);box-shadow:var(--n-shadow)}
+  .old-d .card{background:var(--od-glass);border:1px solid rgba(255,255,255,.08)}
+  .new-d .card{background:var(--nd-glass);border:1px solid rgba(234,227,216,.09)}
+  .word{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+  .card h3{font-size:21px;font-weight:900}
+  .old-l .card h3{color:var(--o-ink)}.new-l .card h3{color:var(--n-ink)}
+  .old-d .card h3{color:var(--od-ink)}.new-d .card h3{color:var(--nd-ink)}
+  .phon{font-family:var(--mono);font-size:12px}
+  .old-l .phon{color:var(--o-gold)}.new-l .phon{color:var(--n-gold)}
+  .old-d .phon{color:var(--od-gold)}.new-d .phon{color:var(--nd-gold)}
+  .pos{font-size:11px;font-style:italic;padding:1px 8px;border-radius:4px}
+  .old-l .pos{color:var(--o-seal);background:rgba(139,58,58,.09)}
+  .new-l .pos{color:var(--n-seal);background:rgba(126,52,54,.09)}
+  .old-d .pos{color:var(--od-seal);background:rgba(201,92,92,.12)}
+  .new-d .pos{color:var(--nd-seal);background:rgba(192,95,92,.12)}
+  .def{font-size:13px;line-height:1.75;margin-top:10px}
+  .old-l .def{color:var(--o-brown)}.new-l .def{color:var(--n-brown)}
+  .old-d .def{color:var(--od-brown)}.new-d .def{color:var(--nd-brown)}
+  .stats{display:flex;gap:34px;justify-content:center;padding:14px 0 4px}
+  .stat{text-align:center}
+  .stat b{display:block;font-size:26px;font-weight:900}
+  .old-l .stat b{color:var(--o-seal)}.new-l .stat b{color:var(--n-seal)}
+  .old-d .stat b{color:var(--od-seal)}.new-d .stat b{color:var(--nd-seal)}
+  .stat span{font-size:10px;letter-spacing:.14em;text-transform:uppercase}
+  .old-l .stat span{color:var(--o-brown)}.new-l .stat span{color:var(--n-brown)}
+  .old-d .stat span{color:var(--od-brown)}.new-d .stat span{color:var(--nd-brown)}
+  .tabs{display:flex;gap:8px;flex-wrap:wrap}
+  .tab{font-size:10.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:5px 14px;border-radius:8px 8px 0 0;color:#fff}
+  .t-a-old{background:#e29578}.t-a-new{background:#A2514A}
+  .t-b-old{background:#457b9d}.t-b-new{background:var(--n-blue)}
+  .t-c-old{background:#eab308}.t-c-new{background:var(--n-gold)}
+  .t-d-old{background:#6c5ce7}.t-d-new{background:#46586B}
+  .swatches{display:flex;gap:6px;flex-wrap:wrap}
+  .sw{width:34px;height:22px;border-radius:5px;border:1px solid rgba(128,110,90,.25);position:relative}
+  .sw i{position:absolute;bottom:-17px;left:0;right:0;font-family:var(--mono);font-size:8px;text-align:center;letter-spacing:.03em;font-style:normal}
+  .old-l .sw i{color:var(--o-spine)}.new-l .sw i{color:var(--n-spine)}
+  .old-d .sw i,.new-d .sw i{color:#97897B}
+  .swrow{padding-bottom:20px;margin-top:2px}
+  footer{margin-top:34px;font-family:var(--mono);font-size:11px;color:#79726A;line-height:1.9}
+  footer b{color:#A5814A;font-weight:600}
+  .legend{display:flex;gap:18px;flex-wrap:wrap;margin-top:14px}
+  .lg{display:flex;gap:7px;align-items:center;font-size:12px}
+  .dot{width:11px;height:11px;border-radius:50%}
+</style>
+
+
+<div class="wrap">
+  <header>
+    <div class="kicker">Language Made Easy · Paper &amp; Ink</div>
+    <h1>Fine Press 精装典藏版 — 调色对照</h1>
+    <p class="sub">同一排版，同一布局，只换色彩层：纸色从香蕉黄校到象牙白，墨色加深，金色降饱和为古董烫金，辉光从霓虹收到烛光。左列为现线上版，右列为本次提级。</p>
+  </header>
+
+  <div class="grid">
+    <!-- LIGHT OLD -->
+    <div class="panel">
+      <div class="panel-title"><b>现版 · 亮色</b><span>Paper &amp; Ink v4.0.11</span></div>
+      <div class="stage old-l">
+        <div class="search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          <span class="ph">查一个词,或拖入整段文本…</span>
+          <span class="go">查询</span>
+        </div>
+        <div class="row">
+          <span class="btn">✦ 一键制卡</span>
+          <span class="btn-subtle">AI 精讲</span>
+          <span class="btn-subtle">加入生词本</span>
+        </div>
+        <div class="card">
+          <div class="word"><h3>serendipity</h3><span class="phon">/ˌserənˈdɪpəti/</span><span class="pos">n.</span></div>
+          <p class="def">机缘巧合；意外发现珍奇事物的天赋。一词藏着一个世纪的好运气——由 Horace Walpole 于 1754 年从波斯童话《The Three Princes of Serendip》中提炼而来。</p>
+        </div>
+        <div class="stats">
+          <div class="stat"><b>1,284</b><span>词汇量</span></div>
+          <div class="stat"><b>86</b><span>已测</span></div>
+          <div class="stat"><b>12</b><span>连续天数</span></div>
+        </div>
+        <div class="tabs">
+          <span class="tab t-a-old">跟读</span><span class="tab t-b-old">字幕</span><span class="tab t-c-old">工坊</span><span class="tab t-d-old">批量</span>
+        </div>
+        <div class="swatches swrow">
+          <span class="sw" style="background:#FEF9E7"><i>cream</i></span>
+          <span class="sw" style="background:#2C2416"><i>ink</i></span>
+          <span class="sw" style="background:#C5A059"><i>gold</i></span>
+          <span class="sw" style="background:#8B3A3A"><i>seal</i></span>
+          <span class="sw" style="background:#3D6B35"><i>green</i></span>
+          <span class="sw" style="background:#4A5D6F"><i>blue</i></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- LIGHT NEW -->
+    <div class="panel">
+      <div class="panel-title"><b>提级 · 亮色</b><span>Fine Press Edition</span></div>
+      <div class="stage new-l">
+        <div class="search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          <span class="ph">查一个词,或拖入整段文本…</span>
+          <span class="go">查询</span>
+        </div>
+        <div class="row">
+          <span class="btn">✦ 一键制卡</span>
+          <span class="btn-subtle">AI 精讲</span>
+          <span class="btn-subtle">加入生词本</span>
+        </div>
+        <div class="card">
+          <div class="word"><h3>serendipity</h3><span class="phon">/ˌserənˈdɪpəti/</span><span class="pos">n.</span></div>
+          <p class="def">机缘巧合；意外发现珍奇事物的天赋。一词藏着一个世纪的好运气——由 Horace Walpole 于 1754 年从波斯童话《The Three Princes of Serendip》中提炼而来。</p>
+        </div>
+        <div class="stats">
+          <div class="stat"><b>1,284</b><span>词汇量</span></div>
+          <div class="stat"><b>86</b><span>已测</span></div>
+          <div class="stat"><b>12</b><span>连续天数</span></div>
+        </div>
+        <div class="tabs">
+          <span class="tab t-a-new">跟读</span><span class="tab t-b-new">字幕</span><span class="tab t-c-new">工坊</span><span class="tab t-d-new">批量</span>
+        </div>
+        <div class="swatches swrow">
+          <span class="sw" style="background:#FBF8F2"><i>ivory</i></span>
+          <span class="sw" style="background:#26201A"><i>ink</i></span>
+          <span class="sw" style="background:#A5814A"><i>gold</i></span>
+          <span class="sw" style="background:#7E3436"><i>seal</i></span>
+          <span class="sw" style="background:#37592F"><i>green</i></span>
+          <span class="sw" style="background:#46586B"><i>blue</i></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- DARK OLD -->
+    <div class="panel">
+      <div class="panel-title"><b>现版 · 暗色</b><span>Paper &amp; Ink v4.0.11</span></div>
+      <div class="stage old-d">
+        <div class="search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          <span class="ph">查一个词,或拖入整段文本…</span>
+          <span class="go">查询</span>
+        </div>
+        <div class="card">
+          <div class="word"><h3>serendipity</h3><span class="phon">/ˌserənˈdɪpəti/</span><span class="pos">n.</span></div>
+          <p class="def">机缘巧合；意外发现珍奇事物的天赋。一词藏着一个世纪的好运气——由 Horace Walpole 于 1754 年从波斯童话《The Three Princes of Serendip》中提炼而来。</p>
+        </div>
+        <div class="tabs">
+          <span class="tab t-a-old">跟读</span><span class="tab t-c-old">工坊</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- DARK NEW -->
+    <div class="panel">
+      <div class="panel-title"><b>提级 · 暗色</b><span>Fine Press Edition</span></div>
+      <div class="stage new-d">
+        <div class="search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          <span class="ph">查一个词,或拖入整段文本…</span>
+          <span class="go">查询</span>
+        </div>
+        <div class="card">
+          <div class="word"><h3>serendipity</h3><span class="phon">/ˌserənˈdɪpəti/</span><span class="pos">n.</span></div>
+          <p class="def">机缘巧合；意外发现珍奇事物的天赋。一词藏着一个世纪的好运气——由 Horace Walpole 于 1754 年从波斯童话《The Three Princes of Serendip》中提炼而来。</p>
+        </div>
+        <div class="tabs">
+          <span class="tab t-a-new">跟读</span><span class="tab t-c-new">工坊</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="legend">
+      <span class="lg"><span class="dot" style="background:#FEF9E7"></span>旧纸 #FEF9E7(黄度 62) → <b>#FBF8F2</b> 象牙白(黄度 40)</span>
+      <span class="lg"><span class="dot" style="background:#C5A059"></span>黄铜金 → <b>#A5814A</b> 古董烫金</span>
+      <span class="lg"><span class="dot" style="background:#8B3A3A"></span>印章红 → <b>#7E3436</b> 朱砂</span>
+    </div>
+    <div class="legend" style="margin-top:8px">
+      <span class="lg">紫色残留 rgba(139,92,246) ×3 → 并入靛蓝</span>
+      <span class="lg">珊瑚 #e29578 / 淘宝黄 #eab308 / 紫按钮 #6c5ce7 → 锁回色系</span>
+      <span class="lg">阴影 0 2px 8px 单层 → 环境光+关键光双层</span>
+    </div>
+    <p style="margin-top:16px">零布局改动 · 全部声明均为纯视觉属性 · 边框宽度与样式逐字节一致 · 构建通过 · 正文对比度全部 ≥ WCAG AA(金色 3.4:1 达大字 AA)</p>
+  </footer>
+</div>

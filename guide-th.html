@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Language Made Easy · คู่มือการใช้งาน</title>
+<style>/* ============================================================
+   LME 系统文档风格 · 书卷暖棕（Bookish Warm）
+   面向用户的系统说明文档统一风格
+   ------------------------------------------------------------
+   用法：HTML 生成脚本读取本文件，内联到 <style>。
+   单文件分发时 CSS 随 HTML 一起走，无外部依赖。
+   ============================================================ */
+
+/* ---------- 设计令牌（Design Tokens）---------- */
+:root{
+  /* 底色层：米白书页感 */
+  --bg:#FBF9F5;          /* 主底：温米白 */
+  --soft:#F4EFE6;        /* 次底：羊皮纸暖灰 */
+  --card:#FFFFFF;        /* 卡片：纯白 */
+
+  /* 文字层 */
+  --text:#2C2A26;        /* 主文字：深褐黑 */
+  --muted:#6B6358;       /* 次文字：棕灰 */
+
+  /* 主色：书脊棕 → 砖红强调（纽伯瑞奖章意象）*/
+  --primary:#8B5E3C;     /* 主色：暖棕 */
+  --accent:#C75B4A;      /* 强调：砖红 */
+  --link:#1E6FB0;        /* 链接：沉稳蓝 */
+
+  /* Hero 渐变（可被主题覆盖）*/
+  --g1:#8B5E3C;          /* 渐变起：暖棕 */
+  --g2:#C75B4A;          /* 渐变止：砖红 */
+
+  --border:#E5DED1;      /* 边框：浅米 */
+
+  /* 级别色阶（L1-L4，知识库通用）*/
+  --L1:#E8A33D;          /* L1 暖橙：起步 */
+  --L2:#5A9367;          /* L2 草绿：成长 */
+  --L3:#3D7AA8;          /* L3 海蓝：进阶 */
+  --L4:#7B5AA8;          /* L4 紫罗兰：高阶 */
+}
+
+/* ---------- 基础排版 ---------- */
+*{box-sizing:border-box}
+body{
+  margin:0; padding:0;
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  background:var(--bg); color:var(--text);
+  line-height:1.7; font-size:16px;
+}
+.wrap{max-width:960px; margin:0 auto; padding:32px 28px 80px;}
+
+/* ---------- Hero 头图 ---------- */
+/* 渐变色带 + 圆角下沿，用于文档顶部标题区 */
+header.hero{
+  position:relative; overflow:hidden;
+  background:linear-gradient(135deg,var(--g1) 0%, var(--g2) 100%);
+  color:#FBF9F5; padding:48px 28px; border-radius:0 0 24px 24px;
+  margin:-32px -28px 36px; box-shadow:0 4px 20px rgba(139,94,60,.18);
+}
+/* 书签缎带装饰：右上角双条错落，V 口 + 穿线孔经典书签造型，不贴边 */
+header.hero::after{
+  content:""; position:absolute;
+  top:0; right:64px; width:32px; height:96px;
+  background:
+    radial-gradient(circle 3px at 50% 11px, rgba(0,0,0,.20) 99%, transparent 100%),
+    rgba(255,255,255,.32);
+  clip-path:polygon(0 0, 100% 0, 100% 100%, 50% 76%, 0 100%);
+  box-shadow:0 3px 8px rgba(0,0,0,.14);
+}
+header.hero h1{margin:0 0 8px; font-size:30px; font-weight:700; letter-spacing:.5px;}
+header.hero p{margin:0; opacity:.92; font-size:15px;}
+
+/* ---------- 标题层级 ---------- */
+/* h2：章节标题，带砖红竖条前缀 */
+h2{
+  font-size:22px; color:var(--primary); margin:40px 0 16px;
+  padding-bottom:8px; border-bottom:2px solid var(--border);
+  display:flex; align-items:center; gap:10px;
+}
+h2::before{content:""; width:4px; height:22px; background:var(--accent); border-radius:2px;}
+h3{font-size:18px; color:var(--text); margin:28px 0 12px; font-weight:600;}
+h4{font-size:15px; color:var(--muted); margin:18px 0 8px; text-transform:uppercase; letter-spacing:1px;}
+p{margin:10px 0;}
+strong{color:var(--accent);}
+code{background:var(--soft); padding:2px 6px; border-radius:4px; font-size:14px; color:var(--primary);}
+
+/* ---------- 引用块 ---------- */
+blockquote{
+  margin:16px 0; padding:12px 18px; background:var(--soft);
+  border-left:4px solid var(--accent); border-radius:0 8px 8px 0; color:var(--muted);
+}
+blockquote strong{color:var(--primary);}
+hr{border:none; border-top:1px dashed var(--border); margin:36px 0;}
+
+/* ---------- 表格 ---------- */
+/* 圆角阴影容器 + 表头主色填充 + 隔行条纹 + 悬停高亮 */
+.table-wrap{overflow-x:auto; margin:18px 0; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,.04);}
+table{width:100%; border-collapse:collapse; background:var(--card); font-size:14.5px;}
+thead{background:var(--primary); color:#FBF9F5;}
+th{padding:10px 10px; text-align:left; font-weight:600; white-space:nowrap;}
+td{padding:9px 10px; border-bottom:1px solid var(--border); vertical-align:top;}
+tbody tr:nth-child(even){background:#FAF6EE;}
+tbody tr:hover{background:#F4E8D8;}
+/* 分级说明：最后一列（内容特征）加宽 */
+body.theme-fenji .table-wrap table th:last-child,
+body.theme-fenji .table-wrap table td:last-child{min-width:220px;}
+td strong:first-child{display:inline-block;}
+
+/* ---------- 列表 ---------- */
+ul,ol{margin:12px 0; padding-left:24px;}
+li{margin:6px 0;}
+ul li::marker{color:var(--accent);}
+
+/* ---------- 书名 / 文档链接 ---------- */
+/* book-link：可点跳转，虚下划线，悬停浅底 */
+a.book-link{
+  color:var(--link); text-decoration:none; border-bottom:1px dashed var(--link);
+  padding-bottom:1px; transition:all .15s;
+}
+a.book-link:hover{background:rgba(30,111,176,.08); border-bottom-style:solid;}
+.plain-link{color:inherit;}
+a.doc-link{color:var(--link);text-decoration:none;border-bottom:1px solid var(--link);padding-bottom:1px;}
+a.doc-link:hover{opacity:.7;}
+
+/* ---------- 级别徽章 ---------- */
+/* 配合级别色阶使用：<span class="lv-badge lv-L1">L1</span> */
+.lv-badge{
+  display:inline-block; padding:2px 10px; border-radius:12px;
+  color:#fff; font-size:12px; font-weight:600; margin-right:6px;
+}
+.lv-L1{background:var(--L1);}
+.lv-L2{background:var(--L2);}
+.lv-L3{background:var(--L3);}
+.lv-L4{background:var(--L4);}
+
+/* ---------- 章节卡片（可选容器）---------- */
+.section-card{
+  background:var(--card); border-radius:12px; padding:8px 22px;
+  margin:16px 0; box-shadow:0 1px 4px rgba(0,0,0,.03);
+}
+
+/* ---------- Sticky 锚点导航 ---------- */
+nav.toc{
+  position:sticky; top:0; z-index:10; background:rgba(251,249,245,.95);
+  backdrop-filter:blur(8px); padding:12px 0; margin:0 -28px 24px;
+  border-bottom:1px solid var(--border); padding-left:28px; padding-right:28px;
+  display:flex; gap:8px; flex-wrap:wrap; font-size:13px;
+}
+nav.toc a{
+  color:var(--muted); text-decoration:none; padding:4px 10px;
+  border-radius:14px; background:var(--soft); transition:all .15s;
+}
+nav.toc a:hover{background:var(--primary); color:#fff;}
+
+/* ---------- 页脚 ---------- */
+footer{text-align:center; color:var(--muted); font-size:13px; margin-top:48px; padding-top:24px; border-top:1px dashed var(--border);}
+
+/* ---------- 代码块 ---------- */
+pre{
+  background:#2C2A26; color:#F4EFE6; padding:14px 18px;
+  border-radius:8px; overflow-x:auto; margin:14px 0; font-size:13.5px;
+  line-height:1.55;
+}
+pre code{background:transparent; color:#F4EFE6; padding:0; font-size:inherit; border:none;}
+
+/* ---------- Callout 提示框 ---------- */
+/* Obsidian callout：> [!type] title \n > 内容 */
+.callout{
+  margin:16px 0; padding:14px 18px; border-radius:8px;
+  background:var(--soft); border-left:4px solid var(--primary);
+}
+.callout-title{font-weight:600; margin-bottom:6px; color:var(--primary);}
+.callout-body p{margin:6px 0;}
+.callout-body p:first-child{margin-top:0;}
+.callout-body p:last-child{margin-bottom:0;}
+.callout-tip{border-left-color:#5A9367; background:#EEF7F0;}
+.callout-tip .callout-title{color:#3D6B47;}
+.callout-info{border-left-color:#3D7AA8; background:#EBF2F9;}
+.callout-info .callout-title{color:#2B5A82;}
+.callout-warning{border-left-color:#C75B4A; background:#FBEEEA;}
+.callout-warning .callout-title{color:#A04535;}
+.callout-note{border-left-color:#8B5E3C; background:var(--soft);}
+.callout-note .callout-title{color:var(--primary);}
+
+/* ---------- 外部链接 ---------- */
+a.ext-link{color:var(--link); text-decoration:none; border-bottom:1px dashed var(--link);}
+a.ext-link:hover{border-bottom-style:solid;}
+
+/* ---------- 响应式 ---------- */
+@media(max-width:640px){
+  .wrap{padding:20px 16px 60px;}
+  header.hero{padding:32px 16px; margin:-20px -16px 24px; border-radius:0 0 16px 16px;}
+  header.hero h1{font-size:24px;}
+  th,td{padding:8px 10px; font-size:13px;}
+  header.hero::before,header.hero::after{display:none;}
+}
+
+/* ---------- 主题色板（4 文档差异化；底色/文字/链接/callout 跨主题共享）---------- */
+/* 每主题只覆盖 --primary / --accent / --g1 / --g2 四变量 */
+body.theme-readme{--primary:#8B5E3C;--accent:#C75B4A;--g1:#8B5E3C;--g2:#C75B4A;}   /* 首页·书卷暖棕（默认）*/
+body.theme-fenji{--primary:#3D6B7A;--accent:#5A9367;--g1:#3D6B7A;--g2:#5A9367;}     /* 分级说明·体系森林 */
+body.theme-shudan{--primary:#8C3A3A;--accent:#C8862E;--g1:#8C3A3A;--g2:#C8862E;}    /* 推荐书单·藏书酒红 */
+body.theme-lme{--primary:#4A5A8C;--accent:#7B5AA8;--g1:#4A5A8C;--g2:#7B5AA8;}       /* LME 手册·工具靛紫 */
+</style>
+</head>
+<body class="theme-lme">
+<div class="wrap">
+<header class="hero">
+  <h1>Language Made Easy · คู่มือการใช้งาน</h1>
+  <p>ปลั๊กอิน Obsidian สำหรับเรียนภาษาแบบดื่มด่ำ · ค้นคำศัพท์ / การ์ดคำศัพท์ / แชโดว์ / AI</p>
+</header>
+<nav class="toc"><a href="#install">ติดตั้ง</a><a href="#lookup">ค้นคำศัพท์</a><a href="#flashcards">การ์ดคำศัพท์</a><a href="#shadowing">แชโดว์</a><a href="#ai">AI</a><a href="#more">เพิ่มเติม</a><a href="#faq">คำถามที่พบบ่อย</a></nav>
+
+<blockquote><p><strong>Language Made Easy</strong> คือปลั๊กอิน Obsidian ที่รวม <strong>การค้นคำศัพท์ แฟลชการ์ด แชโดว์วิดีโอ และการวิเคราะห์ด้วย AI</strong> ไว้ในสายการทำงานการจดบันทึกของคุณ — ช่วยให้คุณซึมซับภาษาอย่างเป็นธรรมชาติระหว่างอ่านบทความ ดูวิดีโอ และจดโน้ต</p></blockquote>
+<hr>
+<h2 id="install">1. ติดตั้งปลั๊กอิน</h2>
+<h3>📦 ดาวน์โหลดและติดตั้ง</h3>
+<ol>
+<li>คัดลอกไฟล์ปลั๊กอิน (<code>main.js</code>, <code>manifest.json</code>, <code>style.css</code>) ไปยังโฟลเดอร์ปลั๊กอินของคลัง Obsidian:</li>
+</ol>
+<pre><code>your-vault/
+└── .obsidian/
+    └── plugins/
+        └── language-made-easy/
+            ├── main.js
+            ├── manifest.json
+            └── style.css</code></pre>
+<div class="callout callout-tip"><div class="callout-title">💡 หาโฟลเดอร์ปลั๊กอินยังไง?</div><div class="callout-body"><p>ใน Obsidian เปิด <strong>การตั้งค่า → ปลั๊กอินชุมชน → กดไอคอน 📁</strong> เพื่อไปที่โฟลเดอร์ปลั๊กอินทันที</p></div></div>
+<ol>
+<li>กลับมาที่ Obsidian เข้า <strong>การตั้งค่า → ปลั๊กอินชุมชน</strong> ค้นหา <strong>Language Made Easy</strong> แล้วเปิดใช้งาน</li>
+</ol>
+<h3>🆓 ทดลองใช้ฟรี 3 วัน → เวอร์ชันเต็ม</h3>
+<p>ตั้งแต่เปิดใช้ครั้งแรกจะเริ่ม <strong>ช่วงทดลองใช้ฟรี 3 วัน</strong> — ทุกภาษาเปิดให้เรียน (ค้นคำศัพท์ แฟลชการ์ด FSRS แชโดว์วิดีโอ วิเคราะห์ AI) ด้วยชุดฟีเจอร์พื้นฐาน ตัวนับถอยหลังแสดงในแถบสถานะ</p>
+<p>เมื่อหมดช่วงทดลอง ใช้งานต่อได้ด้วยการซื้อ <strong>เวอร์ชันเต็ม</strong> (จ่ายครั้งเดียว อัปเดตตลอดชีพ) ปลดล็อกทุกโมดูลขั้นสูง:</p>
+<ul>
+<li>ภาษาเพิ่มอีก 7 ภาษา: อังกฤษ / เยอรมัน / ฝรั่งเศส / สเปน / เกาหลี / รัสเซีย / ญี่ปุ่น</li>
+<li>การ์ดไม่จำกัด พจนานุกรมในเครื่อง 5 เล่ม พจนานุกรมออฟไลน์บนมือถือ</li>
+<li>ซิงก์การ์ดข้ามเครื่อง นำเข้า / ส่งออกข้อมูล</li>
+<li>สร้างการ์ดเป็นชุดด้วย AI ส่งออกรายงาน AI</li>
+<li>ธีมหน้าจอเพิ่มอีก 9 แบบ โหมดทบทวนฟังเสียง / พิมพ์</li>
+<li>บุ๊กมาร์กวิดีโอ การ์ดบรรยายวิดีโอ ดาวน์โหลดคลิกเดียวและเป็นชุดจากหน้าติดตาม</li>
+</ul>
+<blockquote><p>🌐 ซื้อเวอร์ชันเต็มที่ https://languagemadeeasy.com</p></blockquote>
+<hr>
+<h2 id="lookup">2. ใช้งานการค้นคำศัพท์</h2>
+<p>📖 ตัวอย่างบทความภาษาอังกฤษ:</p>
+<blockquote><p>The best way to learn a new language is not through memorization, but through immersion. When you read, listen, and speak in context, your brain absorbs vocabulary and grammar naturally — just like how you learned your first language as a child.</p></blockquote>
+<p>ลอง <strong>ดับเบิลคลิก</strong>คำไหนก็ได้ที่ไม่รู้จักในย่อหน้าด้านบน เพื่อลองฟีเจอร์ค้นคำดู!</p>
+<h3>เปิดผู้ช่วยคำศัพท์</h3>
+<p>เปิดได้หลายวิธี:</p>
+<pre><code>วิธีที่ 1: กดไอคอนหนังสือ 📖 ในแถบข้างซ้าย
+วิธีที่ 2: Ctrl/Cmd + P → ค้นคำอัตโนมัติด้วย「ผู้ช่วยคำศัพท์」</code></pre>
+<h3>สิ่งที่ทำได้หลังค้น</h3>
+<p><strong>ดับเบิลคลิกคำ</strong>ในโน้ต หรือ <strong>กดค้าง <code>Ctrl/Cmd + Shift</code> แล้วเลือกข้อความ</strong> แผงผลลัพธ์จะเด้งขึ้นด้านขวาอัตโนมัติ</p>
+<h3>แผงผลลัพธ์การค้น</h3>
+<p>ค้นคำแล้วคุณจะเห็น:</p>
+<div class="table-wrap"><table><thead><tr><th>ฟีเจอร์</th><th>คำอธิบาย</th></tr></thead><tbody><tr><td>🔊 <strong>การออกเสียง</strong></td><td>กดเพื่อฟังเสียงอ่านที่ถูกต้อง</td></tr><tr><td>📝 <strong>เพิ่มเข้าสมุดคำศัพท์</strong></td><td>บันทึกเป็นการ์ดในคลิกเดียวไว้ทบทวนภายหลัง</td></tr><tr><td>🔤 <strong>คำอ่าน</strong></td><td>แสดงคำอ่านตามสัทอักษร</td></tr><tr><td>📖 <strong>ความหมาย</strong></td><td>แสดงชนิดคำและความหมาย</td></tr></tbody></table></div>
+<div class="callout callout-tip"><div class="callout-title">✨ เคล็ดลับ</div><div class="callout-body"><p>ในแผงผลลัพธ์ก็ <strong>ดับเบิลคลิกค้นคำ</strong> ได้เช่นกัน — ตัวพจนานุกรมเองก็เป็นสื่อการเรียนที่ดีมาก!</p></div></div>
+<h3>ภาษาที่รองรับ</h3>
+<div class="table-wrap"><table><thead><tr><th>ภาษา</th><th>รหัส</th></tr></thead><tbody><tr><td>🇬🇧 English</td><td><code>en</code></td></tr><tr><td>🇩🇪 German</td><td><code>de</code></td></tr><tr><td>🇫🇷 French</td><td><code>fr</code></td></tr><tr><td>🇪🇸 Spanish</td><td><code>es</code></td></tr><tr><td>🇰🇷 Korean</td><td><code>ko</code></td></tr><tr><td>🇷🇺 Russian</td><td><code>ru</code></td></tr><tr><td>🇯🇵 Japanese</td><td><code>ja</code></td></tr></tbody></table></div>
+<div class="callout callout-info"><div class="callout-title">🌐 จะรองรับภาษาเพิ่มเติมในอนาคต</div><div class="callout-body"></div></div>
+<hr>
+<h2 id="flashcards">3. เพิ่มและจัดการการ์ดคำศัพท์</h2>
+<p>🎴 เมื่อคุณเก็บคำใหม่จากการอ่านและการค้นได้เพียบแล้ว มาดูวิธีทบทวนอย่างเป็นระบบ:</p>
+<h3>การ์ดที่สร้างอัตโนมัติ</h3>
+<p>เมื่อคุณกด <strong>「เพิ่มเข้าสมุดคำศัพท์」</strong>หลังค้นคำ ปลั๊กอินจะสร้างการ์ดให้อัตโนมัติ การ์ดแต่ละใบมี:</p>
+<ul>
+<li>✅ คำศัพท์ + คำอ่าน</li>
+<li>✅ ความหมาย</li>
+<li>✅ บริบทของคำ (จากโน้ตที่ค้นพบ)</li>
+<li>✅ ลิงก์ไปยังโน้ตต้นทาง</li>
+<li>✅ วันที่เพิ่ม</li>
+</ul>
+<h3>เพิ่มการ์ดด้วยตัวเอง</h3>
+<pre><code>เปิดแผงทบทวนการ์ด → กดปุ่ม「เพิ่มการ์ด」ด้านล่าง
+→ กรอกคำศัพท์ คำอ่าน (ทางเลือก) ความหมาย ประโยคตัวอย่าง (ทางเลือก)
+→ บันทึก</code></pre>
+<h3>เริ่มทบทวน</h3>
+<p>เปิดแผงทบทวนการ์ด:</p>
+<pre><code>วิธีที่ 1: กดไอคอนสมอง 🧠 ในแถบข้างซ้าย
+วิธีที่ 2: Ctrl/Cmd + P → ค้นหา「เริ่มทบทวนแฟลชการ์ด」</code></pre>
+<h4>ขั้นตอนการทบทวน</h4>
+<pre><code>👀 ดูด้านหน้าการ์ด → 🤔 พยายามนึกความหมาย
+→ 🖱️ กดพลิกเพื่อดูเฉลย → ⭐ ให้คะแนนว่าจำได้ดีแค่ไหน</code></pre>
+<h4>เกณฑ์การให้คะแนน</h4>
+<div class="callout callout-info"><div class="callout-title">🧠 เรื่องอัลกอริทึม FSRS</div><div class="callout-body"><p>การทบทวนขับเคลื่อนด้วย <strong>อัลกอริทึม FSRS</strong> (อัลกอริทึมจัดความจำแบบเว้นระยะยุคใหม่) จากคะแนนที่คุณให้ ระบบจะจัดตารางการทบทวนครั้งถัดไปของแต่ละใบอย่างชาญฉลาด ให้คุณได้ทบทวนตอนใกล้จะลืมพอดี</p></div></div>
+<div class="table-wrap"><table><thead><tr><th>คะแนน</th><th>ความหมาย</th><th>ผลลัพธ์</th></tr></thead><tbody><tr><td>😵 <strong>จำไม่ได้</strong></td><td>นึกไม่ออกเลย</td><td>จะกลับมาเร็ว ๆ นี้</td></tr><tr><td>😐 <strong>ยาก</strong></td><td>นึกได้ฉุกเฉิน</td><td>ช่วงเว้นถูกสั้นลง</td></tr><tr><td>🙂 <strong>พอใช้</strong></td><td>นึกได้ตามปกติ</td><td>จัดช่วงเว้นตามมาตรฐาน</td></tr><tr><td>😎 <strong>ง่าย</strong></td><td>รู้ทันที</td><td>ช่วงเว้นยาวขึ้นมาก</td></tr></tbody></table></div>
+<div class="callout callout-warning"><div class="callout-title">🧹 ล้างอัตโนมัติ</div><div class="callout-body"><p>เมื่อคำถูกให้คะแนน <strong>「ง่าย」ติดกันหลายครั้ง</strong> จะถูกถอดออกจากรอบทบทวนอัตโนมัติ ปรับเงื่อนไข「ล้างอัตโนมัติ」ได้ที่ <strong>การตั้งค่า → Language Made Easy</strong></p></div></div>
+<h3>จัดการข้อมูลการ์ด</h3>
+<pre><code>Ctrl/Cmd + P → ค้นหา「จัดการข้อมูลการ์ด」</code></pre>
+<p>ในหน้าจัดการคุณสามารถ:</p>
+<ul>
+<li>📋 กรองการ์ดตามภาษาและสถานะ</li>
+<li>🗑️ ลบการ์ดที่ไม่ต้องการเป็นชุด</li>
+<li>📤 ส่งออกข้อมูลการ์ด</li>
+</ul>
+<div class="callout callout-tip"><div class="callout-title">💡 สองเรื่องสำคัญ</div><div class="callout-body"><p>1. ข้อมูลการ์ดเก็บไว้ใน <strong>IndexedDB ในเครื่อง</strong> เวลาอัปเดตปลั๊กอินแค่เปลี่ยนสามไฟล์ <code>main.js</code>, <code>manifest.json</code>, <code>style.css</code> — <strong>การ์ดเดิมของคุณไม่หาย</strong> อัปเดตได้สบายใจ!</p><p>2. การ์ดรองรับ <strong>นำเข้าและส่งออก</strong>หลายรูปแบบ — <code>txt</code>, <code>markdown</code>, <code>csv</code>, <code>json</code> และอื่น ๆ — สำรองข้อมูลและย้ายถิ่นได้สะดวก</p></div></div>
+<hr>
+<h2 id="shadowing">4. ใช้งานโรงฝึกแชโดว์</h2>
+<p>🎬 Language Made Easy ช่วยให้คุณเรียนจาก <strong>วิดีโอ YouTube / Bilibili</strong> ได้มีประสิทธิภาพขึ้น เก็บภาษาพูดธรรมชาติและฝึกหูไปพร้อมกัน</p>
+<h3>เปิดโรงฝึกแชโดว์</h3>
+<pre><code>วิธีที่ 1: กดไอคอนเล่น ▶️ ในแถบข้างซ้าย
+วิธีที่ 2: Ctrl/Cmd + P → ค้นหา「โรงฝึกแชโดว์」</code></pre>
+<h3>โหลดวิดีโอ</h3>
+<p>วางลิงก์วิดีโอลงโน้ต ปลั๊กอินจะจับและโหลดให้อัตโนมัติ:</p>
+<pre><code>✅ วิดีโอ YouTube → วางลิงก์เพื่อโหลดอัตโนมัติ
+✅ วิดีโอ Bilibili → วางลิงก์เพื่อโหลดอัตโนมัติ (ดาวน์โหลดและแคชให้อัตโนมัติ)
+✅ เสียง/วิดีโอในเครื่อง → ฝังด้วย ![[video.mp4]] หรือ ![[audio.mp3]]</code></pre>
+<h3>ดาวน์โหลดซับ</h3>
+<p>โหลดวิดีโอแล้ว กดปุ่ม <strong>「ดาวน์โหลดซับ」</strong> บนแถบเครื่องมือด้านขวา ปลั๊กอินจะดึงซับจาก YouTube / Bilibili แล้วแทรกลงโน้ตให้</p>
+<p>ตัวอย่างรูปแบบซับ:</p>
+<pre><code>[00:12] Hello, how are you today?
+[00:15] I&#x27;m fine, thank you. And you?
+[01:23] What a beautiful day! Let&#x27;s go for a walk.</code></pre>
+<div class="callout callout-tip"><div class="callout-title">📝 หมายเหตุ</div><div class="callout-body"><p>โรงฝึกแชโดว์รองรับ <strong>รูปแบบไทม์สแตมป์หลายแบบ</strong> — จะเป็น <code>HH:MM:SS</code>, <code>MM:SS</code> หรือ <code>[00:12]</code> ก็จับได้หมดและโหลดให้อัตโนมัติ</p></div></div>
+<h3>ปุ่มควบคุมการเล่น</h3>
+<p>ตัวเล่นของโรงฝึกแชโดว์มีแถวปุ่มควบคุมอยู่ด้านล่าง:</p>
+<div class="table-wrap"><table><thead><tr><th>ปุ่ม</th><th>หน้าที่</th><th>หมายเหตุ</th></tr></thead><tbody><tr><td>⏮️ <strong>เล่นซ้ำ</strong></td><td>กระโดดไปต้นประโยคปัจจุบัน</td><td>ฟังซ้ำจากต้นประโยค</td></tr><tr><td>🔁 <strong>วนซ้ำ</strong></td><td>วนประโยคเดียว</td><td>เหมาะกับการฝึกประโยคเดียว</td></tr><tr><td>▶️ / ⏸️ <strong>เล่น/หยุด</strong></td><td>ควบคุมการเล่น</td><td>แป้นว่าง</td></tr><tr><td>🐢🐇 <strong>ความเร็ว</strong></td><td>0.8x / 1.0x / 1.2x</td><td>ปรับตามระดับของคุณ</td></tr></tbody></table></div>
+<h3>🎧 โหมดดิกเทชัน</h3>
+<p>อยากท้าทายการฟัง? ลอง <strong>โหมดดิกเทชัน</strong>!</p>
+<pre><code>แถบเครื่องมือขวาของโรงฝึกแชโดว์ → กดปุ่ม「โหมดดิกเทชัน」
+→ ระบบเล่นประโยค คุณพิมพ์ตามที่ได้ยิน
+→ กดส่งแล้วระบบเทียบสิ่งที่พิมพ์กับต้นฉบับ
+→ จุดที่ผิดถูกมาร์กสีแดง ส่วนที่ถูกมาร์กสีเขียว</code></pre>
+<hr>
+<h2 id="ai">5. อัปเกรดการเรียนด้วย AI</h2>
+<p>อยากได้ประสบการณ์การเรียนที่ทรงพลังขึ้น? การตั้งค่าขั้นสูงด้านล่างจะปลดล็อกฟีเจอร์อย่าง <strong>พจนานุกรมในเครื่อง</strong> และ <strong>การวิเคราะห์ AI</strong></p>
+<h3>5.1 ตั้งค่าพจนานุกรมในเครื่อง</h3>
+<p>พจนานุกรมในเครื่อง (รูปแบบ MDX) ให้ความหมายที่สมบูรณ์ขึ้น — มีตัวอย่างประโยค คำที่มักใช้คู่กัน คำพ้องความหมาย — แถมใช้ <strong>ออฟไลน์</strong>ได้ด้วย</p>
+<pre><code>การตั้งค่า → Language Made Easy → การตั้งค่าพจนานุกรม
+→ ระบุพาธไฟล์พจนานุกรม MDX ในเครื่อง
+→ บันทึก</code></pre>
+<h3>5.2 พจนานุกรมในเครื่องในการใช้งานจริง</h3>
+<p>เมื่อตั้งค่าพจนานุกรมในเครื่องแล้ว ผลการค้นจะสมบูรณ์ขึ้นมาก:</p>
+<div class="table-wrap"><table><thead><tr><th>ด้าน</th><th>พจนานุกรมออนไลน์</th><th>พจนานุกรม MDX ในเครื่อง</th></tr></thead><tbody><tr><td>อินเทอร์เน็ต</td><td>✅ ต้องมี</td><td>❌ ใช้ออฟไลน์ได้</td></tr><tr><td>ความละเอียดของความหมาย</td><td>ความหมายพื้นฐาน</td><td>ละเอียด + ตัวอย่าง + คำที่ใช้คู่กัน</td></tr><tr><td>ความเร็ว</td><td>แล้วแต่เน็ต</td><td>⚡ ทันที</td></tr><tr><td>แหล่งที่รองรับ</td><td>Google / MyMemory / Jisho</td><td>ไฟล์ MDX ที่คุณเลือก</td></tr></tbody></table></div>
+<h3>5.3 ตั้งค่า API คีย์ของโมเดลภาษาขนาดใหญ่</h3>
+<p>ฟีเจอร์วิเคราะห์ AI ต้องใช้ API คีย์ของโมเดลภาษาขนาดใหญ่ ผู้ให้บริการที่รองรับตอนนี้:</p>
+<pre><code>การตั้งค่า → Language Made Easy → การตั้งค่า AI
+→ เลือกผู้ให้บริการโมเดล (OpenAI / Google Gemini / OpenRouter)
+→ ใส่ API คีย์
+→ บันทึก</code></pre>
+<div class="callout callout-tip"><div class="callout-title">💡 คำแนะนำ</div><div class="callout-body"><p>- <strong>OpenAI</strong>: ใช้ได้เลยทันทีที่มีคีย์</p><p>- <strong>Google Gemini</strong>: มีช่วงใช้ฟรี เหมาะเป็นตัวสำรองหรือใช้ศึกษาเชิงลึก</p></div></div>
+<h3>5.4 ใช้งานการวิเคราะห์ AI</h3>
+<h4>5.4.1 สร้างรายงานวิเคราะห์ AI</h4>
+<p>หลังโหลดซับในโรงฝึกแชโดว์แล้ว:</p>
+<pre><code>กดปุ่ม「วิเคราะห์ AI」บนแถบเครื่องมือด้านขวา
+→ รอการวิเคราะห์เสร็จ (ปกติใช้เวลาสิบถึงยี่สิบวินาที)
+→ รายงานจะแสดงในแผงด้านขวา
+→ กด「บันทึกลงโน้ต」เพื่อเก็บไว้
+→ กดปุ่มรูปภาพเพื่อ「บันทึกเป็นภาพยาว」ลงเครื่อง</code></pre>
+<p>รายงานวิเคราะห์ AI โดยทั่วไปมี:</p>
+<ul>
+<li>📝 <strong>คำศัพท์</strong> — วิธีใช้และคำที่มักใช้คู่กันของคำสำคัญ</li>
+<li>🏗️ <strong>ไวยากรณ์</strong> — แยกโครงสร้างไวยากรณ์สำคัญ</li>
+<li>🌍 <strong>เกร็ดวัฒนธรรม</strong> — บริบทวัฒนธรรมที่เกี่ยวข้อง</li>
+<li>💡 <strong>เคล็ดการเรียน</strong> — คำแนะนำเฉพาะทาง</li>
+</ul>
+<p>ปลั๊กอินมาพร้อม <strong>พรอมป์วิเคราะห์ AI ในตัว 3 แบบ</strong> สำหรับความต้องการการเรียนที่ต่างกัน:</p>
+<div class="table-wrap"><table><thead><tr><th>พรอมป์</th><th>เหมาะกับ</th><th>ผลลัพธ์</th></tr></thead><tbody><tr><td>📝 <strong>สรุปใจความ</strong></td><td>เก็บใจความของวิดีโออย่างรวดเร็ว</td><td>สรุปกระชับ + ประเด็นสำคัญ</td></tr><tr><td>📖 <strong>สองภาษา</strong></td><td>เรียนเนื้อหาทีละประโยค</td><td>คำแปลสองภาษารายประโยค</td></tr><tr><td>🧪 <strong>ควิซสั้น</strong></td><td>ทดสอบสิ่งที่เรียนไปแล้ว</td><td>ข้อสอบที่สร้างจากวิดีโอ</td></tr></tbody></table></div>
+<div class="callout callout-tip"><div class="callout-title">💡 เขียนพรอมป์เองก็ได้ — ดู <a href="#ai-custom-prompt">5.4.2 เพิ่มพรอมป์แบบกำหนดเอง</a></div><div class="callout-body"></div></div>
+<h4 id="ai-custom-prompt">5.4.2 เพิ่มพรอมป์แบบกำหนดเอง</h4>
+<p>คุณเขียนพรอมป์เองได้ ให้ AI สร้างสื่อการเรียนที่ตรงกับความต้องการของคุณ:</p>
+<pre><code>การตั้งค่า → Language Made Easy → การจัดการพรอมป์ AI
+→ เพิ่มพรอมป์แบบกำหนดเอง
+→ ตั้งชื่อและเนื้อหาพรอมป์
+→ บันทึก</code></pre>
+<h3>5.5 เติมการ์ดให้ครบด้วยคลิกเดียว</h3>
+<p>ไม่อยากพิมพ์คำอ่านกับความหมายเองตอนเพิ่มการ์ด? ใช้ <strong>เติมอัตโนมัติด้วย AI</strong>!</p>
+<pre><code>แผงเพิ่มการ์ด → พิมพ์คำศัพท์
+→ กดปุ่ม「เติมด้วย AI」
+→ คำอ่าน ความหมาย และประโยคตัวอย่างถูกเติมให้อัตโนมัติ
+→ ตรวจสอบแล้วบันทึก</code></pre>
+<h3>5.6 วิธีโหลดซับแบบอื่น</h3>
+<p>นอกจากดาวน์โหลดซับในโรงฝึกแชโดว์โดยตรง ยังมีวิธีโหลดซับแบบอื่นอีก:</p>
+<h4>5.6.1 ปุ่ม「ดาวน์โหลดซับ」ในโรงฝึกแชโดว์</h4>
+<p>ตรงที่สุด โหลดวิดีโอแล้วกดปุ่ม <strong>「ดาวน์โหลดซับ」</strong> บนแถบเครื่องมือด้านขวา — ปลั๊กอินจะดึงซับจาก YouTube / Bilibili ให้อัตโนมัติ</p>
+<div class="callout callout-warning"><div class="callout-title">⚠️ ข้อควรรู้เรื่องดาวน์โหลดซับ</div><div class="callout-body"><p>1. ปลั๊กอินดาวน์โหลดซับของ <strong>ภาษาที่เลือกไว้ตอนนี้</strong> — กรุณาตรวจภาษาก่อนดาวน์โหลด ถ้าไม่มีซับภาษานั้น จะได้ซับเริ่มต้นของวิดีโอแทน</p><p>2. วิดีโอ Bilibili <strong>มักไม่มีซับภาษาอังกฤษ</strong> ก่อนเลือกวิดีโอ ตรวจรายการ「字幕」(ซับ) ในเครื่องเล่นของ Bilibili ว่ามีภาษาที่คุณต้องการหรือไม่</p></div></div>
+<h4>5.6.2 ใช้ Obsidian Web Clipper</h4>
+<p>ด้วยส่วนขยายเบราว์เซอร์ <a class="ext-link" href="https://obsidian.md/clipper" target="_blank" rel="noopener">Obsidian Web Clipper</a> คุณเก็บซับ YouTube เข้าโน้ต Obsidian ได้ระหว่างดูวิดีโอเลย</p>
+<pre><code>ติดตั้งส่วนขยายเบราว์เซอร์ Obsidian Web Clipper
+→ ที่หน้าวิดีโอ YouTube กดไอคอนส่วนขยาย
+→ เลือกเก็บเนื้อหาซับ
+→ จะถูกบันทึกเป็นโน้ตพร้อมไทม์สแตมป์อัตโนมัติ</code></pre>
+<h4>5.6.3 ใช้ปลั๊กอิน ytranscript</h4>
+<p><a class="ext-link" href="https://obsidian.md/plugins?id=ytranscript" target="_blank" rel="noopener">ytranscript</a> อีกหนึ่งปลั๊กอิน Obsidian ที่ช่วยดาวน์โหลดซับ YouTube ใน Obsidian:</p>
+<pre><code>ค้นหาและติดตั้ง「ytranscript」จากปลั๊กอินชุมชนของ Obsidian
+→ เรียกใช้ ytranscript จากแถบคำสั่งเพื่อดึงซับ YouTube
+→ ซับจะถูกแทรกลงโน้ตพร้อมไทม์สแตมป์
+→ เปิดโรงฝึกแชโดว์แล้วเริ่มใช้งานได้เลย</code></pre>
+<h4>5.6.4 โหลดไฟล์ SRT สำหรับวิดีโอในเครื่อง</h4>
+<p>ถ้าคุณมีไฟล์วิดีโอในเครื่องและไฟล์ซับ SRT ที่คู่กัน:</p>
+<pre><code>วิธีที่ 1: คัดลอกเนื้อหา SRT ลงโน้ต
+         → ตรวจว่ารูปแบบไทม์สแตมป์ SRT ถูกต้อง
+         → ฝังวิดีโอในโน้ตด้วย ![[video.mp4]]
+         → เปิดโรงฝึกแชโดว์เพื่อแยกวิเคราะห์วิดีโอและซับ
+
+วิธีที่ 2: วางไฟล์ SRT ไว้ข้างไฟล์วิดีโอในคลัง
+         → ฝังวิดีโอในโน้ตด้วย ![[video.mp4]]
+         → ปลั๊กอินจับคู่ไฟล์ SRT ชื่อเดียวกันให้อัตโนมัติ</code></pre>
+<hr>
+<h2 id="more">6. การใช้งานเพิ่มเติม</h2>
+<h3>6.1 คำสั่งด่วน: สลับธีมคลิกเดียว</h3>
+<p>ปลั๊กอินมาพร้อม <strong>10 ธีมที่ออกแบบมาอย่างดี</strong> เพื่อให้สภาพแวดล้อมการเรียนน่าใช้:</p>
+<pre><code>Ctrl/Cmd + P → ค้นหา「สลับไปธีมถัดไป」
+→ กดแต่ละครั้งจะสลับไปธีมถัดไป</code></pre>
+<div class="table-wrap"><table><thead><tr><th>ธีม</th><th>สไตล์</th></tr></thead><tbody><tr><td>📜 Paper Ink</td><td>หมึกบนกระดาษคลาสสิก อบอุ่นนุ่มนวล</td></tr><tr><td>🌿 Mint Atelier</td><td>ความสดชื่นมินต์ สะอาดเป็นมืออาชีพ</td></tr><tr><td>🌸 Rose Blush</td><td>ชมพูกุหลาบอ่อน นุ่มนวลโรแมนติก</td></tr><tr><td>💜 Lavender Dream</td><td>ความฝันลาเวนเดอร์ เบาสบาย</td></tr><tr><td>🍬 Candy Pop</td><td>ปาร์ตี้ลูกกวาด สดใสมีชีวิตชีวา</td></tr><tr><td>🌳 Mindful Oasis</td><td>โอเอซิสแห่งสติ เป็นธรรมชาติอบอุ่น</td></tr><tr><td>🪸 Coral Warmth</td><td>อุ่นไอปะการัง อบอุ่นมีพลัง</td></tr><tr><td>🌊 Ocean Glass</td><td>ดวงใจมหาสมุทร ลึกและสงบ</td></tr><tr><td>🌌 Aurora Prism</td><td>ปริซึมแสงเหนือ ลึกลับหลากสี</td></tr><tr><td>🍋 Dark Lemon</td><td>เลมอนยามค่ำ มืดเย็นสบาย</td></tr></tbody></table></div>
+<h3>6.2 คำสั่งด่วน: สลับภาษาเรียนคลิกเดียว</h3>
+<p>เรียนหลายภาษาอยู่? สลับไปมาได้อย่างรวดเร็ว:</p>
+<pre><code>Ctrl/Cmd + P → ค้นหา「สลับไปอังกฤษ / เยอรมัน / ฝรั่งเศส / ...」
+→ ภาษาเรียนปัจจุบันสลับทันที</code></pre>
+<h3>6.3 คำสั่งด่วน: รายงานวิเคราะห์ AI</h3>
+<pre><code>Ctrl/Cmd + P → ค้นหา「วิเคราะห์ AI」
+→ เลือกโน้ตใดก็ได้ในคลังมาวิเคราะห์ด้วย AI</code></pre>
+<h3>6.4 ตั้งพาธบันทึกสมุดคำศัพท์</h3>
+<p>ทุกครั้งที่เพิ่มคำเข้าสมุดคำศัพท์ ปลั๊กอินจะสร้างไฟล์สมุดคำศัพท์ Markdown ในคลัง คุณปรับตำแหน่งบันทึกได้:</p>
+<pre><code>การตั้งค่า → Language Made Easy → การตั้งค่าสมุดคำศัพท์
+→ ระบุพาธและชื่อไฟล์สมุดคำศัพท์
+→ บันทึก</code></pre>
+<h3>6.5 ตั้งพาธบันทึกรายงานวิเคราะห์ AI</h3>
+<p>รายงานวิเคราะห์ AI บันทึกไว้ที่อื่นได้เช่นกัน:</p>
+<pre><code>การตั้งค่า → Language Made Easy → การตั้งค่าการวิเคราะห์ AI
+→ ระบุพาธบันทึกรายงาน
+→ บันทึก</code></pre>
+<hr>
+<h2 id="faq">7. คำถามที่พบบ่อย</h2>
+<h3>❓ ค้นคำแล้วไม่ตอบสนอง?</h3>
+<blockquote><p>กรุณาตรวจดังนี้:</p><p>1. ตรวจว่าตั้งค่าพจนานุกรมเรียบร้อยแล้ว (พจนานุกรมออนไลน์ต้องต่ออินเทอร์เน็ต)</p><p>2. ถ้าใช้พจนานุกรม MDX ตรวจว่าพาธไฟล์ mdx, mdd, css กรอกถูกต้องในการตั้งค่า</p><p>3. ตรวจว่าภาษาเรียนปัจจุบันตั้งค่าถูกต้อง</p></blockquote>
+<h3>❓ ทำไมไม่เห็นการ์ดที่เพิ่งเพิ่ม?</h3>
+<blockquote><p>การ์ดที่เพิ่มใหม่จะอยู่ท้ายสุดของคิวการทบทวน</p></blockquote>
+<h3>❓ วิดีโอ Bilibili ดาวน์โหลดได้แต่ซับจีน?</h3>
+<blockquote><p>ตรวจดูว่าวิดีโอมีซับภาษาอื่นอัปโหลดจริงหรือไม่ ซับสองภาษาที่พิมพ์ติดภาพในเฟรมไม่ได้แปลว่าผู้อัปโหลดให้ไฟล์ซับภาษานั้นมาด้วย</p></blockquote>
+<h3>❓ โรงฝึกแชโดว์ขึ้นให้「ล็อกอิน」ตอนเปิดวิดีโอ YouTube?</h3>
+<blockquote><p><strong>เปลี่ยนเครือข่าย</strong>มักช่วยแก้ได้ ปกติเกี่ยวข้องกับสภาพแวดล้อมเครือข่ายปัจจุบัน — ลองเปลี่ยนโหนดเครือข่ายแล้วลองใหม่</p></blockquote>
+<h3>❓ วิเคราะห์ AI ขึ้น error?</h3>
+<blockquote><p>กรุณาตรวจ:</p><p>1. ตั้งค่า API คีย์ถูกต้องหรือไม่?</p><p>2. อินเทอร์เน็ตใช้งานปกติหรือไม่?</p><p>3. ยอดเงินใน API เพียงพอหรือไม่?</p></blockquote>
+<h3>📮 ติดต่อผู้พัฒนา</h3>
+<ul>
+<li>📧 อีเมล: <a class="ext-link" href="mailto:panrunrun@gmail.com">panrunrun@gmail.com</a></li>
+<li>🌐 เว็บไซต์: <a class="ext-link" href="https://www.languagemadeeasy.com" target="_blank" rel="noopener">www.languagemadeeasy.com</a></li>
+</ul>
+<hr>
+<blockquote><p>🎉 <strong>ขอให้สนุกกับการเรียน! มีคำถามติดต่อมาได้ตลอดเลย</strong></p></blockquote>
+<footer>เรียบเรียงโดย Pandora&#x27;s Digital Garden</footer>
+</div>
+</body>
+</html>

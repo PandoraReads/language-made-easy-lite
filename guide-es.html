@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Language Made Easy · Guía de usuario</title>
+<style>/* ============================================================
+   LME 系统文档风格 · 书卷暖棕（Bookish Warm）
+   面向用户的系统说明文档统一风格
+   ------------------------------------------------------------
+   用法：HTML 生成脚本读取本文件，内联到 <style>。
+   单文件分发时 CSS 随 HTML 一起走，无外部依赖。
+   ============================================================ */
+
+/* ---------- 设计令牌（Design Tokens）---------- */
+:root{
+  /* 底色层：米白书页感 */
+  --bg:#FBF9F5;          /* 主底：温米白 */
+  --soft:#F4EFE6;        /* 次底：羊皮纸暖灰 */
+  --card:#FFFFFF;        /* 卡片：纯白 */
+
+  /* 文字层 */
+  --text:#2C2A26;        /* 主文字：深褐黑 */
+  --muted:#6B6358;       /* 次文字：棕灰 */
+
+  /* 主色：书脊棕 → 砖红强调（纽伯瑞奖章意象）*/
+  --primary:#8B5E3C;     /* 主色：暖棕 */
+  --accent:#C75B4A;      /* 强调：砖红 */
+  --link:#1E6FB0;        /* 链接：沉稳蓝 */
+
+  /* Hero 渐变（可被主题覆盖）*/
+  --g1:#8B5E3C;          /* 渐变起：暖棕 */
+  --g2:#C75B4A;          /* 渐变止：砖红 */
+
+  --border:#E5DED1;      /* 边框：浅米 */
+
+  /* 级别色阶（L1-L4，知识库通用）*/
+  --L1:#E8A33D;          /* L1 暖橙：起步 */
+  --L2:#5A9367;          /* L2 草绿：成长 */
+  --L3:#3D7AA8;          /* L3 海蓝：进阶 */
+  --L4:#7B5AA8;          /* L4 紫罗兰：高阶 */
+}
+
+/* ---------- 基础排版 ---------- */
+*{box-sizing:border-box}
+body{
+  margin:0; padding:0;
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  background:var(--bg); color:var(--text);
+  line-height:1.7; font-size:16px;
+}
+.wrap{max-width:960px; margin:0 auto; padding:32px 28px 80px;}
+
+/* ---------- Hero 头图 ---------- */
+/* 渐变色带 + 圆角下沿，用于文档顶部标题区 */
+header.hero{
+  position:relative; overflow:hidden;
+  background:linear-gradient(135deg,var(--g1) 0%, var(--g2) 100%);
+  color:#FBF9F5; padding:48px 28px; border-radius:0 0 24px 24px;
+  margin:-32px -28px 36px; box-shadow:0 4px 20px rgba(139,94,60,.18);
+}
+/* 书签缎带装饰：右上角双条错落，V 口 + 穿线孔经典书签造型，不贴边 */
+header.hero::after{
+  content:""; position:absolute;
+  top:0; right:64px; width:32px; height:96px;
+  background:
+    radial-gradient(circle 3px at 50% 11px, rgba(0,0,0,.20) 99%, transparent 100%),
+    rgba(255,255,255,.32);
+  clip-path:polygon(0 0, 100% 0, 100% 100%, 50% 76%, 0 100%);
+  box-shadow:0 3px 8px rgba(0,0,0,.14);
+}
+header.hero h1{margin:0 0 8px; font-size:30px; font-weight:700; letter-spacing:.5px;}
+header.hero p{margin:0; opacity:.92; font-size:15px;}
+
+/* ---------- 标题层级 ---------- */
+/* h2：章节标题，带砖红竖条前缀 */
+h2{
+  font-size:22px; color:var(--primary); margin:40px 0 16px;
+  padding-bottom:8px; border-bottom:2px solid var(--border);
+  display:flex; align-items:center; gap:10px;
+}
+h2::before{content:""; width:4px; height:22px; background:var(--accent); border-radius:2px;}
+h3{font-size:18px; color:var(--text); margin:28px 0 12px; font-weight:600;}
+h4{font-size:15px; color:var(--muted); margin:18px 0 8px; text-transform:uppercase; letter-spacing:1px;}
+p{margin:10px 0;}
+strong{color:var(--accent);}
+code{background:var(--soft); padding:2px 6px; border-radius:4px; font-size:14px; color:var(--primary);}
+
+/* ---------- 引用块 ---------- */
+blockquote{
+  margin:16px 0; padding:12px 18px; background:var(--soft);
+  border-left:4px solid var(--accent); border-radius:0 8px 8px 0; color:var(--muted);
+}
+blockquote strong{color:var(--primary);}
+hr{border:none; border-top:1px dashed var(--border); margin:36px 0;}
+
+/* ---------- 表格 ---------- */
+/* 圆角阴影容器 + 表头主色填充 + 隔行条纹 + 悬停高亮 */
+.table-wrap{overflow-x:auto; margin:18px 0; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,.04);}
+table{width:100%; border-collapse:collapse; background:var(--card); font-size:14.5px;}
+thead{background:var(--primary); color:#FBF9F5;}
+th{padding:10px 10px; text-align:left; font-weight:600; white-space:nowrap;}
+td{padding:9px 10px; border-bottom:1px solid var(--border); vertical-align:top;}
+tbody tr:nth-child(even){background:#FAF6EE;}
+tbody tr:hover{background:#F4E8D8;}
+/* 分级说明：最后一列（内容特征）加宽 */
+body.theme-fenji .table-wrap table th:last-child,
+body.theme-fenji .table-wrap table td:last-child{min-width:220px;}
+td strong:first-child{display:inline-block;}
+
+/* ---------- 列表 ---------- */
+ul,ol{margin:12px 0; padding-left:24px;}
+li{margin:6px 0;}
+ul li::marker{color:var(--accent);}
+
+/* ---------- 书名 / 文档链接 ---------- */
+/* book-link：可点跳转，虚下划线，悬停浅底 */
+a.book-link{
+  color:var(--link); text-decoration:none; border-bottom:1px dashed var(--link);
+  padding-bottom:1px; transition:all .15s;
+}
+a.book-link:hover{background:rgba(30,111,176,.08); border-bottom-style:solid;}
+.plain-link{color:inherit;}
+a.doc-link{color:var(--link);text-decoration:none;border-bottom:1px solid var(--link);padding-bottom:1px;}
+a.doc-link:hover{opacity:.7;}
+
+/* ---------- 级别徽章 ---------- */
+/* 配合级别色阶使用：<span class="lv-badge lv-L1">L1</span> */
+.lv-badge{
+  display:inline-block; padding:2px 10px; border-radius:12px;
+  color:#fff; font-size:12px; font-weight:600; margin-right:6px;
+}
+.lv-L1{background:var(--L1);}
+.lv-L2{background:var(--L2);}
+.lv-L3{background:var(--L3);}
+.lv-L4{background:var(--L4);}
+
+/* ---------- 章节卡片（可选容器）---------- */
+.section-card{
+  background:var(--card); border-radius:12px; padding:8px 22px;
+  margin:16px 0; box-shadow:0 1px 4px rgba(0,0,0,.03);
+}
+
+/* ---------- Sticky 锚点导航 ---------- */
+nav.toc{
+  position:sticky; top:0; z-index:10; background:rgba(251,249,245,.95);
+  backdrop-filter:blur(8px); padding:12px 0; margin:0 -28px 24px;
+  border-bottom:1px solid var(--border); padding-left:28px; padding-right:28px;
+  display:flex; gap:8px; flex-wrap:wrap; font-size:13px;
+}
+nav.toc a{
+  color:var(--muted); text-decoration:none; padding:4px 10px;
+  border-radius:14px; background:var(--soft); transition:all .15s;
+}
+nav.toc a:hover{background:var(--primary); color:#fff;}
+
+/* ---------- 页脚 ---------- */
+footer{text-align:center; color:var(--muted); font-size:13px; margin-top:48px; padding-top:24px; border-top:1px dashed var(--border);}
+
+/* ---------- 代码块 ---------- */
+pre{
+  background:#2C2A26; color:#F4EFE6; padding:14px 18px;
+  border-radius:8px; overflow-x:auto; margin:14px 0; font-size:13.5px;
+  line-height:1.55;
+}
+pre code{background:transparent; color:#F4EFE6; padding:0; font-size:inherit; border:none;}
+
+/* ---------- Callout 提示框 ---------- */
+/* Obsidian callout：> [!type] title \n > 内容 */
+.callout{
+  margin:16px 0; padding:14px 18px; border-radius:8px;
+  background:var(--soft); border-left:4px solid var(--primary);
+}
+.callout-title{font-weight:600; margin-bottom:6px; color:var(--primary);}
+.callout-body p{margin:6px 0;}
+.callout-body p:first-child{margin-top:0;}
+.callout-body p:last-child{margin-bottom:0;}
+.callout-tip{border-left-color:#5A9367; background:#EEF7F0;}
+.callout-tip .callout-title{color:#3D6B47;}
+.callout-info{border-left-color:#3D7AA8; background:#EBF2F9;}
+.callout-info .callout-title{color:#2B5A82;}
+.callout-warning{border-left-color:#C75B4A; background:#FBEEEA;}
+.callout-warning .callout-title{color:#A04535;}
+.callout-note{border-left-color:#8B5E3C; background:var(--soft);}
+.callout-note .callout-title{color:var(--primary);}
+
+/* ---------- 外部链接 ---------- */
+a.ext-link{color:var(--link); text-decoration:none; border-bottom:1px dashed var(--link);}
+a.ext-link:hover{border-bottom-style:solid;}
+
+/* ---------- 响应式 ---------- */
+@media(max-width:640px){
+  .wrap{padding:20px 16px 60px;}
+  header.hero{padding:32px 16px; margin:-20px -16px 24px; border-radius:0 0 16px 16px;}
+  header.hero h1{font-size:24px;}
+  th,td{padding:8px 10px; font-size:13px;}
+  header.hero::before,header.hero::after{display:none;}
+}
+
+/* ---------- 主题色板（4 文档差异化；底色/文字/链接/callout 跨主题共享）---------- */
+/* 每主题只覆盖 --primary / --accent / --g1 / --g2 四变量 */
+body.theme-readme{--primary:#8B5E3C;--accent:#C75B4A;--g1:#8B5E3C;--g2:#C75B4A;}   /* 首页·书卷暖棕（默认）*/
+body.theme-fenji{--primary:#3D6B7A;--accent:#5A9367;--g1:#3D6B7A;--g2:#5A9367;}     /* 分级说明·体系森林 */
+body.theme-shudan{--primary:#8C3A3A;--accent:#C8862E;--g1:#8C3A3A;--g2:#C8862E;}    /* 推荐书单·藏书酒红 */
+body.theme-lme{--primary:#4A5A8C;--accent:#7B5AA8;--g1:#4A5A8C;--g2:#7B5AA8;}       /* LME 手册·工具靛紫 */
+</style>
+</head>
+<body class="theme-lme">
+<div class="wrap">
+<header class="hero">
+  <h1>Language Made Easy · Guía de usuario</h1>
+  <p>Plugin inmersivo de Obsidian para idiomas · Búsqueda / Tarjetas / Shadowing / IA</p>
+</header>
+<nav class="toc"><a href="#install">Instalar</a><a href="#lookup">Búsqueda</a><a href="#flashcards">Tarjetas</a><a href="#shadowing">Shadowing</a><a href="#ai">IA</a><a href="#more">Más</a><a href="#faq">FAQ</a></nav>
+
+<blockquote><p><strong>Language Made Easy</strong> es un plugin de Obsidian que integra <strong>búsqueda de palabras, tarjetas, shadowing de vídeo y análisis con IA</strong> en tu flujo de notas — aprendes un idioma de forma natural mientras lees, ves vídeos y tomas notas.</p></blockquote>
+<hr>
+<h2 id="install">1. Instalar el plugin</h2>
+<h3>📦 Descargar e instalar</h3>
+<ol>
+<li>Copia los archivos del plugin (<code>main.js</code>, <code>manifest.json</code>, <code>style.css</code>) en la carpeta de plugins de tu bóveda de Obsidian:</li>
+</ol>
+<pre><code>tu-boveda/
+└── .obsidian/
+    └── plugins/
+        └── language-made-easy/
+            ├── main.js
+            ├── manifest.json
+            └── style.css</code></pre>
+<div class="callout callout-tip"><div class="callout-title">💡 ¿Cómo encuentro la carpeta de plugins?</div><div class="callout-body"><p>En Obsidian, abre <strong>Ajustes → Plugins de la comunidad → pulsa el icono 📁</strong> para ir directo a la carpeta de plugins.</p></div></div>
+<ol>
+<li>Vuelve a Obsidian, entra en <strong>Ajustes → Plugins de la comunidad</strong>, busca <strong>Language Made Easy</strong> y actívalo.</li>
+</ol>
+<h3>🆓 Prueba gratuita de 3 días → Edición completa</h3>
+<p>Tu <strong>prueba gratuita de 3 días</strong> empieza en el primer arranque — todos los idiomas están abiertos para estudiar (búsqueda / tarjetas / shadowing / análisis IA) con las funciones básicas de siempre; la cuenta atrás se ve en la barra de estado.</p>
+<p>Al terminar la prueba, sigue usando el plugin con la <strong>Edición completa</strong> (compra única, actualizaciones de por vida). Desbloquea todos los módulos avanzados:</p>
+<ul>
+<li>7 idiomas más: inglés / alemán / francés / español / coreano / ruso / japonés</li>
+<li>Tarjetas ilimitadas, 5 diccionarios locales, diccionarios sin conexión para móvil</li>
+<li>Sincronización de tarjetas entre dispositivos, importación / exportación de datos</li>
+<li>Generación de tarjetas por lotes con IA, exportación de informes IA</li>
+<li>9 temas de interfaz extra, modos de repaso de escucha / escritura</li>
+<li>Marcadores de vídeo, tarjetas didácticas de vídeo, descargas en un clic y por lotes desde la página de suscripciones</li>
+</ul>
+<blockquote><p>🌐 Visita https://languagemadeeasy.com para conseguir la Edición completa.</p></blockquote>
+<hr>
+<h2 id="lookup">2. Usar la búsqueda de palabras</h2>
+<p>📖 Aquí tienes un pasaje de ejemplo en inglés:</p>
+<blockquote><p>The best way to learn a new language is not through memorization, but through immersion. When you read, listen, and speak in context, your brain absorbs vocabulary and grammar naturally — just like how you learned your first language as a child.</p></blockquote>
+<p>¡Prueba a <strong>hacer doble clic</strong> en cualquier palabra que no conozcas del pasaje anterior para probar la búsqueda!</p>
+<h3>Abrir el asistente de palabras</h3>
+<p>Hay varias formas:</p>
+<pre><code>Opción 1: pulsa el icono 📖 de la barra lateral izquierda
+Opción 2: Ctrl/Cmd + P → busca automáticamente con «Asistente de palabras»</code></pre>
+<h3>Acciones de búsqueda</h3>
+<p><strong>Haz doble clic en una palabra</strong> en una nota, o <strong>mantén <code>Ctrl/Cmd + Mayús</code> y selecciona texto</strong>: el panel de resultados aparece a la derecha automáticamente.</p>
+<h3>Panel de resultados</h3>
+<p>Tras buscar una palabra verás:</p>
+<div class="table-wrap"><table><thead><tr><th>Función</th><th>Descripción</th></tr></thead><tbody><tr><td>🔊 <strong>Pronunciación</strong></td><td>Pulsa para oír la pronunciación correcta</td></tr><tr><td>📝 <strong>Añadir al vocabulario</strong></td><td>Guárdala como tarjeta en un clic para repasarla luego</td></tr><tr><td>🔤 <strong>Fonética</strong></td><td>Muestra la transcripción fonética</td></tr><tr><td>📖 <strong>Definición</strong></td><td>Muestra la categoría gramatical y la definición</td></tr></tbody></table></div>
+<div class="callout callout-tip"><div class="callout-title">✨ Consejo</div><div class="callout-body"><p>También puedes <strong>hacer doble clic para buscar</strong> palabras dentro del panel de resultados — ¡el diccionario en sí es un gran material de estudio!</p></div></div>
+<h3>Idiomas admitidos</h3>
+<div class="table-wrap"><table><thead><tr><th>Idioma</th><th>Código</th></tr></thead><tbody><tr><td>🇬🇧 Inglés</td><td><code>en</code></td></tr><tr><td>🇩🇪 Alemán</td><td><code>de</code></td></tr><tr><td>🇫🇷 Francés</td><td><code>fr</code></td></tr><tr><td>🇪🇸 Español</td><td><code>es</code></td></tr><tr><td>🇰🇷 Coreano</td><td><code>ko</code></td></tr><tr><td>🇷🇺 Ruso</td><td><code>ru</code></td></tr><tr><td>🇯🇵 Japonés</td><td><code>ja</code></td></tr></tbody></table></div>
+<div class="callout callout-info"><div class="callout-title">🌐 Se admitirán más idiomas en el futuro.</div><div class="callout-body"></div></div>
+<hr>
+<h2 id="flashcards">3. Añadir y gestionar tarjetas</h2>
+<p>🎴 Cuando hayas acumulado muchas palabras nuevas leyendo y buscando, así puedes repasarlas de forma sistemática:</p>
+<h3>Tarjetas generadas automáticamente</h3>
+<p>Al pulsar <strong>«Añadir al vocabulario»</strong> después de una búsqueda, el plugin genera una tarjeta automáticamente. Cada tarjeta incluye:</p>
+<ul>
+<li>✅ Palabra + fonética</li>
+<li>✅ Definición</li>
+<li>✅ Contexto de la palabra (la frase de la nota donde la buscaste)</li>
+<li>✅ Enlace a la nota de origen</li>
+<li>✅ Fecha de alta</li>
+</ul>
+<h3>Añadir una tarjeta manualmente</h3>
+<pre><code>Abre el panel de repaso → pulsa el botón «Añadir tarjeta» abajo
+→ Rellena palabra, fonética (opcional), definición, frase de ejemplo (opcional)
+→ Guardar</code></pre>
+<h3>Empezar a repasar</h3>
+<p>Abre el panel de repaso de tarjetas:</p>
+<pre><code>Opción 1: pulsa el icono 🧠 de la barra lateral izquierda
+Opción 2: Ctrl/Cmd + P → busca «Empezar repaso de tarjetas»</code></pre>
+<h4>Flujo de repaso</h4>
+<pre><code>👀 Ver el anverso → 🤔 Intentar recordar el significado
+→ 🖱️ Clic para girar y revelar la definición → ⭐ Valora qué tal lo recordabas</code></pre>
+<h4>Escala de valoración</h4>
+<div class="callout callout-info"><div class="callout-title">🧠 Sobre el algoritmo FSRS</div><div class="callout-body"><p>El repaso funciona con el <strong>algoritmo FSRS</strong> (repetición espaciada moderna). Según tus valoraciones, programa de forma inteligente el próximo repaso de cada tarjeta, justo al borde del olvido.</p></div></div>
+<div class="table-wrap"><table><thead><tr><th>Valoración</th><th>Significado</th><th>Efecto</th></tr></thead><tbody><tr><td>😵 <strong>Otra vez</strong></td><td>No la recordaba</td><td>Vuelve pronto</td></tr><tr><td>😐 <strong>Difícil</strong></td><td>Apenas recordada</td><td>Intervalo acortado</td></tr><tr><td>🙂 <strong>Bien</strong></td><td>Recordada con normalidad</td><td>Intervalo estándar</td></tr><tr><td>😎 <strong>Fácil</strong></td><td>La supe al instante</td><td>Intervalo muy ampliado</td></tr></tbody></table></div>
+<div class="callout callout-warning"><div class="callout-title">🧹 Limpieza automática</div><div class="callout-body"><p>Tras varios <strong>«Fácil»</strong>, la palabra sale automáticamente de la rotación de repaso. Puedes personalizar el disparador en <strong>Ajustes → Language Made Easy</strong>.</p></div></div>
+<h3>Gestionar los datos de las tarjetas</h3>
+<pre><code>Ctrl/Cmd + P → busca «Gestionar datos de tarjetas»</code></pre>
+<p>En el gestor puedes:</p>
+<ul>
+<li>📋 Filtrar tarjetas por idioma y estado</li>
+<li>🗑️ Borrar por lotes las que ya no necesites</li>
+<li>📤 Exportar tus datos de tarjetas</li>
+</ul>
+<div class="callout callout-tip"><div class="callout-title">💡 Dos notas importantes</div><div class="callout-body"><p>1. Los datos de las tarjetas se guardan en <strong>IndexedDB local</strong>. Al actualizar el plugin solo reemplazas los tres archivos <code>main.js</code>, <code>manifest.json</code> y <code>style.css</code> — <strong>tus tarjetas no se ven afectadas</strong>. ¡Actualiza tranquilo!</p><p>2. Las tarjetas admiten <strong>importación y exportación</strong> en varios formatos — <code>txt</code>, <code>markdown</code>, <code>csv</code>, <code>json</code> y más — para copias de seguridad y migraciones.</p></div></div>
+<hr>
+<h2 id="shadowing">4. El taller de shadowing</h2>
+<p>🎬 Language Made Easy te ayuda a aprender mejor con <strong>vídeos de YouTube / Bilibili</strong>, para coger lenguaje hablado natural y afinar tu oído.</p>
+<h3>Abrir el taller</h3>
+<pre><code>Opción 1: pulsa el icono ▶️ de la barra lateral izquierda
+Opción 2: Ctrl/Cmd + P → busca «Taller de shadowing»</code></pre>
+<h3>Cargar un vídeo</h3>
+<p>Pega un enlace de vídeo en una nota y el plugin lo reconoce y carga solo:</p>
+<pre><code>✅ Vídeo de YouTube → pega el enlace y se carga solo
+✅ Vídeo de Bilibili → pega el enlace y se carga solo (descarga y caché automáticas)
+✅ Audio/vídeo local → inégralo con ![[video.mp4]] o ![[audio.mp3]]</code></pre>
+<h3>Descargar subtítulos</h3>
+<p>Tras cargar el vídeo, pulsa <strong>«Descargar subtítulos»</strong> en la barra derecha. El plugin los obtiene de YouTube / Bilibili y los inserta en tu nota.</p>
+<p>Ejemplo de formato:</p>
+<pre><code>[00:12] Hello, how are you today?
+[00:15] I'm fine, thank you. And you?
+[01:23] What a beautiful day! Let's go for a walk.</code></pre>
+<div class="callout callout-tip"><div class="callout-title">📝 Nota</div><div class="callout-body"><p>El taller admite <strong>varios formatos de marca de tiempo</strong> — <code>HH:MM:SS</code>, <code>MM:SS</code> o <code>[00:12]</code>: todos se reconocen y cargan automáticamente.</p></div></div>
+<h3>Controles de reproducción</h3>
+<p>El reproductor tiene una fila de controles abajo:</p>
+<div class="table-wrap"><table><thead><tr><th>Botón</th><th>Función</th><th>Uso</th></tr></thead><tbody><tr><td>⏮️ <strong>Repetir</strong></td><td>Salta al inicio de la frase</td><td>Reescuchar desde el principio</td></tr><tr><td>🔁 <strong>Bucle</strong></td><td>Bucle de una frase</td><td>Ideal para machacar una frase</td></tr><tr><td>▶️ / ⏸️ <strong>Reproducir/Pausa</strong></td><td>Controla la reproducción</td><td>Barra espaciadora</td></tr><tr><td>🐢🐇 <strong>Velocidad</strong></td><td>0,8x / 1,0x / 1,2x</td><td>Ajusta a tu nivel</td></tr></tbody></table></div>
+<h3>🎧 Modo dictado</h3>
+<p>¿Quieres retar tu oído? ¡Prueba el <strong>modo dictado</strong>!</p>
+<pre><code>Barra derecha del taller → pulsa «Modo dictado»
+→ Suena una frase y tú escribes lo que oyes
+→ Al enviar, se compara tu entrada con el original
+→ Errores en rojo; aciertos en verde</code></pre>
+<hr>
+<h2 id="ai">5. Sube de nivel con IA</h2>
+<p>¿Quieres una experiencia más potente? Las configuraciones avanzadas desbloquean <strong>diccionarios locales</strong> y <strong>análisis con IA</strong>.</p>
+<h3>5.1 Configurar un diccionario local</h3>
+<p>Un diccionario local (formato MDX) da definiciones más ricas — con ejemplos, colocaciones y sinónimos — incluso <strong>sin conexión</strong>.</p>
+<pre><code>Ajustes → Language Made Easy → Ajustes de diccionario
+→ Pon la ruta de tu diccionario MDX local
+→ Guardar</code></pre>
+<h3>5.2 El diccionario local en acción</h3>
+<p>Con un diccionario local, los resultados mejoran mucho:</p>
+<div class="table-wrap"><table><thead><tr><th>Aspecto</th><td>Diccionario en línea</th><th>Diccionario MDX local</th></tr></thead><tbody><tr><td>Red</td><td>✅ Necesaria</td><td>❌ Funciona sin conexión</td></tr><tr><td>Detalle</td><td>Definiciones básicas</td><td>Detalladas + ejemplos + colocaciones</td></tr><tr><td>Velocidad</td><td>Depende de la red</td><td>⚡ Instantáneo</td></tr><tr><td>Fuentes</td><td>Google / MyMemory / Jisho</td><td>Archivos MDX propios</td></tr></tbody></table></div>
+<h3>5.3 Configurar una clave API de LLM</h3>
+<p>El análisis IA necesita una clave API de un modelo de lenguaje. Proveedores admitidos:</p>
+<pre><code>Ajustes → Language Made Easy → Ajustes de IA
+→ Elige un proveedor (OpenAI / Google Gemini / OpenRouter)
+→ Introduce tu clave API
+→ Guardar</code></pre>
+<div class="callout callout-tip"><div class="callout-title">💡 Recomendaciones</div><div class="callout-body"><p>- <strong>OpenAI</strong>: pega la clave API y a funcionar.</p><p>- <strong>Google Gemini</strong>: tiene capa gratuita; genial como respaldo o para estudio profundo.</p></div></div>
+<h3>5.4 Usar el análisis IA</h3>
+<h4>5.4.1 Generar un informe de análisis IA</h4>
+<p>Tras cargar subtítulos en el taller:</p>
+<pre><code>Pulsa «Análisis IA» en la barra derecha
+→ Espera a que termine (suele tardar de diez a veinte segundos)
+→ El informe aparece en el panel derecho
+→ Pulsa «Guardar en la nota» para conservarlo
+→ El botón de imagen lo «Guarda como imagen larga»</code></pre>
+<p>Un informe de análisis IA suele incluir:</p>
+<ul>
+<li>📝 <strong>Vocabulario</strong> — uso y colocaciones de palabras clave</li>
+<li>🏗️ <strong>Gramática</strong> — despiece de estructuras clave</li>
+<li>🌍 <strong>Cultura</strong> — contexto cultural relevante</li>
+<li>💡 <strong>Consejos</strong> — sugerencias de estudio a medida</li>
+</ul>
+<p>El plugin trae <strong>3 prompts de análisis integrados</strong> para distintas necesidades:</p>
+<div class="table-wrap"><table><thead><tr><th>Prompt</th><th>Ideal para</th><th>Resultado</th></tr></thead><tbody><tr><td>📝 <strong>Resumen</strong></td><td>Captar la idea del vídeo rápido</td><td>Resumen conciso + puntos clave</td></tr><tr><td>📖 <strong>Bilingüe</strong></td><td>Estudiar línea a línea</td><td>Traducción bilingüe frase por frase</td></tr><tr><td>🧪 <strong>Miniquiz</strong></td><td>Comprobar lo aprendido</td><td>Preguntas generadas del vídeo</td></tr></tbody></table></div>
+<div class="callout callout-tip"><div class="callout-title">💡 También puedes escribir tus propios prompts — mira <a href="#ai-custom-prompt">5.4.2 Añadir un prompt personalizado</a>.</div><div class="callout-body"></div></div>
+<h4 id="ai-custom-prompt">5.4.2 Añadir un prompt personalizado</h4>
+<p>Escribe tus propios prompts y pide a la IA material a tu medida:</p>
+<pre><code>Ajustes → Language Made Easy → Gestión de prompts IA
+→ Añadir un prompt personalizado
+→ Pon nombre y contenido
+→ Guardar</code></pre>
+<h3>5.5 Autocompletado de tarjetas en un clic</h3>
+<p>¿No quieres rellenar fonética y definiciones a mano? ¡Usa el <strong>autocompletado IA</strong>!</p>
+<pre><code>Panel «Añadir tarjeta» → escribe la palabra
+→ Pulsa «Rellenar con IA»
+→ Fonética, definición y ejemplo se rellenan solos
+→ Revisa y guarda</code></pre>
+<h3>5.6 Más formas de cargar subtítulos</h3>
+<p>Además de descargarlos en el taller, hay otras opciones:</p>
+<h4>5.6.1 El botón «Descargar subtítulos» del taller</h4>
+<p>El método más directo. Tras cargar el vídeo, pulsa <strong>«Descargar subtítulos»</strong> en la barra derecha — el plugin los obtiene de YouTube / Bilibili automáticamente.</p>
+<div class="callout callout-warning"><div class="callout-title">⚠️ Notas sobre la descarga</div><div class="callout-body"><p>1. El plugin descarga los subtítulos del <strong>idioma de estudio seleccionado</strong> — revisa el idioma antes. Si no hay subtítulos en ese idioma, se devuelven los predeterminados del vídeo.</p><p>2. Los vídeos de Bilibili <strong>a menudo no tienen subtítulos en inglés</strong>. Antes de elegir, revisa la lista «字幕» (subtítulos) del reproductor.</p></div></div>
+<h4>5.6.2 Obsidian Web Clipper</h4>
+<p>Con la extensión <a class="ext-link" href="https://obsidian.md/clipper" target="_blank" rel="noopener">Obsidian Web Clipper</a> puedes recortar subtítulos de YouTube directo a una nota mientras ves el vídeo:</p>
+<pre><code>Instala la extensión Obsidian Web Clipper
+→ En la página del vídeo, pulsa el icono de la extensión
+→ Elige recortar los subtítulos
+→ Se guarda como nota con marcas de tiempo</code></pre>
+<h4>5.6.3 El plugin ytranscript</h4>
+<p><a class="ext-link" href="https://obsidian.md/plugins?id=ytranscript" target="_blank" rel="noopener">ytranscript</a> es otro plugin de Obsidian para descargar subtítulos de YouTube:</p>
+<pre><code>Busca e instala «ytranscript» en plugins de la comunidad
+→ Usa ytranscript desde la paleta de comandos
+→ Los subtítulos se insertan con marca de tiempo
+→ Abre el taller y a practicar</code></pre>
+<h4>5.6.4 Cargar archivos SRT para vídeos locales</h4>
+<p>Si tienes un vídeo local y su archivo SRT:</p>
+<pre><code>Opción 1: copia el contenido del SRT en una nota
+         → Comprueba el formato de las marcas de tiempo
+         → Integra el vídeo con ![[video.mp4]]
+         → Abre el taller para analizar vídeo y subtítulos
+
+Opción 2: pon el SRT junto al vídeo en la bóveda
+         → Integra el vídeo con ![[video.mp4]]
+         → El plugin empareja solo el SRT con el mismo nombre</code></pre>
+<hr>
+<h2 id="more">6. Otros usos</h2>
+<h3>6.1 Comando rápido: cambiar de tema en un clic</h3>
+<p>El plugin trae <strong>10 temas de interfaz cuidadosamente diseñados</strong>:</p>
+<pre><code>Ctrl/Cmd + P → busca «Cambiar al siguiente tema»
+→ Cada ejecución pasa al siguiente tema</code></pre>
+<div class="table-wrap"><table><thead><tr><th>Tema</th><th>Estilo</th></tr></thead><tbody><tr><td>📜 Paper Ink</td><td>Tinta sobre papel clásico, cálido</td></tr><tr><td>🌿 Mint Atelier</td><td>Frescor menta, limpio y profesional</td></tr><tr><td>🌸 Rose Blush</td><td>Rosa suave, tierno y romántico</td></tr><tr><td>💜 Lavender Dream</td><td>Sueño de lavanda, ligero</td></tr><tr><td>🍬 Candy Pop</td><td>Fiesta de caramelos, alegre</td></tr><tr><td>🌳 Mindful Oasis</td><td>Oasis mindful, natural y acogedor</td></tr><tr><td>🪸 Coral Warmth</td><td>Calor coral, cálido y con energía</td></tr><tr><td>🌊 Ocean Glass</td><td>Corazón del océano, profundo y sereno</td></tr><tr><td>🌌 Aurora Prism</td><td>Prisma de aurora, misterioso y colorido</td></tr><tr><td>🍋 Dark Lemon</td><td>Limón nocturno, oscuro y con estilo</td></tr></tbody></table></div>
+<h3>6.2 Comando rápido: cambiar de idioma en un clic</h3>
+<p>¿Estudias varios idiomas? Cambia rápido:</p>
+<pre><code>Ctrl/Cmd + P → busca «Cambiar a inglés / alemán / francés / …»
+→ Cambia al instante el idioma de estudio</code></pre>
+<h3>6.3 Comando rápido: informe de análisis IA</h3>
+<pre><code>Ctrl/Cmd + P → busca «Análisis IA»
+→ Elige cualquier nota de la bóveda para analizarla</code></pre>
+<h3>6.4 Ruta de guardado del cuaderno de vocabulario</h3>
+<p>Cada vez que añades una palabra, el plugin genera un archivo Markdown de vocabulario en la bóveda. Puedes personalizar dónde se guarda:</p>
+<pre><code>Ajustes → Language Made Easy → Ajustes del vocabulario
+→ Define ruta y nombre de archivo
+→ Guardar</code></pre>
+<h3>6.5 Ruta de guardado de los informes IA</h3>
+<p>Los informes también pueden ir a otro sitio:</p>
+<pre><code>Ajustes → Language Made Easy → Ajustes de análisis IA
+→ Define la ruta de los informes
+→ Guardar</code></pre>
+<hr>
+<h2 id="faq">7. FAQ</h2>
+<h3>❓ ¿La búsqueda no responde?</h3>
+<blockquote><p>Revisa lo siguiente:</p><p>1. Que haya un diccionario bien configurado (los en línea necesitan red).</p><p>2. Si usas MDX, comprueba que las rutas de mdx, mdd y css estén bien en los ajustes.</p><p>3. Confirma que el idioma de estudio esté bien puesto.</p></blockquote>
+<h3>❓ ¿No veo la tarjeta que acabo de añadir?</h3>
+<blockquote><p>Las tarjetas nuevas van al final de la cola de repaso.</p></blockquote>
+<h3>❓ ¿Los vídeos de Bilibili solo descargan subtítulos en chino?</h3>
+<blockquote><p>Comprueba si el vídeo tiene de verdad subtítulos subidos en otros idiomas. Que aparezcan subtítulos bilingües incrustados en pantalla no significa que el autor subiera esos archivos.</p></blockquote>
+<h3>❓ ¿El taller me pide «iniciar sesión» al abrir un vídeo de YouTube?</h3>
+<blockquote><p><strong>Cambiar de red</strong> suele resolverlo. Normalmente se relaciona con tu entorno de red — prueba otro nodo y reintenta.</p></blockquote>
+<h3>❓ ¿El análisis IA da error?</h3>
+<blockquote><p>Comprueba:</p><p>1. ¿La clave API está bien configurada?</p><p>2. ¿Funciona tu conexión?</p><p>3. ¿Hay saldo suficiente en la API?</p></blockquote>
+<h3>📮 Contactar con el autor</h3>
+<ul>
+<li>📧 Correo: <a class="ext-link" href="mailto:panrunrun@gmail.com">panrunrun@gmail.com</a></li>
+<li>🌐 Web: <a class="ext-link" href="https://www.languagemadeeasy.com" target="_blank" rel="noopener">www.languagemadeeasy.com</a></li>
+</ul>
+<hr>
+<blockquote><p>🎉 <strong>¡Feliz aprendizaje! Escríbenos cuando quieras si tienes dudas.</strong></p></blockquote>
+<footer>Curado por el jardín digital de Pandora</footer>
+</div>
+</body>
+</html>

@@ -4,17 +4,21 @@
 // Copyright (c) 2024-2026 PandoraReads | panrunrun@gmail.com
 
 import { App, Modal, setIcon } from 'obsidian';
-import { t } from '../i18n';
+import { t, getLocale } from '../i18n';
 import wechatQrUrl from '../../assets/wechat-qr.jpg';
 
 /**
- * 完整版购买店铺链接(小红书 / B站 / 视频号)。
+ * 完整版购买店铺链接(小红书 / B站 / 视频号)。仅简体中文界面使用:
+ * 海外语言包的购买入口统一改为官网。
  */
 const STORE_LINKS = {
 	xiaohongshu: 'https://xhslink.com/m/4ke3sdw1uXp',
 	bilibili: 'https://b23.tv/QYtaP7T',
 	weixinChannel: 'https://store.weixin.qq.com/shop/a/T9WX95cCebFqe4F',
 } as const;
+
+/** 官网链接(非简体中文语言的购买入口)。 */
+const OFFICIAL_WEBSITE_URL = 'https://www.languagemadeeasy.com';
 
 interface StoreLinkConfig {
 	key: keyof typeof STORE_LINKS;
@@ -30,7 +34,8 @@ const STORE_LIST: StoreLinkConfig[] = [
 
 // PandoraReads — 社区免费版付费引导弹窗。
 // 免费版中被移除的高级功能,入口按钮保留可见,点击时弹出本窗口:
-// 店铺链接(小红书/B站/视频号) + 微信二维码(咨询用法与高级版)。
+// 简体中文 → 店铺链接(小红书/B站/视频号);其他语言 → 官网链接。
+// 弹窗底部保留微信二维码(咨询用法与高级版)。
 export class UpgradeModal extends Modal {
 	/** 可选:被点击的功能名,用于在弹窗中高亮说明(如「批量闪卡」)。 */
 	private readonly feature: string | null;
@@ -38,6 +43,11 @@ export class UpgradeModal extends Modal {
 	constructor(app: App, feature?: string) {
 		super(app);
 		this.feature = feature ?? null;
+	}
+
+	/** 简体中文界面沿用国内店铺,其余语言跳转官网购买。 */
+	private isDomesticStoreLocale(): boolean {
+		return getLocale() === 'zh-CN';
 	}
 
 	onOpen() {
@@ -59,14 +69,24 @@ export class UpgradeModal extends Modal {
 		}
 		body.createEl('p', { text: t('upgrade.desc') });
 
-		// Stores
-		body.createDiv('lme-upgrade-stores-title').setText(t('upgrade.storesTitle'));
-		const storeRow = body.createDiv('lme-upgrade-store-row');
-		for (const store of STORE_LIST) {
-			const btn = storeRow.createEl('button', { cls: 'lme-upgrade-store-btn', text: t(store.labelKey) });
-			setIcon(btn.createDiv('lme-upgrade-store-icon'), store.icon);
+		// Stores (zh-CN) / Official website (all other UI languages)
+		if (this.isDomesticStoreLocale()) {
+			body.createDiv('lme-upgrade-stores-title').setText(t('upgrade.storesTitle'));
+			const storeRow = body.createDiv('lme-upgrade-store-row');
+			for (const store of STORE_LIST) {
+				const btn = storeRow.createEl('button', { cls: 'lme-upgrade-store-btn', text: t(store.labelKey) });
+				setIcon(btn.createDiv('lme-upgrade-store-icon'), store.icon);
+				btn.onclick = () => {
+					window.open(STORE_LINKS[store.key], '_blank');
+				};
+			}
+		} else {
+			body.createDiv('lme-upgrade-stores-title').setText(t('upgrade.websiteTitle'));
+			const storeRow = body.createDiv('lme-upgrade-store-row');
+			const btn = storeRow.createEl('button', { cls: 'lme-upgrade-store-btn', text: t('upgrade.websiteButton') });
+			setIcon(btn.createDiv('lme-upgrade-store-icon'), 'globe');
 			btn.onclick = () => {
-				window.open(STORE_LINKS[store.key], '_blank');
+				window.open(OFFICIAL_WEBSITE_URL, '_blank');
 			};
 		}
 		body.createDiv('lme-upgrade-stores-hint').setText(t('upgrade.storesHint'));

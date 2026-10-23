@@ -3,7 +3,8 @@
 import { ItemView, WorkspaceLeaf, Notice, setIcon, FuzzySuggestModal } from 'obsidian';
 import { db } from '../core/Database';
 import { vocabSizeService } from '../core/VocabSizeService';
-import { t } from '../i18n';
+import { t, getLocale } from '../i18n';
+import { uiThemeLabel } from '../models';
 import { FlashcardManagerModal } from '../ui/flashcard-manager-modal';
 import { VocabTestModal } from './VocabTestModal';
 import { FLASHCARD_VIEW_TYPE } from './flashcard-view';
@@ -39,18 +40,43 @@ const LANGUAGES = [
 	{ id: 'chinese', name: '中文' },
 ];
 
+// Theme display names resolve through i18n at render time (see uiThemeLabel)
 const THEMES = [
-	{ id: 'paper-ink', name: 'Paper & Ink (经典纸墨)' },
-	{ id: 'mint-coach', name: 'Mint Atelier (薄荷雅境)' },
-	{ id: 'rose-blush', name: 'Rose Blush (蔷薇柔粉)' },
-	{ id: 'lavender-dream', name: 'Lavender Dream (紫藤之梦)' },
-	{ id: 'candy-pop', name: 'Candy Pop (糖果派对)' },
-	{ id: 'mindful-oasis', name: 'Mindful Oasis (童心绿洲)' },
-	{ id: 'coral-warmth', name: 'Coral Warmth (珊瑚暖阳)' },
-	{ id: 'ocean-glass', name: 'Ocean Glass (海洋之心)' },
-	{ id: 'aurora-prism', name: 'Aurora Prism (极光棱镜)' },
-	{ id: 'neon-lime', name: 'Dark Lemon (暗夜柠檬)' },
+	{ id: 'paper-ink' },
+	{ id: 'mint-coach' },
+	{ id: 'rose-blush' },
+	{ id: 'lavender-dream' },
+	{ id: 'candy-pop' },
+	{ id: 'mindful-oasis' },
+	{ id: 'coral-warmth' },
+	{ id: 'ocean-glass' },
+	{ id: 'aurora-prism' },
+	{ id: 'neon-lime' },
 ];
+
+// Long-word locales: stat captions overflow the narrow stat columns, so stats
+// render value-first with the label below and no hint (see createStat).
+const COMPACT_STATS_LOCALES = new Set(['en', 'de', 'fr', 'es', 'ru', 'th']);
+
+// Latin-script labels (accents included) get the stacked-word layout.
+const LATIN_LABEL_RE = /^[\p{Script=Latin}\p{P}\d\s]+$/u;
+
+/** Split words onto at most two lines, balancing the line lengths. */
+function splitTwoBalancedLines(words: string[]): string[] {
+	if (words.length <= 2) return words;
+	let best: string[] = [words[0], words.slice(1).join(' ')];
+	let bestDiff = Infinity;
+	for (let i = 1; i < words.length; i++) {
+		const first = words.slice(0, i).join(' ');
+		const second = words.slice(i).join(' ');
+		const diff = Math.abs(first.length - second.length);
+		if (diff < bestDiff) {
+			bestDiff = diff;
+			best = [first, second];
+		}
+	}
+	return best;
+}
 
 export class NavigationPanelView extends ItemView {
 	private plugin: LanguageMadeEasyPlugin;
@@ -138,7 +164,9 @@ export class NavigationPanelView extends ItemView {
 	}
 
 	private async renderStatsContent(section: HTMLElement): Promise<void> {
+		const compactStats = COMPACT_STATS_LOCALES.has(getLocale());
 		const grid = section.createDiv('lme-nav-stats-grid');
+		if (compactStats) grid.addClass('is-compact');
 		const language = this.plugin.settings.activeLanguage || 'english';
 
 		let vocabCount = 0;
@@ -168,14 +196,21 @@ export class NavigationPanelView extends ItemView {
 			console.error('[LME] Failed to load navigation stats:', error);
 		}
 
-		this.createStat(grid, t('nav.vocabSize'), estimatedSize, t('nav.vocabSizeHint'));
-		this.createStat(grid, t('nav.flashcardCount'), String(vocabCount), t('nav.flashcardCountHint'));
-		this.createStat(grid, t('nav.dueToday'), String(dueCount), t('nav.dueTodayHint'));
-		this.createStat(grid, t('nav.reviewData'), `${todayReviews} / ${weekReviews}`, t('nav.reviewDataHint'));
+		this.createStat(grid, t('nav.vocabSize'), estimatedSize, t('nav.vocabSizeHint'), compactStats);
+		this.createStat(grid, t('nav.flashcardCount'), String(vocabCount), t('nav.flashcardCountHint'), compactStats);
+		this.createStat(grid, t('nav.dueToday'), String(dueCount), t('nav.dueTodayHint'), compactStats);
+		this.createStat(grid, t('nav.reviewData'), `${todayReviews} / ${weekReviews}`, t('nav.reviewDataHint'), compactStats);
 	}
 
-	private createStat(parent: HTMLElement, label: string, value: string, hint: string): void {
+	private createStat(parent: HTMLElement, label: string, value: string, hint: string, compact: boolean): void {
 		const item = parent.createDiv('lme-nav-stat');
+		if (compact) {
+			// Long-word locales: value on top, label below, hint dropped.
+			item.addClass('is-compact');
+			item.createEl('strong', { text: value });
+			item.createSpan({ text: label });
+			return;
+		}
 		item.createSpan({ text: label });
 		item.createEl('strong', { text: value });
 		item.createEl('small', { text: hint });
@@ -257,12 +292,16 @@ export class NavigationPanelView extends ItemView {
 		setIcon(iconEl, icon);
 		const text = button.createSpan('lme-nav-action-copy');
 		const labelEl = text.createEl('strong');
-		const words = label.trim().split(/\s+/).filter(Boolean);
-		if (words.length > 1 && /^[\x20-\x7E\s]+$/.test(label)) {
+		const trimmed = label.trim();
+		const words = trimmed.split(/\s+/).filter(Boolean);
+		if (words.length > 1 && LATIN_LABEL_RE.test(trimmed)) {
+			// Stack at most two balanced lines so labels stay inside the card.
 			labelEl.addClass('is-word-stack');
-			words.forEach(word => labelEl.createSpan({ text: word, cls: 'lme-nav-action-word' }));
+			for (const line of splitTwoBalancedLines(words)) {
+				labelEl.createSpan({ text: line, cls: 'lme-nav-action-word' });
+			}
 		} else {
-			labelEl.setText(label);
+			labelEl.setText(trimmed);
 		}
 		button.onclick = () => {
 			button.addClass('is-pressed');
@@ -293,7 +332,7 @@ export class NavigationPanelView extends ItemView {
 		// 社区免费版:仅经典纸墨可用;其他主题保留在列表中,选中时弹付费引导。
 		new ThemeSelectModal(this.app, this.plugin, async (theme: string) => {
 			if (theme !== 'paper-ink') {
-				const label = THEMES.find(x => x.id === theme)?.name || theme;
+				const label = uiThemeLabel(THEMES.find(x => x.id === theme)?.id || theme);
 				new UpgradeModal(this.app, label).open();
 				return;
 			}
@@ -373,9 +412,10 @@ class ThemeSelectModal extends FuzzySuggestModal<{ id: string; name: string }> {
 		return THEMES;
 	}
 
-	getItemText(item: { id: string; name: string }) {
+	getItemText(item: { id: string; name?: string }) {
 		const current = (this.plugin.settings.uiStyle || 'paper-ink') === item.id ? t('nav.currentTag') : '';
-		return current ? `${item.name} ${current}` : item.name;
+		const name = uiThemeLabel(item.id);
+		return current ? `${name} ${current}` : name;
 	}
 
 	onChooseItem(item: { id: string; name: string }) {

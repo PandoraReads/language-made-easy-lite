@@ -163,6 +163,19 @@ The plugin works fully offline except for the following optional, user-initiated
 
 **Files outside the vault**: dictionary settings may point at MDX files stored elsewhere on your device; the plugin only reads files you explicitly select.
 
+## 📋 Changelog
+
+### 4.2.0
+
+- **Interface in 10 languages** — English, Simplified/Traditional Chinese, German, French, Spanish, Japanese, Korean, Russian, and Thai. The interface follows Obsidian's language by default and can be overridden in Settings; open views re-render immediately after switching.
+- **Localized AI reports** — English prompt variants added, and reports are written in your interface language on non-Chinese UIs.
+- **Smarter translation chain** — translation targets follow the interface language, and non-English learning languages default to Google Translate.
+- **Localized purchase flow** — non-Chinese interfaces open the official website in the upgrade dialog.
+- **Multilingual built-in guide** — the HTML guide ships in all 10 interface languages.
+- **Navigation panel polish** — stats and quick-action buttons adapt to long-word languages: numbers stay aligned on one line, labels never wrap or overlap, and button captions are capped at two lines.
+- **Fully hidden scrollbars** in the navigation panel and flashcard review views.
+- Bilingual plugin description (English + Chinese) in the manifest, and a bilingual intro in the Chinese README.
+
 ## 🛠 Development
 
 - Requirements: Node.js 18+

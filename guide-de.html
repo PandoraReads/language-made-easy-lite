@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Language Made Easy · Benutzerhandbuch</title>
+<style>/* ============================================================
+   LME 系统文档风格 · 书卷暖棕（Bookish Warm）
+   面向用户的系统说明文档统一风格
+   ------------------------------------------------------------
+   用法：HTML 生成脚本读取本文件，内联到 <style>。
+   单文件分发时 CSS 随 HTML 一起走，无外部依赖。
+   ============================================================ */
+
+/* ---------- 设计令牌（Design Tokens）---------- */
+:root{
+  /* 底色层：米白书页感 */
+  --bg:#FBF9F5;          /* 主底：温米白 */
+  --soft:#F4EFE6;        /* 次底：羊皮纸暖灰 */
+  --card:#FFFFFF;        /* 卡片：纯白 */
+
+  /* 文字层 */
+  --text:#2C2A26;        /* 主文字：深褐黑 */
+  --muted:#6B6358;       /* 次文字：棕灰 */
+
+  /* 主色：书脊棕 → 砖红强调（纽伯瑞奖章意象）*/
+  --primary:#8B5E3C;     /* 主色：暖棕 */
+  --accent:#C75B4A;      /* 强调：砖红 */
+  --link:#1E6FB0;        /* 链接：沉稳蓝 */
+
+  /* Hero 渐变（可被主题覆盖）*/
+  --g1:#8B5E3C;          /* 渐变起：暖棕 */
+  --g2:#C75B4A;          /* 渐变止：砖红 */
+
+  --border:#E5DED1;      /* 边框：浅米 */
+
+  /* 级别色阶（L1-L4，知识库通用）*/
+  --L1:#E8A33D;          /* L1 暖橙：起步 */
+  --L2:#5A9367;          /* L2 草绿：成长 */
+  --L3:#3D7AA8;          /* L3 海蓝：进阶 */
+  --L4:#7B5AA8;          /* L4 紫罗兰：高阶 */
+}
+
+/* ---------- 基础排版 ---------- */
+*{box-sizing:border-box}
+body{
+  margin:0; padding:0;
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  background:var(--bg); color:var(--text);
+  line-height:1.7; font-size:16px;
+}
+.wrap{max-width:960px; margin:0 auto; padding:32px 28px 80px;}
+
+/* ---------- Hero 头图 ---------- */
+/* 渐变色带 + 圆角下沿，用于文档顶部标题区 */
+header.hero{
+  position:relative; overflow:hidden;
+  background:linear-gradient(135deg,var(--g1) 0%, var(--g2) 100%);
+  color:#FBF9F5; padding:48px 28px; border-radius:0 0 24px 24px;
+  margin:-32px -28px 36px; box-shadow:0 4px 20px rgba(139,94,60,.18);
+}
+/* 书签缎带装饰：右上角双条错落，V 口 + 穿线孔经典书签造型，不贴边 */
+header.hero::after{
+  content:""; position:absolute;
+  top:0; right:64px; width:32px; height:96px;
+  background:
+    radial-gradient(circle 3px at 50% 11px, rgba(0,0,0,.20) 99%, transparent 100%),
+    rgba(255,255,255,.32);
+  clip-path:polygon(0 0, 100% 0, 100% 100%, 50% 76%, 0 100%);
+  box-shadow:0 3px 8px rgba(0,0,0,.14);
+}
+header.hero h1{margin:0 0 8px; font-size:30px; font-weight:700; letter-spacing:.5px;}
+header.hero p{margin:0; opacity:.92; font-size:15px;}
+
+/* ---------- 标题层级 ---------- */
+/* h2：章节标题，带砖红竖条前缀 */
+h2{
+  font-size:22px; color:var(--primary); margin:40px 0 16px;
+  padding-bottom:8px; border-bottom:2px solid var(--border);
+  display:flex; align-items:center; gap:10px;
+}
+h2::before{content:""; width:4px; height:22px; background:var(--accent); border-radius:2px;}
+h3{font-size:18px; color:var(--text); margin:28px 0 12px; font-weight:600;}
+h4{font-size:15px; color:var(--muted); margin:18px 0 8px; text-transform:uppercase; letter-spacing:1px;}
+p{margin:10px 0;}
+strong{color:var(--accent);}
+code{background:var(--soft); padding:2px 6px; border-radius:4px; font-size:14px; color:var(--primary);}
+
+/* ---------- 引用块 ---------- */
+blockquote{
+  margin:16px 0; padding:12px 18px; background:var(--soft);
+  border-left:4px solid var(--accent); border-radius:0 8px 8px 0; color:var(--muted);
+}
+blockquote strong{color:var(--primary);}
+hr{border:none; border-top:1px dashed var(--border); margin:36px 0;}
+
+/* ---------- 表格 ---------- */
+/* 圆角阴影容器 + 表头主色填充 + 隔行条纹 + 悬停高亮 */
+.table-wrap{overflow-x:auto; margin:18px 0; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,.04);}
+table{width:100%; border-collapse:collapse; background:var(--card); font-size:14.5px;}
+thead{background:var(--primary); color:#FBF9F5;}
+th{padding:10px 10px; text-align:left; font-weight:600; white-space:nowrap;}
+td{padding:9px 10px; border-bottom:1px solid var(--border); vertical-align:top;}
+tbody tr:nth-child(even){background:#FAF6EE;}
+tbody tr:hover{background:#F4E8D8;}
+/* 分级说明：最后一列（内容特征）加宽 */
+body.theme-fenji .table-wrap table th:last-child,
+body.theme-fenji .table-wrap table td:last-child{min-width:220px;}
+td strong:first-child{display:inline-block;}
+
+/* ---------- 列表 ---------- */
+ul,ol{margin:12px 0; padding-left:24px;}
+li{margin:6px 0;}
+ul li::marker{color:var(--accent);}
+
+/* ---------- 书名 / 文档链接 ---------- */
+/* book-link：可点跳转，虚下划线，悬停浅底 */
+a.book-link{
+  color:var(--link); text-decoration:none; border-bottom:1px dashed var(--link);
+  padding-bottom:1px; transition:all .15s;
+}
+a.book-link:hover{background:rgba(30,111,176,.08); border-bottom-style:solid;}
+.plain-link{color:inherit;}
+a.doc-link{color:var(--link);text-decoration:none;border-bottom:1px solid var(--link);padding-bottom:1px;}
+a.doc-link:hover{opacity:.7;}
+
+/* ---------- 级别徽章 ---------- */
+/* 配合级别色阶使用：<span class="lv-badge lv-L1">L1</span> */
+.lv-badge{
+  display:inline-block; padding:2px 10px; border-radius:12px;
+  color:#fff; font-size:12px; font-weight:600; margin-right:6px;
+}
+.lv-L1{background:var(--L1);}
+.lv-L2{background:var(--L2);}
+.lv-L3{background:var(--L3);}
+.lv-L4{background:var(--L4);}
+
+/* ---------- 章节卡片（可选容器）---------- */
+.section-card{
+  background:var(--card); border-radius:12px; padding:8px 22px;
+  margin:16px 0; box-shadow:0 1px 4px rgba(0,0,0,.03);
+}
+
+/* ---------- Sticky 锚点导航 ---------- */
+nav.toc{
+  position:sticky; top:0; z-index:10; background:rgba(251,249,245,.95);
+  backdrop-filter:blur(8px); padding:12px 0; margin:0 -28px 24px;
+  border-bottom:1px solid var(--border); padding-left:28px; padding-right:28px;
+  display:flex; gap:8px; flex-wrap:wrap; font-size:13px;
+}
+nav.toc a{
+  color:var(--muted); text-decoration:none; padding:4px 10px;
+  border-radius:14px; background:var(--soft); transition:all .15s;
+}
+nav.toc a:hover{background:var(--primary); color:#fff;}
+
+/* ---------- 页脚 ---------- */
+footer{text-align:center; color:var(--muted); font-size:13px; margin-top:48px; padding-top:24px; border-top:1px dashed var(--border);}
+
+/* ---------- 代码块 ---------- */
+pre{
+  background:#2C2A26; color:#F4EFE6; padding:14px 18px;
+  border-radius:8px; overflow-x:auto; margin:14px 0; font-size:13.5px;
+  line-height:1.55;
+}
+pre code{background:transparent; color:#F4EFE6; padding:0; font-size:inherit; border:none;}
+
+/* ---------- Callout 提示框 ---------- */
+/* Obsidian callout：> [!type] title \n > 内容 */
+.callout{
+  margin:16px 0; padding:14px 18px; border-radius:8px;
+  background:var(--soft); border-left:4px solid var(--primary);
+}
+.callout-title{font-weight:600; margin-bottom:6px; color:var(--primary);}
+.callout-body p{margin:6px 0;}
+.callout-body p:first-child{margin-top:0;}
+.callout-body p:last-child{margin-bottom:0;}
+.callout-tip{border-left-color:#5A9367; background:#EEF7F0;}
+.callout-tip .callout-title{color:#3D6B47;}
+.callout-info{border-left-color:#3D7AA8; background:#EBF2F9;}
+.callout-info .callout-title{color:#2B5A82;}
+.callout-warning{border-left-color:#C75B4A; background:#FBEEEA;}
+.callout-warning .callout-title{color:#A04535;}
+.callout-note{border-left-color:#8B5E3C; background:var(--soft);}
+.callout-note .callout-title{color:var(--primary);}
+
+/* ---------- 外部链接 ---------- */
+a.ext-link{color:var(--link); text-decoration:none; border-bottom:1px dashed var(--link);}
+a.ext-link:hover{border-bottom-style:solid;}
+
+/* ---------- 响应式 ---------- */
+@media(max-width:640px){
+  .wrap{padding:20px 16px 60px;}
+  header.hero{padding:32px 16px; margin:-20px -16px 24px; border-radius:0 0 16px 16px;}
+  header.hero h1{font-size:24px;}
+  th,td{padding:8px 10px; font-size:13px;}
+  header.hero::before,header.hero::after{display:none;}
+}
+
+/* ---------- 主题色板（4 文档差异化；底色/文字/链接/callout 跨主题共享）---------- */
+/* 每主题只覆盖 --primary / --accent / --g1 / --g2 四变量 */
+body.theme-readme{--primary:#8B5E3C;--accent:#C75B4A;--g1:#8B5E3C;--g2:#C75B4A;}   /* 首页·书卷暖棕（默认）*/
+body.theme-fenji{--primary:#3D6B7A;--accent:#5A9367;--g1:#3D6B7A;--g2:#5A9367;}     /* 分级说明·体系森林 */
+body.theme-shudan{--primary:#8C3A3A;--accent:#C8862E;--g1:#8C3A3A;--g2:#C8862E;}    /* 推荐书单·藏书酒红 */
+body.theme-lme{--primary:#4A5A8C;--accent:#7B5AA8;--g1:#4A5A8C;--g2:#7B5AA8;}       /* LME 手册·工具靛紫 */
+</style>
+</head>
+<body class="theme-lme">
+<div class="wrap">
+<header class="hero">
+  <h1>Language Made Easy · Benutzerhandbuch</h1>
+  <p>Immersives Obsidian-Plugin für Sprachlernen · Nachschlagen / Karteikarten / Shadowing / KI</p>
+</header>
+<nav class="toc"><a href="#install">Installieren</a><a href="#lookup">Nachschlagen</a><a href="#flashcards">Karteikarten</a><a href="#shadowing">Shadowing</a><a href="#ai">KI</a><a href="#more">Mehr</a><a href="#faq">FAQ</a></nav>
+
+<blockquote><p><strong>Language Made Easy</strong> ist ein Obsidian-Plugin, das <strong>Wortnachschlagen, Karteikarten, Video-Shadowing und KI-Analyse</strong> direkt in deinen Notiz-Workflow bringt — so lernst du eine Sprache ganz nebenbei beim Lesen, Schauen und Notieren.</p></blockquote>
+<hr>
+<h2 id="install">1. Plugin installieren</h2>
+<h3>📦 Herunterladen &amp; installieren</h3>
+<ol>
+<li>Kopiere die Plugin-Dateien (<code>main.js</code>, <code>manifest.json</code>, <code>style.css</code>) in den Plugin-Ordner deines Obsidian-Tresors:</li>
+</ol>
+<pre><code>dein-tresor/
+└── .obsidian/
+    └── plugins/
+        └── language-made-easy/
+            ├── main.js
+            ├── manifest.json
+            └── style.css</code></pre>
+<div class="callout callout-tip"><div class="callout-title">💡 Wo finde ich den Plugin-Ordner?</div><div class="callout-body"><p>Öffne in Obsidian <strong>Einstellungen → Community-Plugins → klicke das 📁-Symbol</strong>, um direkt zum Plugin-Ordner zu springen.</p></div></div>
+<ol>
+<li>Zurück in Obsidian: <strong>Einstellungen → Community-Plugins</strong>, suche <strong>Language Made Easy</strong> und schalte es ein.</li>
+</ol>
+<h3>🆓 3-Tage-Gratis-Testphase → Vollversion</h3>
+<p>Deine <strong>3-tägige kostenlose Testphase</strong> beginnt mit dem ersten Start — alle Sprachen stehen zum Lernen offen (Nachschlagen / Karten / Shadowing / KI-Analyse) bei sonst gleichem Basis-Funktionsumfang; der Countdown steht in der Statusleiste.</p>
+<p>Nach der Testphase nutzt du das Plugin mit der <strong>Vollversion</strong> weiter (Einmalkauf, lebenslange Updates). Sie schaltet jedes fortgeschrittene Modul frei:</p>
+<ul>
+<li>7 weitere Sprachen: Englisch / Deutsch / Französisch / Spanisch / Koreanisch / Russisch / Japanisch</li>
+<li>Unbegrenzte Karteikarten, 5 lokale Wörterbücher, mobile Offline-Wörterbücher</li>
+<li>Geräteübergreifender Karten-Sync, Daten-Import / -Export</li>
+<li>KI-Stapel-Karteikarten, KI-Bericht-Export</li>
+<li>9 zusätzliche Designthemes, Hör-/Schreib-Wiederholungsmodi</li>
+<li>Video-Lesezeichen, Video-Lernkarten, Ein-Klick- &amp; Stapel-Downloads von der Abo-Seite</li>
+</ul>
+<blockquote><p>🌐 Besuche https://languagemadeeasy.com, um die Vollversion zu erhalten.</p></blockquote>
+<hr>
+<h2 id="lookup">2. Nachschlagen</h2>
+<p>📖 Hier ein englischer Beispieltext:</p>
+<blockquote><p>The best way to learn a new language is not through memorization, but through immersion. When you read, listen, and speak in context, your brain absorbs vocabulary and grammar naturally — just like how you learned your first language as a child.</p></blockquote>
+<p><strong>Doppelklicke</strong> im Text oben auf ein Wort, das du nicht kennst, und probiere das Nachschlagen!</p>
+<h3>Wort-Assistent öffnen</h3>
+<p>Es gibt mehrere Wege:</p>
+<pre><code>Weg 1: Klicke das 📖-Buchsymbol in der linken Seitenleiste
+Weg 2: Ctrl/Cmd + P → schlägt das Wort automatisch mit „Wort-Assistent" nach</code></pre>
+<h3>Nachschlagen</h3>
+<p><strong>Doppelklicke auf ein Wort</strong> in einer Notiz oder <strong>halte <code>Ctrl/Cmd + Shift</code> und markiere Text</strong> — das Ergebnispanel erscheint rechts automatisch.</p>
+<h3>Ergebnispanel</h3>
+<p>Nach dem Nachschlagen siehst du:</p>
+<div class="table-wrap"><table><thead><tr><th>Funktion</th><th>Beschreibung</th></tr></thead><tbody><tr><td>🔊 <strong>Aussprache</strong></td><td>Anklicken und die korrekte Aussprache hören</td></tr><tr><td>📝 <strong>Zum Vokabelbuch</strong></td><td>Mit einem Klick als Karteikarte für späteres Wiederholen speichern</td></tr><tr><td>🔤 <strong>Lautschrift</strong></td><td>Zeigt die Lautschrift</td></tr><tr><td>📖 <strong>Definition</strong></td><td>Zeigt Wortart und Bedeutung</td></tr></tbody></table></div>
+<div class="callout callout-tip"><div class="callout-title">✨ Tipp</div><div class="callout-body"><p>Auch im Ergebnispanel kannst du Wörter <strong>per Doppelklick nachschlagen</strong> — das Wörterbuch selbst ist tolles Lernmaterial!</p></div></div>
+<h3>Unterstützte Sprachen</h3>
+<div class="table-wrap"><table><thead><tr><th>Sprache</th><th>Code</th></tr></thead><tbody><tr><td>🇬🇧 Englisch</td><td><code>en</code></td></tr><tr><td>🇩🇪 Deutsch</td><td><code>de</code></td></tr><tr><td>🇫🇷 Französisch</td><td><code>fr</code></td></tr><tr><td>🇪🇸 Spanisch</td><td><code>es</code></td></tr><tr><td>🇰🇷 Koreanisch</td><td><code>ko</code></td></tr><tr><td>🇷🇺 Russisch</td><td><code>ru</code></td></tr><tr><td>🇯🇵 Japanisch</td><td><code>ja</code></td></tr></tbody></table></div>
+<div class="callout callout-info"><div class="callout-title">🌐 Weitere Sprachen folgen.</div><div class="callout-body"></div></div>
+<hr>
+<h2 id="flashcards">3. Karteikarten anlegen &amp; verwalten</h2>
+<p>🎴 Wenn du beim Lesen und Nachschlagen viele neue Wörter gesammelt hast, kannst du sie so systematisch wiederholen:</p>
+<h3>Automatisch erzeugte Karten</h3>
+<p>Wenn du nach dem Nachschlagen auf <strong>„Zum Vokabelbuch"</strong> klickst, erzeugt das Plugin automatisch eine Karteikarte. Jede Karte enthält:</p>
+<ul>
+<li>✅ Wort + Lautschrift</li>
+<li>✅ Definition</li>
+<li>✅ Wortkontext (aus der Notiz, in der du nachgeschlagen hast)</li>
+<li>✅ Link zur Quellnotiz</li>
+<li>✅ Hinzugefügt am</li>
+</ul>
+<h3>Karte manuell hinzufügen</h3>
+<pre><code>Wiederholungspanel öffnen → unten „Karte hinzufügen" klicken
+→ Wort, Lautschrift (optional), Definition, Beispielsatz (optional) ausfüllen
+→ Speichern</code></pre>
+<h3>Mit dem Wiederholen starten</h3>
+<p>Öffne das Karteikarten-Wiederholungspanel:</p>
+<pre><code>Weg 1: Klicke das 🧠-Gehirn-Symbol in der linken Seitenleiste
+Weg 2: Ctrl/Cmd + P → „Karteikarten-Wiederholung starten" suchen</code></pre>
+<h4>Ablauf</h4>
+<pre><code>👀 Kartenfront sehen → 🤔 Bedeutung abrufen
+→ 🖱️ Anklicken zum Umdrehen und Anzeigen der Definition → ⭐ Bewerten, wie gut du es wusstest</code></pre>
+<h4>Bewertungsskala</h4>
+<div class="callout callout-info"><div class="callout-title">🧠 Zum FSRS-Algorithmus</div><div class="callout-body"><p>Die Wiederholung läuft mit dem <strong>FSRS-Algorithmus</strong> (ein moderner Spaced-Repetition-Algorithmus). Er plant anhand deiner Bewertungen intelligent den nächsten Termin jeder Karte — genau an der Vergessensgrenze.</p></div></div>
+<div class="table-wrap"><table><thead><tr><th>Bewertung</th><th>Bedeutung</th><th>Wirkung</th></tr></thead><tbody><tr><td>😵 <strong>Erneut</strong></td><td>Gar nicht erinnert</td><td>Erscheint bald wieder</td></tr><tr><td>😐 <strong>Schwer</strong></td><td>Kaum erinnert</td><td>Intervall verkürzt</td></tr><tr><td>🙂 <strong>Gut</strong></td><td>Normal erinnert</td><td>Standard-Intervall</td></tr><tr><td>😎 <strong>Leicht</strong></td><td>Sofort gewusst</td><td>Intervall stark verlängert</td></tr></tbody></table></div>
+<div class="callout callout-warning"><div class="callout-title">🧹 Auto-Bereinigung</div><div class="callout-body"><p>Nachdem ein Wort mehrfach <strong>„Leicht"</strong> bewertet wurde, verlässt es automatisch die Wiederholungsrotation. Den Auslöser kannst du unter <strong>Einstellungen → Language Made Easy</strong> anpassen.</p></div></div>
+<h3>Kartendaten verwalten</h3>
+<pre><code>Ctrl/Cmd + P → „Karteikartendaten verwalten" suchen</code></pre>
+<p>Im Manager kannst du:</p>
+<ul>
+<li>📋 Karten nach Sprache und Status filtern</li>
+<li>🗑️ Nicht mehr benötigte Karten stapelweise löschen</li>
+<li>📤 Kartendaten exportieren</li>
+</ul>
+<div class="callout callout-tip"><div class="callout-title">💡 Zwei wichtige Hinweise</div><div class="callout-body"><p>1. Kartendaten liegen in der <strong>lokalen IndexedDB</strong>. Beim Plugin-Update tauschst du nur die drei Dateien <code>main.js</code>, <code>manifest.json</code> und <code>style.css</code> aus — <strong>deine bestehenden Karten bleiben unberührt</strong>. Update ruhig!</p><p>2. Karten unterstützen <strong>Import und Export</strong> in vielen Formaten — <code>txt</code>, <code>markdown</code>, <code>csv</code>, <code>json</code> und mehr — für einfaches Backup und Migration.</p></div></div>
+<hr>
+<h2 id="shadowing">4. Die Shadowing-Werkstatt</h2>
+<p>🎬 Language Made Easy hilft dir, effizienter aus <strong>YouTube-/Bilibili-Videos</strong> zu lernen — für natürliches Sprechen und geschärftes Hörverständnis.</p>
+<h3>Werkstatt öffnen</h3>
+<pre><code>Weg 1: Klicke das ▶️-Wiedergabesymbol in der linken Seitenleiste
+Weg 2: Ctrl/Cmd + P → „Shadowing-Werkstatt" suchen</code></pre>
+<h3>Video laden</h3>
+<p>Füge einen Videolink in eine Notiz ein — das Plugin erkennt und lädt ihn automatisch:</p>
+<pre><code>✅ YouTube-Video → Link einfügen, automatisches Laden
+✅ Bilibili-Video → Link einfügen, automatisches Laden (auto-download &amp; cache)
+✅ Lokales Audio/Video → mit ![[video.mp4]] oder ![[audio.mp3]] einbetten</code></pre>
+<h3>Untertitel herunterladen</h3>
+<p>Nach dem Laden klicke in der rechten Werkzeugleiste auf <strong>„Untertitel herunterladen"</strong>. Das Plugin holt die Untertitel von YouTube / Bilibili und fügt sie in deine Notiz ein.</p>
+<p>Beispiel-Untertitelformat:</p>
+<pre><code>[00:12] Hello, how are you today?
+[00:15] I'm fine, thank you. And you?
+[01:23] What a beautiful day! Let's go for a walk.</code></pre>
+<div class="callout callout-tip"><div class="callout-title">📝 Hinweis</div><div class="callout-body"><p>Die Werkstatt unterstützt <strong>mehrere Zeitstempelformate</strong> — ob <code>HH:MM:SS</code>, <code>MM:SS</code> oder <code>[00:12]</code>, alle werden automatisch erkannt und geladen.</p></div></div>
+<h3>Wiedergabesteuerung</h3>
+<p>Der Werkstatt-Player hat unten eine Reihe von Steuerungen:</p>
+<div class="table-wrap"><table><thead><tr><th>Schaltfläche</th><th>Funktion</th><th>Zweck</th></tr></thead><tbody><tr><td>⏮️ <strong>Nochmal</strong></td><td>Sprung zum Satzanfang</td><td>Vom Satzanfang neu hören</td></tr><tr><td>🔁 <strong>Loop</strong></td><td>Einzelner Satz in Schleife</td><td>Ideal zum Drillen eines Satzes</td></tr><tr><td>▶️ / ⏸️ <strong>Play/Pause</strong></td><td>Wiedergabe steuern</td><td>Leertaste</td></tr><tr><td>🐢🐇 <strong>Tempo</strong></td><td>0,8x / 1,0x / 1,2x</td><td>Nach Level anpassen</td></tr></tbody></table></div>
+<h3>🎧 Diktatmodus</h3>
+<p>Hörverständnis herausfordern? Probiere den <strong>Diktatmodus</strong>!</p>
+<pre><code>Rechte Werkzeugleiste → „Diktatmodus" klicken
+→ Ein Satz spielt, du tippst, was du hörst
+→ Beim Absenden wird deine Eingabe mit dem Original verglichen
+→ Fehler rot, Richtiges grün</code></pre>
+<hr>
+<h2 id="ai">5. Mit KI aufs nächste Level</h2>
+<p>Du willst mehr? Die folgenden Setups schalten Funktionen wie <strong>lokale Wörterbücher</strong> und <strong>KI-Analyse</strong> frei.</p>
+<h3>5.1 Lokales Wörterbuch einrichten</h3>
+<p>Ein lokales Wörterbuch (MDX-Format) liefert reichhaltigere Einträge — mit Beispielen, Kollokationen und Synonymen — sogar <strong>offline</strong>.</p>
+<pre><code>Einstellungen → Language Made Easy → Wörterbuch-Einstellungen
+→ Dateipfad des lokalen MDX-Wörterbuchs setzen
+→ Speichern</code></pre>
+<h3>5.2 Wirkung des lokalen Wörterbuchs</h3>
+<p>Mit lokalem Wörterbuch werden die Ergebnisse deutlich reicher:</p>
+<div class="table-wrap"><table><thead><tr><th>Aspekt</th><th>Online-Wörterbuch</th><th>Lokales MDX</th></tr></thead><tbody><tr><td>Netzwerk</td><td>✅ nötig</td><td>❌ offline nutzbar</td></tr><tr><td>Detailtiefe</td><td>Grundbedeutungen</td><td>Detailliert + Beispiele + Kollokationen</td></tr><tr><td>Tempo</td><td>Netzabhängig</td><td>⚡ Sofort</td></tr><tr><td>Quellen</td><td>Google / MyMemory / Jisho</td><td>Eigene MDX-Dateien</td></tr></tbody></table></div>
+<h3>5.3 LLM-API-Schlüssel konfigurieren</h3>
+<p>Die KI-Analyse braucht einen API-Schlüssel eines Sprachmodells. Unterstützte Anbieter:</p>
+<pre><code>Einstellungen → Language Made Easy → KI-Einstellungen
+→ Modellanbieter wählen (OpenAI / Google Gemini / OpenRouter)
+→ API-Schlüssel eingeben
+→ Speichern</code></pre>
+<div class="callout callout-tip"><div class="callout-title">💡 Empfehlungen</div><div class="callout-body"><p>- <strong>OpenAI</strong>: API-Schlüssel eintragen und sofort starten.</p><p>- <strong>Google Gemini</strong>: Kostenlosem Kontingent verfügbar; gut als Backup oder für vertieftes Lernen.</p></div></div>
+<h3>5.4 KI-Analyse nutzen</h3>
+<h4>5.4.1 KI-Analysebericht erzeugen</h4>
+<p>Nachdem in der Werkstatt Untertitel geladen sind:</p>
+<pre><code>In der rechten Werkzeugleiste „KI-Analyse" klicken
+→ Auf das Ende warten (meist zehn bis zwanzig Sekunden)
+→ Der Bericht erscheint im rechten Panel
+→ „In Notiz speichern" zum Aufbewahren
+→ Bild-Schaltfläche = „Als Langbild speichern"</code></pre>
+<p>Ein KI-Bericht enthält typischerweise:</p>
+<ul>
+<li>📝 <strong>Wortschatz</strong> — Verwendung und Kollokationen wichtiger Wörter</li>
+<li>🏗️ <strong>Grammatik</strong> — Aufschlüsselung zentraler Strukturen</li>
+<li>🌍 <strong>Kulturhinweise</strong> — passender kultureller Kontext</li>
+<li>💡 <strong>Lerntipps</strong> — gezielte Vorschläge</li>
+</ul>
+<p>Das Plugin bringt <strong>3 eingebaute KI-Prompts</strong> für verschiedene Lernbedürfnisse mit:</p>
+<div class="table-wrap"><table><thead><tr><th>Prompt</th><th>Ideal für</th><th>Ergebnis</th></tr></thead><tbody><tr><td>📝 <strong>Zusammenfassung</strong></td><td>Videoinhalt schnell erfassen</td><td>Knappe Zusammenfassung + Kernpunkte</td></tr><tr><td>📖 <strong>Zweisprachig</strong></td><td>Zeile für Zeile studieren</td><td>Satzweise zweisprachige Übersetzung</td></tr><tr><td>🧪 <strong>Mini-Quiz</strong></td><td>Gelerntes testen</td><td>Quizfragen aus dem Video</td></tr></tbody></table></div>
+<div class="callout callout-tip"><div class="callout-title">💡 Eigene Prompts gehen auch — siehe <a href="#ai-custom-prompt">5.4.2 Eigenen Prompt hinzufügen</a>.</div><div class="callout-body"></div></div>
+<h4 id="ai-custom-prompt">5.4.2 Eigenen Prompt hinzufügen</h4>
+<p>Schreibe eigene Prompts und lass die KI Lernmaterial nach deinen Wünschen erzeugen:</p>
+<pre><code>Einstellungen → Language Made Easy → KI-Prompt-Verwaltung
+→ Eigenen Prompt hinzufügen
+→ Name und Inhalt festlegen
+→ Speichern</code></pre>
+<h3>5.5 Karteikarten-Auto-Ausfüllen mit einem Klick</h3>
+<p>Keine Lust, Lautschrift und Definition von Hand einzutragen? Nutze <strong>KI-Auto-Ausfüllen</strong>!</p>
+<pre><code>Panel „Karte hinzufügen" → Wort eingeben
+→ „KI-Ausfüllen" klicken
+→ Lautschrift, Definition und Beispielsatz werden automatisch gefüllt
+→ Prüfen und speichern</code></pre>
+<h3>5.6 Weitere Wege, Untertitel zu laden</h3>
+<p>Außer dem Direkt-Download in der Werkstatt gibt es noch mehr Möglichkeiten:</p>
+<h4>5.6.1 „Untertitel herunterladen" in der Werkstatt</h4>
+<p>Der direkteste Weg. Nach dem Laden klicke in der rechten Werkzeugleiste auf <strong>„Untertitel herunterladen"</strong> — das Plugin holt sie automatisch von YouTube / Bilibili.</p>
+<div class="callout callout-warning"><div class="callout-title">⚠️ Hinweise zum Untertitel-Download</div><div class="callout-body"><p>1. Geladen werden Untertitel der <strong>aktuell gewählten Sprache</strong> — prüfe die Sprache vor dem Download. Gibt es keine in dieser Sprache, fallen die Standard-Untertitel des Videos zurück.</p><p>2. Bilibili-Videos haben <strong>oft keine englischen Untertitel</strong>. Prüfe vor der Wahl die „字幕"-Liste (Untertitel) im Bilibili-Player.</p></div></div>
+<h4>5.6.2 Obsidian Web Clipper</h4>
+<p>Mit der Browser-Erweiterung <a class="ext-link" href="https://obsidian.md/clipper" target="_blank" rel="noopener">Obsidian Web Clipper</a> kannst du YouTube-Untertitel beim Schauen direkt in eine Obsidian-Notiz clippen:</p>
+<pre><code>Obsidian-Web-Clipper-Erweiterung installieren
+→ Auf der YouTube-Videoseite das Erweiterungssymbol klicken
+→ Untertitelinhalt zum Clippfen auswählen
+→ Wird automatisch als Notiz mit Zeitstempel gespeichert</code></pre>
+<h4>5.6.3 Das Plugin ytranscript</h4>
+<p><a class="ext-link" href="https://obsidian.md/plugins?id=ytranscript" target="_blank" rel="noopener">ytranscript</a> ist ein weiteres Obsidian-Plugin zum YouTube-Untertitel-Download:</p>
+<pre><code>In den Community-Plugins „ytranscript" suchen und installieren
+→ Über die Befehlspalette YouTube-Untertitel holen
+→ Untertitel werden mit Zeitstempel in die Notiz eingefügt
+→ Werkstatt öffnen und loslegen</code></pre>
+<h4>5.6.4 SRT-Dateien für lokale Videos</h4>
+<p>Wenn du ein lokales Video und eine passende SRT-Datei hast:</p>
+<pre><code>Weg 1: Inhalt der SRT-Datei in eine Notiz kopieren
+         → Zeitstempelformat der SRT prüfen
+         → Video mit ![[video.mp4]] in die Notiz einbetten
+         → Werkstatt öffnen; Video und Untertitel werden geparst
+
+Weg 2: SRT-Datei im Tresor neben die Videodatei legen
+         → Video mit ![[video.mp4]] einbetten
+         → Das Plugin findet die gleichnamige SRT automatisch</code></pre>
+<hr>
+<h2 id="more">6. Weitere Nutzung</h2>
+<h3>6.1 Schnellbefehl: Design im Ein-Klick-Wechsel</h3>
+<p>Das Plugin bringt <strong>10 sorgfältig gestaltete Designthemes</strong> mit:</p>
+<pre><code>Ctrl/Cmd + P → „Zum nächsten Design wechseln" suchen
+→ Jeder Aufruf wechselt zum nächsten Design</code></pre>
+<div class="table-wrap"><table><thead><tr><th>Design</th><th>Stil</th></tr></thead><tbody><tr><td>📜 Paper Ink</td><td>Klassisch Tinte auf Papier, warm und weich</td></tr><tr><td>🌿 Mint Atelier</td><td>Minzfrische, klar und professionell</td></tr><tr><td>🌸 Rose Blush</td><td>Zartes Rosé, sanft und romantisch</td></tr><tr><td>💜 Lavender Dream</td><td>Fliedertraum, leicht und luftig</td></tr><tr><td>🍬 Candy Pop</td><td>Bonbonparty, hell und lebendig</td></tr><tr><td>🌳 Mindful Oasis</td><td>Achtsamkeitsoase, natürlich und gemütlich</td></tr><tr><td>🪸 Coral Warmth</td><td>Korallenwärme, warm und energetisch</td></tr><tr><td>🌊 Ocean Glass</td><td>Herz des Ozeans, tief und ruhig</td></tr><tr><td>🌌 Aurora Prism</td><td>Polarlichtprisma, mysteriös und farbenfroh</td></tr><tr><td>🍋 Dark Lemon</td><td>Nachtzitrone, dunkel und cool</td></tr></tbody></table></div>
+<h3>6.2 Schnellbefehl: Sprache im Ein-Klick-Wechsel</h3>
+<p>Mehrere Sprachen gleichzeitig? Schnell wechseln:</p>
+<pre><code>Ctrl/Cmd + P → „Zu Englisch / Deutsch / Französisch / … wechseln" suchen
+→ Wechselt die aktuelle Lernsprache sofort</code></pre>
+<h3>6.3 Schnellbefehl: KI-Analysebericht</h3>
+<pre><code>Ctrl/Cmd + P → „KI-Analyse" suchen
+→ Beliebige Notiz im Tresor per KI analysieren</code></pre>
+<h3>6.4 Speicherpfad des Vokabelbuchs</h3>
+<p>Bei jedem Hinzufügen erzeugt das Plugin eine Markdown-Vokabelbuch-Datei im Tresor. Der Ort ist anpassbar:</p>
+<pre><code>Einstellungen → Language Made Easy → Vokabelbuch-Einstellungen
+→ Pfad und Dateiname setzen
+→ Speichern</code></pre>
+<h3>6.5 Speicherpfad der KI-Berichte</h3>
+<p>Auch KI-Berichte lassen sich anders ablegen:</p>
+<pre><code>Einstellungen → Language Made Easy → KI-Analyse-Einstellungen
+→ Berichtpfad setzen
+→ Speichern</code></pre>
+<hr>
+<h2 id="faq">7. FAQ</h2>
+<h3>❓ Nachschlagen reagiert nicht?</h3>
+<blockquote><p>Bitte prüfe:</p><p>1. Ist ein Wörterbuch korrekt konfiguriert (Online-Wörterbücher brauchen Netz)?</p><p>2. Bei MDX: Sind die Pfade für mdx, mdd und css in den Einstellungen korrekt?</p><p>3. Stimmt die aktuelle Lernsprache?</p></blockquote>
+<h3>❓ Die neu hinzugefügte Karte fehlt?</h3>
+<blockquote><p>Neue Karten stehen ganz am Ende der Wiederholungsschlange.</p></blockquote>
+<h3>❓ Bilibili liefert nur chinesische Untertitel?</h3>
+<blockquote><p>Prüfe, ob für das Video wirklich Untertitel in anderen Sprachen hochgeladen wurden. Eingebrannte Bilduntertitel bedeuten nicht, dass der Uploader all diese Untertiteldateien bereitstellt.</p></blockquote>
+<h3>❓ Die Werkstatt verlangt beim YouTube-Video „Anmelden“?</h3>
+<blockquote><p><strong>Netzwechsel</strong> löst das meist. Hängt typischerweise mit der aktuellen Netzwerkumgebung zusammen — anderen Knoten versuchen.</p></blockquote>
+<h3>❓ KI-Analyse meldet Fehler?</h3>
+<blockquote><p>Bitte prüfe:</p><p>1. API-Schlüssel korrekt konfiguriert?</p><p>2. Netzverbindung ok?</p><p>3. API-Guthaben ausreichend?</p></blockquote>
+<h3>📮 Autor kontaktieren</h3>
+<ul>
+<li>📧 E-Mail: <a class="ext-link" href="mailto:panrunrun@gmail.com">panrunrun@gmail.com</a></li>
+<li>🌐 Website: <a class="ext-link" href="https://www.languagemadeeasy.com" target="_blank" rel="noopener">www.languagemadeeasy.com</a></li>
+</ul>
+<hr>
+<blockquote><p>🎉 <strong>Viel Lernfreude! Bei Fragen melde dich jederzeit.</strong></p></blockquote>
+<footer>Kuratiert von Pandoras digitalem Garten</footer>
+</div>
+</body>
+</html>

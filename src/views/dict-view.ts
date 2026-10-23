@@ -8,7 +8,7 @@ import { ItemView, WorkspaceLeaf, Notice, setIcon, MarkdownRenderer } from 'obsi
 import { lookupMulti, extractSentence, fetchPhonetic, fetchCleanDefinition, playAudio } from '../services/UnifiedDictionaryService';
 import { db } from '../core/Database';
 import { assertFlashcardQuota } from '../core/free-quota';
-import { t } from '../i18n';
+import { t, getLocale } from '../i18n';
 import type LanguageMadeEasyPlugin from '../main-unified-full';
 import type { DictResult } from '../models';
 import type { FlashcardView } from './flashcard-view';
@@ -900,7 +900,7 @@ export class DictView extends ItemView {
             const fullPath = folder ? `${folder}/${path}` : path;
             const file = this.app.vault.getAbstractFileByPath(fullPath);
 
-            const dateStr = new Date().toLocaleDateString('zh-CN');
+            const dateStr = new Date().toLocaleDateString(getLocale());
             const cardContent = `> [!lme-vocab]+ **${entry.word}** ${entry.phonetic ? `*[${entry.phonetic}]*` : ''} <span class="lme-tag-new">${t('common.newTag')}</span>\n` +
                 `> \n` +
                 `> ${t('vocabNote.definition')}: ${entry.definition.replace(/\n/g, ' ')}\n` +

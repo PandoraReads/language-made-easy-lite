@@ -9,7 +9,7 @@
 import { Platform, requestUrl } from 'obsidian';
 import type { DictResult, LMESettings } from '../models';
 import { MDXEngine } from '../core/MDXEngine';
-import { t } from '../i18n';
+import { t, getLocale } from '../i18n';
 
 /**
  * A configured local MDX dictionary (an entry of settings.localDictionaries).
@@ -454,9 +454,11 @@ export function lookupMulti(
                 return;
             }
 
-            // Get user's preferred online dict for current language
+            // Get user's preferred online dict for current language.
+            // Youdao only covers English; every other learning language
+            // defaults to Google (mirrors the settings tab).
             const onlineDictKey = `${language}OnlineDict` as keyof LMESettings;
-            const defaultDict = 'youdao-free';
+            const defaultDict = language === 'english' ? 'youdao-free' : 'google-free';
             const preferred = (settings[onlineDictKey] as string) || defaultDict;
 
             // Build ordered list of online dicts: preferred first, then others as fallback
@@ -496,6 +498,47 @@ export function lookupMulti(
         }
         throw new Error(t('errors.mdxNotFound', { word }));
     });
+}
+
+
+/** Learning language -> source language code for translation APIs. */
+const LEARNING_LANG_CODES: Record<string, string> = {
+    english: 'en',
+    german: 'de',
+    french: 'fr',
+    spanish: 'es',
+    japanese: 'ja',
+    korean: 'ko',
+    russian: 'ru',
+    chinese: 'zh-CN',
+};
+
+function sourceLangCode(language: string): string {
+    return LEARNING_LANG_CODES[language] || 'en';
+}
+
+/**
+ * Translation target code follows the UI language (a German interface gets
+ * German explanations, zh-CN keeps the historical Chinese behaviour).
+ */
+function uiTargetLang(): string {
+    switch (getLocale()) {
+        case 'zh-TW': return 'zh-TW';
+        case 'en': return 'en';
+        case 'de': return 'de';
+        case 'fr': return 'fr';
+        case 'es': return 'es';
+        case 'ja': return 'ja';
+        case 'ko': return 'ko';
+        case 'ru': return 'ru';
+        case 'th': return 'th';
+        default: return 'zh-CN';
+    }
+}
+
+/** Whether the translation target is Chinese (needs the CJK-char filter). */
+function targetIsChinese(): boolean {
+    return getLocale() === 'zh-CN' || getLocale() === 'zh-TW';
 }
 
 /** One translation entry inside a Youdao ec trs list ('tr' wraps an 'l.i' string array). */
@@ -682,13 +725,9 @@ type GoogleTranslateResponse = [
  * Simplified version based on original plugin
  */
 async function queryGoogleFree(word: string, language: string): Promise<DictResult> {
-    // Language codes for Google Translate
-    const langCodes: Record<string, string> = {
-        english: 'en',
-    };
-
-    const sourceLang = langCodes[language] || 'en';
-    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${sourceLang}&tl=zh&dt=t&dt=bd&q=${encodeURIComponent(word)}`;
+    const sourceLang = sourceLangCode(language);
+    const targetLang = uiTargetLang();
+    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${sourceLang}&tl=${targetLang}&dt=t&dt=bd&q=${encodeURIComponent(word)}`;
 
     try {
         const resp = await requestUrlWithTimeout({ url, method: 'GET' });
@@ -706,10 +745,13 @@ async function queryGoogleFree(word: string, language: string): Promise<DictResu
         dictEntries.forEach((entry) => {
             const pos = entry[0];
             const meanings = entry[1].slice(0, 3);
-            // Only include meanings that contain Chinese characters
-            const zhMeanings = meanings.filter((m: string) => /[\u4e00-\u9fff]/.test(m));
-            if (zhMeanings.length > 0) {
-                explains.push(`${pos}: ${zhMeanings.join(', ')}`);
+            // Chinese targets keep the CJK-char filter; other UI languages
+            // accept the meanings as-is.
+            const filtered = targetIsChinese()
+                ? meanings.filter((m: string) => /[\u4e00-\u9fff]/.test(m))
+                : meanings.filter((m: string) => m.trim().length > 0);
+            if (filtered.length > 0) {
+                explains.push(`${pos}: ${filtered.join(', ')}`);
             }
         });
 
@@ -753,13 +795,8 @@ interface MyMemoryResponse {
  * Free tier with rate limits, perfect for personal use
  */
 async function queryMyMemory(word: string, language: string): Promise<DictResult> {
-    // Language codes for MyMemory API
-    const langCodes: Record<string, string> = {
-        english: 'en',
-    };
-
-    const sourceLang = langCodes[language] || 'en';
-    const targetLang = 'zh'; // Chinese UI: dictionary target always Chinese
+    const sourceLang = sourceLangCode(language);
+    const targetLang = uiTargetLang(); // target follows the UI language
 
     // MyMemory API endpoint (no API key required for basic usage)
     const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(word)}&langpair=${sourceLang}|${targetLang}`;
@@ -780,27 +817,30 @@ async function queryMyMemory(word: string, language: string): Promise<DictResult
             throw new Error('MyMemory API did not return translation');
         }
 
-        // Extract additional matches, preferring Chinese results
+        // Extract additional matches, preferring target-language results
         const matches = data.matches || [];
         const explains: string[] = [];
 
-        // Find best Chinese translation from matches
         let bestTranslation = '';
         for (const match of matches) {
-            const t = match.translation || '';
-            if (/[\u4e00-\u9fff]/.test(t)) {
-                if (!bestTranslation) bestTranslation = t;
+            const matchText = match.translation || '';
+            // Chinese targets prefer matches that actually contain CJK chars;
+            // other UI languages accept any non-empty match.
+            const inTarget = targetIsChinese() ? /[\u4e00-\u9fff]/.test(matchText) : matchText.trim().length > 0;
+            if (inTarget) {
+                if (!bestTranslation) bestTranslation = matchText;
                 if (match.quality > 50 && explains.length < 3) {
-                    explains.push(t);
+                    explains.push(matchText);
                 }
             }
         }
 
-        // Use best Chinese match as definition; fall back to responseData
-        const finalTranslation = bestTranslation || (/[\u4e00-\u9fff]/.test(translation) ? translation : '');
+        // Use best target-language match as definition; fall back to responseData
+        const fallbackOk = targetIsChinese() ? /[\u4e00-\u9fff]/.test(translation) : translation.trim().length > 0;
+        const finalTranslation = bestTranslation || (fallbackOk ? translation : '');
 
         if (!finalTranslation) {
-            throw new Error('MyMemory did not return Chinese translation');
+            throw new Error('MyMemory did not return a translation in the UI language');
         }
 
         return {
@@ -881,7 +921,7 @@ export async function fetchPhonetic(word: string, language: string): Promise<str
 }
 
 /**
- * Fetch a clean Chinese definition from online API (for flashcard/vocab use)
+ * Fetch a clean definition in the UI language from the online API (for flashcard/vocab use)
  * Avoids MDX HTML bloat by always getting a concise online translation
  */
 export async function fetchCleanDefinition(word: string, language: string): Promise<string> {
@@ -911,11 +951,8 @@ export async function fetchCleanDefinition(word: string, language: string): Prom
         }
 
         // Fallback to Google Translate for any language
-        const langCodes: Record<string, string> = {
-            english: 'en'
-        };
-        const sourceLang = langCodes[language] || 'en';
-        const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${sourceLang}&tl=zh&dt=t&q=${encodeURIComponent(word)}`;
+        const sourceLang = sourceLangCode(language);
+        const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${sourceLang}&tl=${uiTargetLang()}&dt=t&q=${encodeURIComponent(word)}`;
         const resp = await requestUrlWithTimeout({ url, method: 'GET' });
         const data = resp.json as GoogleTranslateResponse;
 

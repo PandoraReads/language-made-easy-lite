@@ -14,7 +14,7 @@ import { playAudio } from '../services/UnifiedDictionaryService';
 import { randomUUID } from '../mocks/crypto';
 import { vocabSizeService } from '../core/VocabSizeService';
 import { petService, type PetSnapshot, type GainResult } from '../core/PetService';
-import { t } from '../i18n';
+import { t, getLocale } from '../i18n';
 import { VocabTestModal } from './VocabTestModal';
 import { flipMode } from './flashcard-modes/flip-mode';
 import { UpgradeModal } from '../ui/upgrade-modal';
@@ -965,7 +965,7 @@ export class AddFlashcardModal extends Modal {
                 const fullPath = folder ? folder + '/' + path : path;
                 const file = this.app.vault.getAbstractFileByPath(fullPath);
 
-                const dateStr = new Date().toLocaleDateString('zh-CN');
+                const dateStr = new Date().toLocaleDateString(getLocale());
                 const cardContent = '> [!lme-vocab]+ **' + normalizedWord + '** ' + (phonetic ? '*[' + phonetic + ']* ' : '') + '<span class="lme-tag-new">' + t('common.newTag') + '</span>\n'
                     + '> \n'
                     + '> ' + t('vocabNote.definition') + ': ' + definition.replace(/\n/g, ' ') + '\n'

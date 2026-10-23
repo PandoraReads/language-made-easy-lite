@@ -20,7 +20,7 @@ import {
 } from 'obsidian';
 import { LMESettingTab, DEFAULT_SETTINGS } from './Settings';
 import type { LMESettings, PromptTemplate, MdxDictionary, AIProviderConfig } from './models';
-import { BUILTIN_PROMPTS, BUILTIN_PROVIDERS, UI_THEME_LABELS } from './models';
+import { BUILTIN_PROMPTS, BUILTIN_PROVIDERS, uiThemeLabel, resolvePromptText } from './models';
 import { AIService } from './core/AIService';
 import { DictView, DICT_VIEW_TYPE } from './views/dict-view';
 import { FlashcardView, FLASHCARD_VIEW_TYPE, AddFlashcardModal } from './views/flashcard-view';
@@ -86,8 +86,9 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 		// 内部吸收旧 data.json 三字段并清空,失败只降级不阻断启动
 		await this.youtubeRssService.initialize();
 		await db.configureVault(this.getVaultStorageKey());
-		// Initialize i18n with saved language preference
-		initI18n('zh-CN');
+		// Initialize i18n — explicit setting wins, otherwise follow Obsidian's language
+		const uiLang = this.settings.uiLanguage;
+		initI18n(uiLang && uiLang !== 'auto' ? uiLang : undefined);
 		this.applyUiTheme();
 		this.watchObsidianThemeChanges();
 
@@ -328,13 +329,13 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 					const idx = themes.indexOf(current);
 					const next = themes[(idx + 1) % themes.length];
 					if (next !== 'paper-ink') {
-						new UpgradeModal(this.app, UI_THEME_LABELS[next] || next).open();
+						new UpgradeModal(this.app, uiThemeLabel(next)).open();
 						return;
 					}
 					this.settings.uiStyle = next;
 					this.applyUiTheme();
 					void this.saveSettings();
-					new Notice(t('notifications.themeSwitched', { name: UI_THEME_LABELS[next] || next }));
+					new Notice(t('notifications.themeSwitched', { name: uiThemeLabel(next) }));
 				}
 			});
 
@@ -567,7 +568,7 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 		this.settings.uiStyle = theme as unknown;
 		await this.saveSettings();
 		this.applyUiTheme();
-		new Notice(t('notifications.themeSwitched', { name: UI_THEME_LABELS[theme as LMESettings['uiStyle']] || theme }));
+		new Notice(t('notifications.themeSwitched', { name: uiThemeLabel(theme) }));
 	}
 
 	private buildGeneratedNoteTitle(prefix: string): string {
@@ -1957,7 +1958,7 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 			if (!Array.isArray(backup) || backup.length === 0) return;
 			this.settings.aiPrompts = backup;
 			await this.saveData(this.settings);
-			new Notice(`检测到 ${backup.length} 条提示词备份(data.json 的提示词为空,可能因同步覆盖丢失),已自动恢复`, 8000);
+			new Notice(t('notifications.promptBackupRestored', { count: backup.length }), 8000);
 		} catch (e) {
 			console.warn('[LME] aiPrompts 备份检查失败', e);
 		}
@@ -2123,6 +2124,8 @@ function contentToBlocks(content: string): { startSec: number; text: string }[] 
 
 async function executeDocAnalysis(plugin: LanguageMadeEasyPlugin, blocks: { startSec: number; text: string }[], promptContent: string, promptMeta?: { name: string; isBuiltIn: boolean }) {
 	const settings = plugin.settings;
+	// Builtin prompts switch to their English text under non-Chinese UIs.
+	promptContent = resolvePromptText(promptMeta, promptContent);
 	const notice = new Notice(t('notifications.analyzing'), 0);
 	try {
 		const ai = AIService.resolveProvider(settings, 'docAnalysis');
@@ -2151,7 +2154,7 @@ async function executeDocAnalysis(plugin: LanguageMadeEasyPlugin, blocks: { star
 		}
 		notice.hide();
 		if (failedChunks > 0) {
-			new Notice(`⚠️ ${failedChunks} 段分析失败,已返回成功部分(详见控制台)`, 8000);
+			new Notice(t('notifications.analysisPartialFailure', { count: failedChunks }), 8000);
 		} else {
 			new Notice(t('notifications.aiDone'));
 		}

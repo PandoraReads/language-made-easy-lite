@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Language Made Easy · 사용 가이드</title>
+<style>/* ============================================================
+   LME 系统文档风格 · 书卷暖棕（Bookish Warm）
+   面向用户的系统说明文档统一风格
+   ------------------------------------------------------------
+   用法：HTML 生成脚本读取本文件，内联到 <style>。
+   单文件分发时 CSS 随 HTML 一起走，无外部依赖。
+   ============================================================ */
+
+/* ---------- 设计令牌（Design Tokens）---------- */
+:root{
+  /* 底色层：米白书页感 */
+  --bg:#FBF9F5;          /* 主底：温米白 */
+  --soft:#F4EFE6;        /* 次底：羊皮纸暖灰 */
+  --card:#FFFFFF;        /* 卡片：纯白 */
+
+  /* 文字层 */
+  --text:#2C2A26;        /* 主文字：深褐黑 */
+  --muted:#6B6358;       /* 次文字：棕灰 */
+
+  /* 主色：书脊棕 → 砖红强调（纽伯瑞奖章意象）*/
+  --primary:#8B5E3C;     /* 主色：暖棕 */
+  --accent:#C75B4A;      /* 强调：砖红 */
+  --link:#1E6FB0;        /* 链接：沉稳蓝 */
+
+  /* Hero 渐变（可被主题覆盖）*/
+  --g1:#8B5E3C;          /* 渐变起：暖棕 */
+  --g2:#C75B4A;          /* 渐变止：砖红 */
+
+  --border:#E5DED1;      /* 边框：浅米 */
+
+  /* 级别色阶（L1-L4，知识库通用）*/
+  --L1:#E8A33D;          /* L1 暖橙：起步 */
+  --L2:#5A9367;          /* L2 草绿：成长 */
+  --L3:#3D7AA8;          /* L3 海蓝：进阶 */
+  --L4:#7B5AA8;          /* L4 紫罗兰：高阶 */
+}
+
+/* ---------- 基础排版 ---------- */
+*{box-sizing:border-box}
+body{
+  margin:0; padding:0;
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  background:var(--bg); color:var(--text);
+  line-height:1.7; font-size:16px;
+}
+.wrap{max-width:960px; margin:0 auto; padding:32px 28px 80px;}
+
+/* ---------- Hero 头图 ---------- */
+/* 渐变色带 + 圆角下沿，用于文档顶部标题区 */
+header.hero{
+  position:relative; overflow:hidden;
+  background:linear-gradient(135deg,var(--g1) 0%, var(--g2) 100%);
+  color:#FBF9F5; padding:48px 28px; border-radius:0 0 24px 24px;
+  margin:-32px -28px 36px; box-shadow:0 4px 20px rgba(139,94,60,.18);
+}
+/* 书签缎带装饰：右上角双条错落，V 口 + 穿线孔经典书签造型，不贴边 */
+header.hero::after{
+  content:""; position:absolute;
+  top:0; right:64px; width:32px; height:96px;
+  background:
+    radial-gradient(circle 3px at 50% 11px, rgba(0,0,0,.20) 99%, transparent 100%),
+    rgba(255,255,255,.32);
+  clip-path:polygon(0 0, 100% 0, 100% 100%, 50% 76%, 0 100%);
+  box-shadow:0 3px 8px rgba(0,0,0,.14);
+}
+header.hero h1{margin:0 0 8px; font-size:30px; font-weight:700; letter-spacing:.5px;}
+header.hero p{margin:0; opacity:.92; font-size:15px;}
+
+/* ---------- 标题层级 ---------- */
+/* h2：章节标题，带砖红竖条前缀 */
+h2{
+  font-size:22px; color:var(--primary); margin:40px 0 16px;
+  padding-bottom:8px; border-bottom:2px solid var(--border);
+  display:flex; align-items:center; gap:10px;
+}
+h2::before{content:""; width:4px; height:22px; background:var(--accent); border-radius:2px;}
+h3{font-size:18px; color:var(--text); margin:28px 0 12px; font-weight:600;}
+h4{font-size:15px; color:var(--muted); margin:18px 0 8px; text-transform:uppercase; letter-spacing:1px;}
+p{margin:10px 0;}
+strong{color:var(--accent);}
+code{background:var(--soft); padding:2px 6px; border-radius:4px; font-size:14px; color:var(--primary);}
+
+/* ---------- 引用块 ---------- */
+blockquote{
+  margin:16px 0; padding:12px 18px; background:var(--soft);
+  border-left:4px solid var(--accent); border-radius:0 8px 8px 0; color:var(--muted);
+}
+blockquote strong{color:var(--primary);}
+hr{border:none; border-top:1px dashed var(--border); margin:36px 0;}
+
+/* ---------- 表格 ---------- */
+/* 圆角阴影容器 + 表头主色填充 + 隔行条纹 + 悬停高亮 */
+.table-wrap{overflow-x:auto; margin:18px 0; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,.04);}
+table{width:100%; border-collapse:collapse; background:var(--card); font-size:14.5px;}
+thead{background:var(--primary); color:#FBF9F5;}
+th{padding:10px 10px; text-align:left; font-weight:600; white-space:nowrap;}
+td{padding:9px 10px; border-bottom:1px solid var(--border); vertical-align:top;}
+tbody tr:nth-child(even){background:#FAF6EE;}
+tbody tr:hover{background:#F4E8D8;}
+/* 分级说明：最后一列（内容特征）加宽 */
+body.theme-fenji .table-wrap table th:last-child,
+body.theme-fenji .table-wrap table td:last-child{min-width:220px;}
+td strong:first-child{display:inline-block;}
+
+/* ---------- 列表 ---------- */
+ul,ol{margin:12px 0; padding-left:24px;}
+li{margin:6px 0;}
+ul li::marker{color:var(--accent);}
+
+/* ---------- 书名 / 文档链接 ---------- */
+/* book-link：可点跳转，虚下划线，悬停浅底 */
+a.book-link{
+  color:var(--link); text-decoration:none; border-bottom:1px dashed var(--link);
+  padding-bottom:1px; transition:all .15s;
+}
+a.book-link:hover{background:rgba(30,111,176,.08); border-bottom-style:solid;}
+.plain-link{color:inherit;}
+a.doc-link{color:var(--link);text-decoration:none;border-bottom:1px solid var(--link);padding-bottom:1px;}
+a.doc-link:hover{opacity:.7;}
+
+/* ---------- 级别徽章 ---------- */
+/* 配合级别色阶使用：<span class="lv-badge lv-L1">L1</span> */
+.lv-badge{
+  display:inline-block; padding:2px 10px; border-radius:12px;
+  color:#fff; font-size:12px; font-weight:600; margin-right:6px;
+}
+.lv-L1{background:var(--L1);}
+.lv-L2{background:var(--L2);}
+.lv-L3{background:var(--L3);}
+.lv-L4{background:var(--L4);}
+
+/* ---------- 章节卡片（可选容器）---------- */
+.section-card{
+  background:var(--card); border-radius:12px; padding:8px 22px;
+  margin:16px 0; box-shadow:0 1px 4px rgba(0,0,0,.03);
+}
+
+/* ---------- Sticky 锚点导航 ---------- */
+nav.toc{
+  position:sticky; top:0; z-index:10; background:rgba(251,249,245,.95);
+  backdrop-filter:blur(8px); padding:12px 0; margin:0 -28px 24px;
+  border-bottom:1px solid var(--border); padding-left:28px; padding-right:28px;
+  display:flex; gap:8px; flex-wrap:wrap; font-size:13px;
+}
+nav.toc a{
+  color:var(--muted); text-decoration:none; padding:4px 10px;
+  border-radius:14px; background:var(--soft); transition:all .15s;
+}
+nav.toc a:hover{background:var(--primary); color:#fff;}
+
+/* ---------- 页脚 ---------- */
+footer{text-align:center; color:var(--muted); font-size:13px; margin-top:48px; padding-top:24px; border-top:1px dashed var(--border);}
+
+/* ---------- 代码块 ---------- */
+pre{
+  background:#2C2A26; color:#F4EFE6; padding:14px 18px;
+  border-radius:8px; overflow-x:auto; margin:14px 0; font-size:13.5px;
+  line-height:1.55;
+}
+pre code{background:transparent; color:#F4EFE6; padding:0; font-size:inherit; border:none;}
+
+/* ---------- Callout 提示框 ---------- */
+/* Obsidian callout：> [!type] title \n > 内容 */
+.callout{
+  margin:16px 0; padding:14px 18px; border-radius:8px;
+  background:var(--soft); border-left:4px solid var(--primary);
+}
+.callout-title{font-weight:600; margin-bottom:6px; color:var(--primary);}
+.callout-body p{margin:6px 0;}
+.callout-body p:first-child{margin-top:0;}
+.callout-body p:last-child{margin-bottom:0;}
+.callout-tip{border-left-color:#5A9367; background:#EEF7F0;}
+.callout-tip .callout-title{color:#3D6B47;}
+.callout-info{border-left-color:#3D7AA8; background:#EBF2F9;}
+.callout-info .callout-title{color:#2B5A82;}
+.callout-warning{border-left-color:#C75B4A; background:#FBEEEA;}
+.callout-warning .callout-title{color:#A04535;}
+.callout-note{border-left-color:#8B5E3C; background:var(--soft);}
+.callout-note .callout-title{color:var(--primary);}
+
+/* ---------- 外部链接 ---------- */
+a.ext-link{color:var(--link); text-decoration:none; border-bottom:1px dashed var(--link);}
+a.ext-link:hover{border-bottom-style:solid;}
+
+/* ---------- 响应式 ---------- */
+@media(max-width:640px){
+  .wrap{padding:20px 16px 60px;}
+  header.hero{padding:32px 16px; margin:-20px -16px 24px; border-radius:0 0 16px 16px;}
+  header.hero h1{font-size:24px;}
+  th,td{padding:8px 10px; font-size:13px;}
+  header.hero::before,header.hero::after{display:none;}
+}
+
+/* ---------- 主题色板（4 文档差异化；底色/文字/链接/callout 跨主题共享）---------- */
+/* 每主题只覆盖 --primary / --accent / --g1 / --g2 四变量 */
+body.theme-readme{--primary:#8B5E3C;--accent:#C75B4A;--g1:#8B5E3C;--g2:#C75B4A;}   /* 首页·书卷暖棕（默认）*/
+body.theme-fenji{--primary:#3D6B7A;--accent:#5A9367;--g1:#3D6B7A;--g2:#5A9367;}     /* 分级说明·体系森林 */
+body.theme-shudan{--primary:#8C3A3A;--accent:#C8862E;--g1:#8C3A3A;--g2:#C8862E;}    /* 推荐书单·藏书酒红 */
+body.theme-lme{--primary:#4A5A8C;--accent:#7B5AA8;--g1:#4A5A8C;--g2:#7B5AA8;}       /* LME 手册·工具靛紫 */
+</style>
+</head>
+<body class="theme-lme">
+<div class="wrap">
+<header class="hero">
+  <h1>Language Made Easy · 사용 가이드</h1>
+  <p>Obsidian 몰입형 언어 학습 플러그인 · 검색 / 카드 / 셰도잉 / AI</p>
+</header>
+<nav class="toc"><a href="#install">설치</a><a href="#lookup">검색</a><a href="#flashcards">카드</a><a href="#shadowing">셰도잉</a><a href="#ai">AI</a><a href="#more">더보기</a><a href="#faq">FAQ</a></nav>
+
+<blockquote><p><strong>Language Made Easy</strong>는 <strong>단어 검색, 플래시카드, 영상 셰도잉, AI 분석</strong>을 노트 작업 흐름에 그대로 담은 Obsidian 플러그인이에요. 글을 읽고, 영상을 보고, 노트를 쓰면서 자연스럽게 언어를 익히게 됩니다.</p></blockquote>
+<hr>
+<h2 id="install">1. 플러그인 설치</h2>
+<h3>📦 다운로드 및 설치</h3>
+<ol>
+<li>플러그인 파일들(<code>main.js</code>, <code>manifest.json</code>, <code>style.css</code>)을 Obsidian Vault의 플러그인 폴더에 복사하세요:</li>
+</ol>
+<pre><code>your-vault/
+└── .obsidian/
+    └── plugins/
+        └── language-made-easy/
+            ├── main.js
+            ├── manifest.json
+            └── style.css</code></pre>
+<div class="callout callout-tip"><div class="callout-title">💡 플러그인 폴더는 어떻게 찾나요?</div><div class="callout-body"><p>Obsidian에서 <strong>설정 → 커뮤니티 플러그인 → 📁 아이콘 클릭</strong>으로 플러그인 폴더로 바로 이동할 수 있어요.</p></div></div>
+<ol>
+<li>Obsidian으로 돌아와 <strong>설정 → 커뮤니티 플러그인</strong>에서 <strong>Language Made Easy</strong>를 찾아 켜세요.</li>
+</ol>
+<h3>🆓 3일 무료 체험 → 풀 에디션</h3>
+<p><strong>3일 무료 체험</strong>은 첫 실행과 함께 시작돼요 — 모든 언어가 열려 공부할 수 있고(검색 / 카드 / 셰도잉 / AI 분석) 기능은 기존 베이직 구성 그대로예요. 남은 시간은 상태 표시줄에 표시됩니다.</p>
+<p>체험이 끝나면 <strong>풀 에디션</strong>(한 번 구매, 평생 업데이트)을 받아 계속 사용하세요. 모든 고급 모듈이 열립니다:</p>
+<ul>
+<li>7개 언어 추가: 영어 / 독일어 / 프랑스어 / 스페인어 / 한국어 / 러시아어 / 일본어</li>
+<li>무제한 카드, 로컬 사전 5개, 모바일 오프라인 사전</li>
+<li>기기 간 카드 동기화, 데이터 가져오기 / 내보내기</li>
+<li>AI 일괄 카드 생성, AI 리포트 내보내기</li>
+<li>인터페이스 테마 9종 추가, 듣기 / 타이핑 복습 모드</li>
+<li>영상 북마크, 영상 해설 카드, 구독 페이지에서 원클릭 &amp; 일괄 다운로드</li>
+</ul>
+<blockquote><p>🌐 https://languagemadeeasy.com 에서 풀 에디션을 받을 수 있어요.</p></blockquote>
+<hr>
+<h2 id="lookup">2. 단어 검색 사용하기</h2>
+<p>📖 영어 샘플 문단이에요:</p>
+<blockquote><p>The best way to learn a new language is not through memorization, but through immersion. When you read, listen, and speak in context, your brain absorbs vocabulary and grammar naturally — just like how you learned your first language as a child.</p></blockquote>
+<p>위 문단에서 모르는 단어를 <strong>더블클릭</strong>해서 검색 기능을 체험해 보세요!</p>
+<h3>단어 어시스턴트 열기</h3>
+<p>여러 가지 방법이 있어요:</p>
+<pre><code>방법 1: 왼쪽 사이드바의 📖 책 아이콘 클릭
+방법 2: Ctrl/Cmd + P → "단어 어시스턴트"로 자동 검색</code></pre>
+<h3>검색 동작</h3>
+<p>노트에서 <strong>단어를 더블클릭</strong>하거나 <code>Ctrl/Cmd + Shift</code>를 누른 채 텍스트를 선택하면, 결과 패널이 오른쪽에 자동으로 떠요.</p>
+<h3>검색 결과 패널</h3>
+<p>단어를 검색하면 이런 게 보여요:</p>
+<div class="table-wrap"><table><thead><tr><th>기능</th><th>설명</th></tr></thead><tbody><tr><td>🔊 <strong>발음</strong></td><td>클릭하면 올바른 발음을 들려줘요</td></tr><tr><td>📝 <strong>단어장에 추가</strong></td><td>원클릭으로 카드로 저장해 나중에 복습</td></tr><tr><td>🔤 <strong>발음 기호</strong></td><td>발음 표기를 보여줘요</td></tr><tr><td>📖 <strong>뜻</strong></td><td>품사와 뜻을 보여줘요</td></tr></tbody></table></div>
+<div class="callout callout-tip"><div class="callout-title">✨ 팁</div><div class="callout-body"><p>결과 패널 안에서도 <strong>더블클릭으로 검색</strong>할 수 있어요 — 사전 자체도 훌륭한 학습 자료예요!</p></div></div>
+<h3>지원 언어</h3>
+<div class="table-wrap"><table><thead><tr><th>언어</th><th>코드</th></tr></thead><tbody><tr><td>🇬🇧 영어</td><td><code>en</code></td></tr><tr><td>🇩🇪 독일어</td><td><code>de</code></td></tr><tr><td>🇫🇷 프랑스어</td><td><code>fr</code></td></tr><tr><td>🇪🇸 스페인어</td><td><code>es</code></td></tr><tr><td>🇰🇷 한국어</td><td><code>ko</code></td></tr><tr><td>🇷🇺 러시아어</td><td><code>ru</code></td></tr><tr><td>🇯🇵 일본어</td><td><code>ja</code></td></tr></tbody></table></div>
+<div class="callout callout-info"><div class="callout-title">🌐 앞으로 더 많은 언어를 지원할 예정이에요.</div><div class="callout-body"></div></div>
+<hr>
+<h2 id="flashcards">3. 카드 추가하고 관리하기</h2>
+<p>🎴 읽고 검색하면서 새 단어를 많이 모았다면, 이렇게 체계적으로 복습할 수 있어요:</p>
+<h3>자동 생성 카드</h3>
+<p>검색 후 <strong>"단어장에 추가"</strong>를 누르면 플러그인이 자동으로 카드를 만들어 줘요. 각 카드에는:</p>
+<ul>
+<li>✅ 단어 + 발음 기호</li>
+<li>✅ 뜻</li>
+<li>✅ 단어의 문맥(검색한 노트의 문장)</li>
+<li>✅ 원본 노트 링크</li>
+<li>✅ 추가한 날짜</li>
+</ul>
+<h3>카드 직접 추가하기</h3>
+<pre><code>카드 복습 패널 열기 → 하단의 "카드 추가" 버튼 클릭
+→ 단어, 발음 기호(선택), 뜻, 예문(선택) 입력
+→ 저장</code></pre>
+<h3>복습 시작하기</h3>
+<p>카드 복습 패널을 여세요:</p>
+<pre><code>방법 1: 왼쪽 사이드바의 🧠 아이콘 클릭
+방법 2: Ctrl/Cmd + P → "플래시카드 복습 시작" 검색</code></pre>
+<h4>복습 흐름</h4>
+<pre><code>👀 카드 앞면 보기 → 🤔 뜻을 떠올려 보기
+→ 🖱️ 클릭해 뒤집고 뜻 확인 → ⭐ 기억 정도 평가하기</code></pre>
+<h4>평가 등급</h4>
+<div class="callout callout-info"><div class="callout-title">🧠 FSRS 알고리즘 소개</div><div class="callout-body"><p>복습은 <strong>FSRS 알고리즘</strong>(최신 간격 반복 알고리즘)으로 돌아가요. 평가에 따라 각 카드의 다음 복습 시기를 똑똑하게 배정해, 딱 잊을 때쯤 다시 보게 해줍니다.</p></div></div>
+<div class="table-wrap"><table><thead><tr><th>평가</th><th>의미</th><th>효과</th></tr></thead><tbody><tr><td>😵 <strong>다시</strong></td><td>전혀 기억 안 남</td><td>곧 다시 출제</td></tr><tr><td>😐 <strong>어려움</strong></td><td>겨우 기억함</td><td>간격 단축</td></tr><tr><td>🙂 <strong>좋음</strong></td><td>보통으로 기억함</td><td>표준 간격</td></tr><tr><td>😎 <strong>쉬움</strong></td><td>바로 답함</td><td>간격 크게 연장</td></tr></tbody></table></div>
+<div class="callout callout-warning"><div class="callout-title">🧹 자동 정리</div><div class="callout-body"><p>단어가 여러 번 <strong>"쉬움"</strong>으로 평가되면 자동으로 복습 순환에서 빠져요. "자동 정리" 조건은 <strong>설정 → Language Made Easy</strong>에서 바꿀 수 있어요.</p></div></div>
+<h3>카드 데이터 관리</h3>
+<pre><code>Ctrl/Cmd + P → "카드 데이터 관리" 검색</code></pre>
+<p>관리자에서는:</p>
+<ul>
+<li>📋 언어와 상태로 카드 필터링</li>
+<li>🗑️ 필요 없는 카드 일괄 삭제</li>
+<li>📤 카드 데이터 내보내기</li>
+</ul>
+<div class="callout callout-tip"><div class="callout-title">💡 중요한 두 가지</div><div class="callout-body"><p>1. 카드 데이터는 <strong>로컬 IndexedDB</strong>에 저장돼요. 플러그인 업데이트 시 <code>main.js</code>, <code>manifest.json</code>, <code>style.css</code> 세 파일만 바꾸면 되고 <strong>기존 카드는 영향을 받지 않아요</strong>. 안심하고 업데이트하세요!</p><p>2. 카드는 <code>txt</code>, <code>markdown</code>, <code>csv</code>, <code>json</code> 등 여러 형식의 <strong>가져오기/내보내기</strong>를 지원해 백업과 이동이 쉬워요.</p></div></div>
+<hr>
+<h2 id="shadowing">4. 셰도잉 워크숍 사용하기</h2>
+<p>🎬 Language Made Easy는 <strong>YouTube / Bilibili 영상</strong>으로 더 효율적으로 공부하도록 도와줘요. 자연스러운 구어체를 익히고 듣기를 단련하세요.</p>
+<h3>워크숍 열기</h3>
+<pre><code>방법 1: 왼쪽 사이드바의 ▶️ 아이콘 클릭
+방법 2: Ctrl/Cmd + P → "셰도잉 워크숍" 검색</code></pre>
+<h3>영상 불러오기</h3>
+<p>노트에 영상 링크를 붙이면 플러그인이 자동으로 인식하고 불러와요:</p>
+<pre><code>✅ YouTube 영상 → 링크만 붙이면 자동 로드
+✅ Bilibili 영상 → 링크만 붙이면 자동 로드(자동 다운로드 &amp; 캐시)
+✅ 로컬 오디오/영상 → ![[video.mp4]] 또는 ![[audio.mp3]]로 삽입</code></pre>
+<h3>자막 다운로드</h3>
+<p>불러온 뒤 오른쪽 도구 모음의 <strong>"자막 다운로드"</strong>를 클릭하세요. YouTube / Bilibili에서 자막을 가져와 노트에 넣어줘요.</p>
+<p>자막 형식 예시:</p>
+<pre><code>[00:12] Hello, how are you today?
+[00:15] I'm fine, thank you. And you?
+[01:23] What a beautiful day! Let's go for a walk.</code></pre>
+<div class="callout callout-tip"><div class="callout-title">📝 참고</div><div class="callout-body"><p>워크숍은 <strong>다양한 타임스탬프 형식</strong>을 지원해요 — <code>HH:MM:SS</code>, <code>MM:SS</code>, <code>[00:12]</code> 모두 자동 인식해 불러옵니다.</p></div></div>
+<h3>재생 컨트롤</h3>
+<p>워크숍 플레이어 하단에는 재생 컨트롤이 한 줄 있어요:</p>
+<div class="table-wrap"><table><thead><tr><th>버튼</th><th>기능</th><th>용도</th></tr></thead><tbody><tr><td>⏮️ <strong>리플레이</strong></td><td>현재 문장 처음으로</td><td>문장 처음부터 다시 듣기</td></tr><tr><td>🔁 <strong>루프</strong></td><td>한 문장 반복</td><td>한 문장 집중 훈련에 최적</td></tr><tr><td>▶️ / ⏸️ <strong>재생/일시정지</strong></td><td>재생 제어</td><td>스페이스바</td></tr><tr><td>🐢🐇 <strong>속도</strong></td><td>0.8x / 1.0x / 1.2x</td><td>내 수준에 맞게 조절</td></tr></tbody></table></div>
+<h3>🎧 받아쓰기 모드</h3>
+<p>듣기에 도전하고 싶나요? <strong>받아쓰기 모드</strong>를 사용해 보세요!</p>
+<pre><code>워크숍 오른쪽 도구 모음 → "받아쓰기 모드" 클릭
+→ 한 문장이 재생되면 들리는 대로 입력
+→ 제출하면 원문과 자동 비교
+→ 틀린 곳은 빨강, 맞은 곳은 초록</code></pre>
+<hr>
+<h2 id="ai">5. AI로 학습 업그레이드</h2>
+<p>더 강력한 경험을 원하세요? 아래 고급 설정이 <strong>로컬 사전</strong>과 <strong>AI 분석</strong> 같은 기능을 열어줘요.</p>
+<h3>5.1 로컬 사전 설정</h3>
+<p>로컬 사전(MDX 형식)은 예문, 연어, 유의어까지 담은 풍부한 뜻풀이를 <strong>오프라인에서도</strong> 제공해요.</p>
+<pre><code>설정 → Language Made Easy → 사전 설정
+→ 로컬 MDX 사전 파일 경로 지정
+→ 저장</code></pre>
+<h3>5.2 로컬 사전의 효과</h3>
+<p>로컬 사전을 설정하면 검색 결과가 훨씬 풍부해져요:</p>
+<div class="table-wrap"><table><thead><tr><th>항목</th><th>온라인 사전</th><th>로컬 MDX 사전</th></tr></thead><tbody><tr><td>네트워크</td><td>✅ 필요</td><td>❌ 오프라인 동작</td></tr><tr><td>뜻풀이 상세도</td><td>기본 뜻풀이</td><td>상세 + 예문 + 연어</td></tr><tr><td>속도</td><td>네트워크에 따라</td><td>⚡ 즉시</td></tr><tr><td>지원 소스</td><td>Google / MyMemory / Jisho</td><td>직접 MDX 파일</td></tr></tbody></table></div>
+<h3>5.3 LLM API 키 설정</h3>
+<p>AI 분석에는 대규모 언어 모델의 API 키가 필요해요. 지원되는 제공자:</p>
+<pre><code>설정 → Language Made Easy → AI 설정
+→ 모델 제공자 선택 (OpenAI / Google Gemini / OpenRouter)
+→ API 키 입력
+→ 저장</code></pre>
+<div class="callout callout-tip"><div class="callout-title">💡 추천</div><div class="callout-body"><p>- <strong>OpenAI</strong>: API 키만 넣으면 바로 사용 가능.</p><p>- <strong>Google Gemini</strong>: 무료 사용권이 있어요. 백업이나 깊이 있는 학습에 좋아요.</p></div></div>
+<h3>5.4 AI 분석 사용하기</h3>
+<h4>5.4.1 AI 분석 리포트 생성</h4>
+<p>워크숍에서 자막을 불러온 뒤:</p>
+<pre><code>오른쪽 도구 모음의 "AI 분석" 클릭
+→ 분석이 끝나길 기다려요 (보통 10~20초)
+→ 리포트가 오른쪽 패널에 표시
+→ "노트에 저장"으로 보관
+→ 이미지 버튼으로 "긴 이미지로 저장"도 가능</code></pre>
+<p>AI 분석 리포트에는 보통 이런 내용이 있어요:</p>
+<ul>
+<li>📝 <strong>어휘</strong> — 핵심 단어의 용법과 연어</li>
+<li>🏗️ <strong>문법</strong> — 핵심 구조 해설</li>
+<li>🌍 <strong>문화 배경</strong> — 관련 문화적 맥락</li>
+<li>💡 <strong>학습 팁</strong> — 맞춤형 학습 제안</li>
+</ul>
+<p>플러그인에는 목적별 <strong>3가지 내장 프롬프트</strong>가 있어요:</p>
+<div class="table-wrap"><table><thead><tr><th>프롬프트</th><th>적합한 상황</th><th>산출물</th></tr></thead><tbody><tr><td>📝 <strong>요약</strong></td><td>영상 내용 빠르게 파악</td><td>간결한 요약 + 핵심 포인트</td></tr><tr><td>📖 <strong>이중 언어</strong></td><td>한 줄씩 정독</td><td>문장별 이중 언어 대역</td></tr><tr><td>🧪 <strong>미니 퀴즈</strong></td><td>학습 점검</td><td>영상 기반 퀴즈 문항</td></tr></tbody></table></div>
+<div class="callout callout-tip"><div class="callout-title">💡 직접 프롬프트를 쓸 수도 있어요 — <a href="#ai-custom-prompt">5.4.2 사용자 지정 프롬프트 추가</a> 참고.</div><div class="callout-body"></div></div>
+<h4 id="ai-custom-prompt">5.4.2 사용자 지정 프롬프트 추가</h4>
+<p>직접 프롬프트를 써서 필요에 맞는 학습 자료를 AI에게 받아 보세요:</p>
+<pre><code>설정 → Language Made Easy → AI 프롬프트 관리
+→ 사용자 지정 프롬프트 추가
+→ 이름과 내용 설정
+→ 저장</code></pre>
+<h3>5.5 원클릭 카드 자동 채우기</h3>
+<p>카드 추가할 때 발음 기호와 뜻을 직접 입력하기 귀찮다면? <strong>AI 자동 채우기</strong>를 쓰세요!</p>
+<pre><code>카드 추가 패널 → 단어 입력
+→ "AI 채우기" 버튼 클릭
+→ 발음 기호, 뜻, 예문이 자동으로 채워져요
+→ 확인 후 저장</code></pre>
+<h3>5.6 자막을 불러오는 더 많은 방법</h3>
+<p>워크숍에서 바로 받는 것 말고도 여러 방법이 있어요:</p>
+<h4>5.6.1 워크숍의 "자막 다운로드" 버튼</h4>
+<p>가장 직접적인 방법이에요. 영상을 불러온 뒤 오른쪽 도구 모음의 <strong>"자막 다운로드"</strong>를 클릭하면 YouTube / Bilibili에서 자동으로 가져와요.</p>
+<div class="callout callout-warning"><div class="callout-title">⚠️ 자막 다운로드 유의사항</div><div class="callout-body"><p>1. 플러그인은 <strong>현재 선택한 학습 언어</strong>의 자막을 내려받아요 — 다운로드 전에 언어를 확인하세요. 해당 언어 자막이 없으면 영상의 기본 자막이 반환돼요.</p><p>2. Bilibili 영상에는 <strong>영어 자막이 없는 경우가 많아요</strong>. 영상을 고르기 전에 Bilibili 플레이어의 "字幕"(자막) 목록에서 필요한 언어가 있는지 확인하세요.</p></div></div>
+<h4>5.6.2 Obsidian Web Clipper 사용</h4>
+<p><a class="ext-link" href="https://obsidian.md/clipper" target="_blank" rel="noopener">Obsidian Web Clipper</a> 브라우저 확장을 쓰면 시청 중에 YouTube 자막을 바로 Obsidian 노트로 클립할 수 있어요:</p>
+<pre><code>Obsidian Web Clipper 확장 설치
+→ YouTube 영상 페이지에서 확장 아이콘 클릭
+→ 자막 내용 클립 선택
+→ 타임스탬프가 붙은 노트로 자동 저장</code></pre>
+<h4>5.6.3 ytranscript 플러그인 사용</h4>
+<p><a class="ext-link" href="https://obsidian.md/plugins?id=ytranscript" target="_blank" rel="noopener">ytranscript</a>는 Obsidian 안에서 YouTube 자막을 내려받는 또 다른 플러그인이에요:</p>
+<pre><code>커뮤니티 플러그인에서 "ytranscript" 검색 후 설치
+→ 명령 팔레트에서 ytranscript로 YouTube 자막 받기
+→ 자막이 타임스탬프와 함께 노트에 삽입
+→ 워크숍을 열어 사용 시작</code></pre>
+<h4>5.6.4 로컬 영상에 SRT 파일 불러오기</h4>
+<p>로컬 영상 파일과 짝이 맞는 SRT 자막 파일이 있다면:</p>
+<pre><code>방법 1: SRT 파일 내용을 노트에 복사
+         → SRT 타임스탬프 형식이 맞는지 확인
+         → ![[video.mp4]]로 영상을 노트에 삽입
+         → 워크숍을 열어 영상과 자막 해석
+
+방법 2: Vault에서 SRT 파일을 영상 옆에 두기
+         → ![[video.mp4]]로 영상 삽입
+         → 플러그인이 같은 이름의 SRT를 자동으로 연결</code></pre>
+<hr>
+<h2 id="more">6. 더 많은 활용</h2>
+<h3>6.1 퀵 커맨드: 원클릭 테마 전환</h3>
+<p>플러그인에는 <strong>정성껏 디자인된 10종 UI 테마</strong>가 들어 있어요:</p>
+<pre><code>Ctrl/Cmd + P → "다음 테마로 전환" 검색
+→ 실행할 때마다 다음 테마로 바뀌어요</code></pre>
+<div class="table-wrap"><table><thead><tr><th>테마</th><th>분위기</th></tr></thead><tbody><tr><td>📜 Paper Ink</td><td>클래식한 종이와 잉크, 따뜻하고 부드러움</td></tr><tr><td>🌿 Mint Atelier</td><td>민트의 청량함, 깔끔하고 프로페셔널</td></tr><tr><td>🌸 Rose Blush</td><td>부드러운 로즈 핑크, 온화하고 낭만적</td></tr><tr><td>💜 Lavender Dream</td><td>라벤더 꿈결, 가볍고 몽환적</td></tr><tr><td>🍬 Candy Pop</td><td>사탕 파티, 밝고 발랄함</td></tr><tr><td>🌳 Mindful Oasis</td><td>마음챙김 오아시스, 자연스럽고 아늑함</td></tr><tr><td>🪸 Coral Warmth</td><td>산호의 온기, 따뜻하고 활기참</td></tr><tr><td>🌊 Ocean Glass</td><td>바다의 심장, 깊고 차분함</td></tr><tr><td>🌌 Aurora Prism</td><td>오로라 프리즘, 신비하고 화려함</td></tr><tr><td>🍋 Dark Lemon</td><td>밤의 레몬, 어둡고 쿨함</td></tr></tbody></table></div>
+<h3>6.2 퀵 커맨드: 원클릭 언어 전환</h3>
+<p>여러 언어를 공부 중이라면? 빠르게 바꿔 보세요:</p>
+<pre><code>Ctrl/Cmd + P → "영어 / 독일어 / 프랑스어 / … 으로 전환" 검색
+→ 현재 학습 언어가 즉시 바뀌어요</code></pre>
+<h3>6.3 퀵 커맨드: AI 분석 리포트</h3>
+<pre><code>Ctrl/Cmd + P → "AI 분석" 검색
+→ Vault의 아무 노트나 골라 AI 분석 실행</code></pre>
+<h3>6.4 단어장 저장 경로 설정</h3>
+<p>단어를 추가할 때마다 플러그인이 Vault에 Markdown 단어장 파일을 만들어요. 저장 위치를 바꿀 수 있어요:</p>
+<pre><code>설정 → Language Made Easy → 단어장 설정
+→ 저장 경로와 파일명 지정
+→ 저장</code></pre>
+<h3>6.5 AI 분석 리포트 저장 경로 설정</h3>
+<p>AI 리포트도 원하는 위치에 저장할 수 있어요:</p>
+<pre><code>설정 → Language Made Easy → AI 분석 설정
+→ 리포트 저장 경로 지정
+→ 저장</code></pre>
+<hr>
+<h2 id="faq">7. FAQ</h2>
+<h3>❓ 검색이 반응하지 않아요?</h3>
+<blockquote><p>다음을 확인해 주세요:</p><p>1. 사전이 제대로 설정되어 있는지(온라인 사전은 네트워크가 필요해요).</p><p>2. MDX 사전을 쓴다면 설정의 mdx, mdd, css 경로가 정확한지.</p><p>3. 현재 학습 언어가 올바르게 설정되어 있는지.</p></blockquote>
+<h3>❓ 방금 추가한 카드가 안 보여요?</h3>
+<blockquote><p>새 카드는 복습 대기열 맨 끝에 붙어요.</p></blockquote>
+<h3>❓ Bilibili 영상이 중국어 자막만 받아져요?</h3>
+<blockquote><p>그 영상에 실제로 다른 언어 자막 파일이 올라와 있는지 확인해 보세요. 화면에 새겨진 이중 언어 자막이 올리는 사람이 그 파일들을 제공한다는 뜻은 아니에요.</p></blockquote>
+<h3>❓ YouTube 영상을 열면 "로그인"을 요구해요?</h3>
+<blockquote><p><strong>네트워크 전환</strong>으로 대부분 해결돼요. 보통 현재 네트워크 환경과 관련 있어요 — 다른 노드로 바꿔 다시 시도해 보세요.</p></blockquote>
+<h3>❓ AI 분석에서 오류가 나요?</h3>
+<blockquote><p>확인해 주세요:</p><p>1. API 키가 올바르게 설정되었나요?</p><p>2. 네트워크 연결이 정상인가요?</p><p>3. API 잔액이 충분한가요?</p></blockquote>
+<h3>📮 저자에게 연락하기</h3>
+<ul>
+<li>📧 이메일: <a class="ext-link" href="mailto:panrunrun@gmail.com">panrunrun@gmail.com</a></li>
+<li>🌐 웹사이트: <a class="ext-link" href="https://www.languagemadeeasy.com" target="_blank" rel="noopener">www.languagemadeeasy.com</a></li>
+</ul>
+<hr>
+<blockquote><p>🎉 <strong>즐거운 학습 되세요! 궁금한 점은 언제든 연락 주세요.</strong></p></blockquote>
+<footer>Pandora의 디지털 정원</footer>
+</div>
+</body>
+</html>

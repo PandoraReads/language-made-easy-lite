@@ -11,9 +11,10 @@
     "test:srt": "node scripts/verify-srt-parser.mjs",
     "test:youtube-rss": "node scripts/verify-youtube-rss.mjs",
     "test:youtube-store": "node scripts/verify-youtube-rss-store.mjs",
-    "test": "npm run test:srt && npm run test:youtube-rss && npm run test:youtube-store && npm run test:workshop-folder",
+    "test": "npm run test:srt && npm run test:youtube-rss && npm run test:youtube-store && npm run test:workshop-folder && npm run test:i18n",
     "version": "node version-bump.mjs && git add manifest.json versions.json && npm run build:release",
     "test:workshop-folder": "node scripts/verify-workshop-folder.mjs",
+    "test:i18n": "node scripts/verify-i18n-parity.mjs",
     "build:release": "node esbuild.config.mjs --release",
     "validate": "obsidian-plugin-validator"
   },

@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Language Made Easy · 使用說明</title>
+<style>/* ============================================================
+   LME 系统文档风格 · 书卷暖棕（Bookish Warm）
+   面向用户的系统说明文档统一风格
+   ------------------------------------------------------------
+   用法：HTML 生成脚本读取本文件，内联到 <style>。
+   单文件分发时 CSS 随 HTML 一起走，无外部依赖。
+   ============================================================ */
+
+/* ---------- 设计令牌（Design Tokens）---------- */
+:root{
+  /* 底色层：米白书页感 */
+  --bg:#FBF9F5;          /* 主底：温米白 */
+  --soft:#F4EFE6;        /* 次底：羊皮纸暖灰 */
+  --card:#FFFFFF;        /* 卡片：纯白 */
+
+  /* 文字层 */
+  --text:#2C2A26;        /* 主文字：深褐黑 */
+  --muted:#6B6358;       /* 次文字：棕灰 */
+
+  /* 主色：书脊棕 → 砖红强调（纽伯瑞奖章意象）*/
+  --primary:#8B5E3C;     /* 主色：暖棕 */
+  --accent:#C75B4A;      /* 强调：砖红 */
+  --link:#1E6FB0;        /* 链接：沉稳蓝 */
+
+  /* Hero 渐变（可被主题覆盖）*/
+  --g1:#8B5E3C;          /* 渐变起：暖棕 */
+  --g2:#C75B4A;          /* 渐变止：砖红 */
+
+  --border:#E5DED1;      /* 边框：浅米 */
+
+  /* 级别色阶（L1-L4，知识库通用）*/
+  --L1:#E8A33D;          /* L1 暖橙：起步 */
+  --L2:#5A9367;          /* L2 草绿：成长 */
+  --L3:#3D7AA8;          /* L3 海蓝：进阶 */
+  --L4:#7B5AA8;          /* L4 紫罗兰：高阶 */
+}
+
+/* ---------- 基础排版 ---------- */
+*{box-sizing:border-box}
+body{
+  margin:0; padding:0;
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  background:var(--bg); color:var(--text);
+  line-height:1.7; font-size:16px;
+}
+.wrap{max-width:960px; margin:0 auto; padding:32px 28px 80px;}
+
+/* ---------- Hero 头图 ---------- */
+/* 渐变色带 + 圆角下沿，用于文档顶部标题区 */
+header.hero{
+  position:relative; overflow:hidden;
+  background:linear-gradient(135deg,var(--g1) 0%, var(--g2) 100%);
+  color:#FBF9F5; padding:48px 28px; border-radius:0 0 24px 24px;
+  margin:-32px -28px 36px; box-shadow:0 4px 20px rgba(139,94,60,.18);
+}
+/* 书签缎带装饰：右上角双条错落，V 口 + 穿线孔经典书签造型，不贴边 */
+header.hero::after{
+  content:""; position:absolute;
+  top:0; right:64px; width:32px; height:96px;
+  background:
+    radial-gradient(circle 3px at 50% 11px, rgba(0,0,0,.20) 99%, transparent 100%),
+    rgba(255,255,255,.32);
+  clip-path:polygon(0 0, 100% 0, 100% 100%, 50% 76%, 0 100%);
+  box-shadow:0 3px 8px rgba(0,0,0,.14);
+}
+header.hero h1{margin:0 0 8px; font-size:30px; font-weight:700; letter-spacing:.5px;}
+header.hero p{margin:0; opacity:.92; font-size:15px;}
+
+/* ---------- 标题层级 ---------- */
+/* h2：章节标题，带砖红竖条前缀 */
+h2{
+  font-size:22px; color:var(--primary); margin:40px 0 16px;
+  padding-bottom:8px; border-bottom:2px solid var(--border);
+  display:flex; align-items:center; gap:10px;
+}
+h2::before{content:""; width:4px; height:22px; background:var(--accent); border-radius:2px;}
+h3{font-size:18px; color:var(--text); margin:28px 0 12px; font-weight:600;}
+h4{font-size:15px; color:var(--muted); margin:18px 0 8px; text-transform:uppercase; letter-spacing:1px;}
+p{margin:10px 0;}
+strong{color:var(--accent);}
+code{background:var(--soft); padding:2px 6px; border-radius:4px; font-size:14px; color:var(--primary);}
+
+/* ---------- 引用块 ---------- */
+blockquote{
+  margin:16px 0; padding:12px 18px; background:var(--soft);
+  border-left:4px solid var(--accent); border-radius:0 8px 8px 0; color:var(--muted);
+}
+blockquote strong{color:var(--primary);}
+hr{border:none; border-top:1px dashed var(--border); margin:36px 0;}
+
+/* ---------- 表格 ---------- */
+/* 圆角阴影容器 + 表头主色填充 + 隔行条纹 + 悬停高亮 */
+.table-wrap{overflow-x:auto; margin:18px 0; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,.04);}
+table{width:100%; border-collapse:collapse; background:var(--card); font-size:14.5px;}
+thead{background:var(--primary); color:#FBF9F5;}
+th{padding:10px 10px; text-align:left; font-weight:600; white-space:nowrap;}
+td{padding:9px 10px; border-bottom:1px solid var(--border); vertical-align:top;}
+tbody tr:nth-child(even){background:#FAF6EE;}
+tbody tr:hover{background:#F4E8D8;}
+/* 分级说明：最后一列（内容特征）加宽 */
+body.theme-fenji .table-wrap table th:last-child,
+body.theme-fenji .table-wrap table td:last-child{min-width:220px;}
+td strong:first-child{display:inline-block;}
+
+/* ---------- 列表 ---------- */
+ul,ol{margin:12px 0; padding-left:24px;}
+li{margin:6px 0;}
+ul li::marker{color:var(--accent);}
+
+/* ---------- 书名 / 文档链接 ---------- */
+/* book-link：可点跳转，虚下划线，悬停浅底 */
+a.book-link{
+  color:var(--link); text-decoration:none; border-bottom:1px dashed var(--link);
+  padding-bottom:1px; transition:all .15s;
+}
+a.book-link:hover{background:rgba(30,111,176,.08); border-bottom-style:solid;}
+.plain-link{color:inherit;}
+a.doc-link{color:var(--link);text-decoration:none;border-bottom:1px solid var(--link);padding-bottom:1px;}
+a.doc-link:hover{opacity:.7;}
+
+/* ---------- 级别徽章 ---------- */
+/* 配合级别色阶使用：<span class="lv-badge lv-L1">L1</span> */
+.lv-badge{
+  display:inline-block; padding:2px 10px; border-radius:12px;
+  color:#fff; font-size:12px; font-weight:600; margin-right:6px;
+}
+.lv-L1{background:var(--L1);}
+.lv-L2{background:var(--L2);}
+.lv-L3{background:var(--L3);}
+.lv-L4{background:var(--L4);}
+
+/* ---------- 章节卡片（可选容器）---------- */
+.section-card{
+  background:var(--card); border-radius:12px; padding:8px 22px;
+  margin:16px 0; box-shadow:0 1px 4px rgba(0,0,0,.03);
+}
+
+/* ---------- Sticky 锚点导航 ---------- */
+nav.toc{
+  position:sticky; top:0; z-index:10; background:rgba(251,249,245,.95);
+  backdrop-filter:blur(8px); padding:12px 0; margin:0 -28px 24px;
+  border-bottom:1px solid var(--border); padding-left:28px; padding-right:28px;
+  display:flex; gap:8px; flex-wrap:wrap; font-size:13px;
+}
+nav.toc a{
+  color:var(--muted); text-decoration:none; padding:4px 10px;
+  border-radius:14px; background:var(--soft); transition:all .15s;
+}
+nav.toc a:hover{background:var(--primary); color:#fff;}
+
+/* ---------- 页脚 ---------- */
+footer{text-align:center; color:var(--muted); font-size:13px; margin-top:48px; padding-top:24px; border-top:1px dashed var(--border);}
+
+/* ---------- 代码块 ---------- */
+pre{
+  background:#2C2A26; color:#F4EFE6; padding:14px 18px;
+  border-radius:8px; overflow-x:auto; margin:14px 0; font-size:13.5px;
+  line-height:1.55;
+}
+pre code{background:transparent; color:#F4EFE6; padding:0; font-size:inherit; border:none;}
+
+/* ---------- Callout 提示框 ---------- */
+/* Obsidian callout：> [!type] title \n > 内容 */
+.callout{
+  margin:16px 0; padding:14px 18px; border-radius:8px;
+  background:var(--soft); border-left:4px solid var(--primary);
+}
+.callout-title{font-weight:600; margin-bottom:6px; color:var(--primary);}
+.callout-body p{margin:6px 0;}
+.callout-body p:first-child{margin-top:0;}
+.callout-body p:last-child{margin-bottom:0;}
+.callout-tip{border-left-color:#5A9367; background:#EEF7F0;}
+.callout-tip .callout-title{color:#3D6B47;}
+.callout-info{border-left-color:#3D7AA8; background:#EBF2F9;}
+.callout-info .callout-title{color:#2B5A82;}
+.callout-warning{border-left-color:#C75B4A; background:#FBEEEA;}
+.callout-warning .callout-title{color:#A04535;}
+.callout-note{border-left-color:#8B5E3C; background:var(--soft);}
+.callout-note .callout-title{color:var(--primary);}
+
+/* ---------- 外部链接 ---------- */
+a.ext-link{color:var(--link); text-decoration:none; border-bottom:1px dashed var(--link);}
+a.ext-link:hover{border-bottom-style:solid;}
+
+/* ---------- 响应式 ---------- */
+@media(max-width:640px){
+  .wrap{padding:20px 16px 60px;}
+  header.hero{padding:32px 16px; margin:-20px -16px 24px; border-radius:0 0 16px 16px;}
+  header.hero h1{font-size:24px;}
+  th,td{padding:8px 10px; font-size:13px;}
+  header.hero::before,header.hero::after{display:none;}
+}
+
+/* ---------- 主题色板（4 文档差异化；底色/文字/链接/callout 跨主题共享）---------- */
+/* 每主题只覆盖 --primary / --accent / --g1 / --g2 四变量 */
+body.theme-readme{--primary:#8B5E3C;--accent:#C75B4A;--g1:#8B5E3C;--g2:#C75B4A;}   /* 首页·书卷暖棕（默认）*/
+body.theme-fenji{--primary:#3D6B7A;--accent:#5A9367;--g1:#3D6B7A;--g2:#5A9367;}     /* 分级说明·体系森林 */
+body.theme-shudan{--primary:#8C3A3A;--accent:#C8862E;--g1:#8C3A3A;--g2:#C8862E;}    /* 推荐书单·藏书酒红 */
+body.theme-lme{--primary:#4A5A8C;--accent:#7B5AA8;--g1:#4A5A8C;--g2:#7B5AA8;}       /* LME 手册·工具靛紫 */
+</style>
+</head>
+<body class="theme-lme">
+<div class="wrap">
+<header class="hero">
+  <h1>Language Made Easy · 使用說明</h1>
+  <p>Obsidian 沉浸式外語學習插件 · 查詞 / 閃卡 / 跟讀 / AI</p>
+</header>
+<nav class="toc"><a href="#install">安裝</a><a href="#lookup">查詞</a><a href="#flashcards">閃卡</a><a href="#shadowing">跟讀</a><a href="#ai">AI</a><a href="#more">更多</a><a href="#faq">FAQ</a></nav>
+
+<blockquote><p><strong>Language Made Easy</strong> 是一款 Obsidian 外語學習插件，把<strong>查詞、閃卡、影片跟讀、AI 解析</strong>整合到你的筆記工作流中，讓你在讀文章、看影片、記筆記的同時自然習得語言。</p></blockquote>
+<hr>
+<h2 id="install">一、安裝插件</h2>
+<h3>📦 下載安裝</h3>
+<ol>
+<li>將收到的插件文件（<code>main.js</code>、<code>manifest.json</code>、<code>style.css</code>）複製到 Obsidian 倉庫的插件目錄：</li>
+</ol>
+<pre><code>你的倉庫/
+└── .obsidian/
+    └── plugins/
+        └── language-made-easy/
+            ├── main.js
+            ├── manifest.json
+            └── style.css</code></pre>
+<div class="callout callout-tip"><div class="callout-title">💡 如何找到插件目錄？</div><div class="callout-body"><p>在 Obsidian 中打開 <strong>設置 → 第三方插件 → 點選📁圖標</strong>，即可直接跳轉到插件目錄。</p></div></div>
+<ol>
+<li>回到 Obsidian，進入 <strong>設置 → 第三方插件</strong>，找到 <strong>Language Made Easy</strong>，打開開關啟用。</li>
+</ol>
+<h3>🆓 3 天免費試用 → 完整版</h3>
+<p><strong>3 天免費試用</strong>從首次啟動開始——所有語言全部開放學習（查詞/閃卡/跟讀/AI 解析），功能維持基礎版配置；狀態欄會顯示剩餘時間。</p>
+<p>試用結束後，獲取<strong>完整版</strong>（一次購買，終身更新）即可繼續使用，它解鎖全部進階模組：</p>
+<ul>
+<li>另外 7 種語言：英語 / 德語 / 法語 / 西班牙語 / 韓語 / 俄語 / 日語</li>
+<li>無限閃卡、5 套本地詞典、行動端離線詞典</li>
+<li>跨設備閃卡同步、數據導入 / 導出</li>
+<li>AI 批量生成閃卡、AI 報告導出</li>
+<li>9 款額外界面主題、聽力 / 打字複習模式</li>
+<li>影片標記筆記、影片講解卡、訂閱頁一鍵 & 批量下載</li>
+</ul>
+<blockquote><p>🌐 訪問 https://languagemadeeasy.com 獲取完整版。</p></blockquote>
+<hr>
+<h2 id="lookup">二、使用查詞功能</h2>
+<p>📖 這是一段英語文字演示：</p>
+<blockquote><p>The best way to learn a new language is not through memorization, but through immersion. When you read, listen, and speak in context, your brain absorbs vocabulary and grammar naturally — just like how you learned your first language as a child.</p></blockquote>
+<p>試試在上面這段文字中 <strong>雙擊</strong> 你不認識的單詞，體驗查詞功能吧！</p>
+<h3>打開單詞助手</h3>
+<p>有多種方式：</p>
+<pre><code>方式一：點選左側邊欄的 📖 書本圖標
+方式二：Ctrl/Cmd + P → 自動使用「單詞助手」查詞</code></pre>
+<h3>查詞操作</h3>
+<p>在筆記中 <strong>雙擊單詞</strong> 或 <strong>按 <code>Ctrl/Cmd + Shift</code> 選取文字</strong>，右側面板會自動顯示查詢結果。</p>
+<h3>查詞結果面板</h3>
+<p>查詞後你會看到：</p>
+<div class="table-wrap"><table><thead><tr><th>功能</th><th>說明</th></tr></thead><tbody><tr><td>🔊 <strong>發音按鈕</strong></td><td>點選聽單詞的正確讀音</td></tr><tr><td>📝 <strong>加入生詞本</strong></td><td>一鍵儲存為閃卡，方便後續複習</td></tr><tr><td>🔤 <strong>音標</strong></td><td>顯示單詞音標</td></tr><tr><td>📖 <strong>釋義</strong></td><td>顯示詞性和釋義</td></tr></tbody></table></div>
+<div class="callout callout-tip"><div class="callout-title">✨ 小貼士</div><div class="callout-body"><p>在查詞結果界面也可以 <strong>雙擊查詞</strong>，詞典也是不錯的學習資料哦！</p></div></div>
+<h3>支持的語言</h3>
+<div class="table-wrap"><table><thead><tr><th>語言</th><th>代碼</th></tr></thead><tbody><tr><td>🇬🇧 英語 English</td><td><code>en</code></td></tr><tr><td>🇩🇪 德語 Deutsch</td><td><code>de</code></td></tr><tr><td>🇫🇷 法語 Français</td><td><code>fr</code></td></tr><tr><td>🇪🇸 西班牙語 Español</td><td><code>es</code></td></tr><tr><td>🇰🇷 韓語 한국어</td><td><code>ko</code></td></tr><tr><td>🇷🇺 俄語 Русский</td><td><code>ru</code></td></tr><tr><td>🇯🇵 日語 日本語</td><td><code>ja</code></td></tr></tbody></table></div>
+<div class="callout callout-info"><div class="callout-title">🌐 後續會支持更多語種。</div><div class="callout-body"></div></div>
+<hr>
+<h2 id="flashcards">三、添加和管理閃卡</h2>
+<p>🎴 當你在閱讀和查詞過程中積累了不少生詞，現在想系統複習它們，你可以這樣做：</p>
+<h3>自動生成閃卡</h3>
+<p>查詞後點選 <strong>「加入生詞本」</strong>，插件會自動為你生成一張閃卡。每張卡片包含：</p>
+<ul>
+<li>✅ 單詞 + 音標</li>
+<li>✅ 釋義</li>
+<li>✅ 單詞上下文（查詞時所在的筆記句）</li>
+<li>✅ 來源筆記連結</li>
+<li>✅ 添加日期</li>
+</ul>
+<h3>手動添加閃卡</h3>
+<pre><code>打開閃卡複習面板 → 點選底部的「添加閃卡」按鈕
+→ 填寫單詞、音標（選填）、釋義、例句（選填）
+→ 儲存</code></pre>
+<h3>開始複習</h3>
+<p>打開閃卡複習面板：</p>
+<pre><code>方式一：點選左側邊欄的 🧠 大腦圖標
+方式二：Ctrl/Cmd + P → 搜尋「開始閃卡複習」</code></pre>
+<h4>複習流程</h4>
+<pre><code>👀 看卡片正面 → 🤔 嘗試回憶單詞含義
+→ 🖱️ 點選翻面查看釋義 → ⭐ 給自己的記憶程度評分</code></pre>
+<h4>評分等級</h4>
+<div class="callout callout-info"><div class="callout-title">🧠 關於 FSRS 演算法</div><div class="callout-body"><p>閃卡複習由 <strong>FSRS 演算法</strong>（現代間隔重複演算法）驅動。它會根據你的評分，智能安排每張卡片的下次複習時間，讓你剛好在遺忘邊緣時複習。</p></div></div>
+<div class="table-wrap"><table><thead><tr><th>評分</th><th>含義</th><th>效果</th></tr></thead><tbody><tr><td>😵 <strong>忘記</strong></td><td>完全想不起來</td><td>很快會再次出現</td></tr><tr><td>😐 <strong>困難</strong></td><td>勉強想起來</td><td>縮短複習間隔</td></tr><tr><td>🙂 <strong>良好</strong></td><td>正常回憶起來</td><td>按標準間隔安排</td></tr><tr><td>😎 <strong>簡單</strong></td><td>秒答出來</td><td>大幅拉長複習間隔</td></tr></tbody></table></div>
+<div class="callout callout-warning"><div class="callout-title">🧹 自動清理</div><div class="callout-body"><p>當一個單詞被多次評為 <strong>「簡單」</strong> 後，會自動退出複習隊列。你可以在 <strong>設置 → Language Made Easy</strong> 中自定義「自動清理」的觸發條件。</p></div></div>
+<h3>管理閃卡數據</h3>
+<pre><code>Ctrl/Cmd + P → 搜尋「管理閃卡數據」</code></pre>
+<p>在管理器中你可以：</p>
+<ul>
+<li>📋 按語言和狀態篩選閃卡</li>
+<li>🗑️ 批量刪除不再需要的閃卡</li>
+<li>📤 導出閃卡數據</li>
+</ul>
+<div class="callout callout-tip"><div class="callout-title">💡 兩個重要說明</div><div class="callout-body"><p>1. 閃卡數據儲存在<strong>本地 IndexedDB</strong> 中。更新插件時只需替換 <code>main.js</code>、<code>manifest.json</code>、<code>style.css</code> 三個文件，<strong>已有的閃卡不會受影響</strong>，放心更新！</p><p>2. 閃卡支持 <code>txt</code>、<code>markdown</code>、<code>csv</code>、<code>json</code> 等多種格式的<strong>導入和導出</strong>，方便備份和遷移。</p></div></div>
+<hr>
+<h2 id="shadowing">四、使用跟讀工坊</h2>
+<p>🎬 Language Made Easy 幫你更高效地從 <strong>YouTube / Bilibili 影片</strong>中學習，自然習得口語表達，磨練聽力。</p>
+<h3>打開跟讀工坊</h3>
+<pre><code>方式一：點選左側邊欄的 ▶️ 播放圖標
+方式二：Ctrl/Cmd + P → 搜尋「跟讀工坊」</code></pre>
+<h3>載入影片</h3>
+<p>把影片鏈接貼進筆記，插件會自動識別並載入：</p>
+<pre><code>✅ YouTube 影片 → 貼上鏈接自動載入
+✅ Bilibili 影片 → 貼上鏈接自動載入（自動下載 & 緩存）
+✅ 本地音訊/影片 → 用 ![[video.mp4]] 或 ![[audio.mp3]] 嵌入</code></pre>
+<h3>下載字幕</h3>
+<p>載入影片後，點選右側工具欄的 <strong>「下載字幕」</strong> 按鈕。插件會從 YouTube / Bilibili 抓取字幕並插入筆記。</p>
+<p>字幕格式示例：</p>
+<pre><code>[00:12] Hello, how are you today?
+[00:15] I'm fine, thank you. And you?
+[01:23] What a beautiful day! Let's go for a walk.</code></pre>
+<div class="callout callout-tip"><div class="callout-title">📝 說明</div><div class="callout-body"><p>跟讀工坊支持<strong>多種時間戳格式</strong>——無論 <code>HH:MM:SS</code>、<code>MM:SS</code> 還是 <code>[00:12]</code>，都能自動識別載入。</p></div></div>
+<h3>播放控制</h3>
+<p>跟讀工坊播放器底部有一排播放控制按鈕：</p>
+<div class="table-wrap"><table><thead><tr><th>按鈕</th><th>功能</th><th>用途</th></tr></thead><tbody><tr><td>⏮️ <strong>重播</strong></td><td>跳到當前句子開頭</td><td>從句子開頭重聽</td></tr><tr><td>🔁 <strong>循環</strong></td><td>單句循環播放</td><td>適合精聽單句</td></tr><tr><td>▶️ / ⏸️ <strong>播放/暫停</strong></td><td>控制播放</td><td>空白鍵</td></tr><tr><td>🐢🐇 <strong>速度</strong></td><td>0.8x / 1.0x / 1.2x</td><td>按自身水平調整</td></tr></tbody></table></div>
+<h3>🎧 聽寫模式</h3>
+<p>想挑戰聽力？試試 <strong>聽寫模式</strong>！</p>
+<pre><code>跟讀工坊右側工具欄 → 點選「聽寫模式」按鈕
+→ 播放一句，把聽到的內容打出来
+→ 提交後自動與原文比對
+→ 錯誤標紅，正確標綠</code></pre>
+<hr>
+<h2 id="ai">五、用 AI 為學習加速</h2>
+<p>想要更強大的學習體驗？下面的進階設置會解鎖<strong>本地詞典</strong>和 <strong>AI 解析</strong>等功能。</p>
+<h3>5.1 配置本地詞典</h3>
+<p>本地詞典（MDX 格式）能提供更豐富的釋義——包括例句、搭配、近義詞——而且<strong>離線可用</strong>。</p>
+<pre><code>設置 → Language Made Easy → 詞典設置
+→ 填寫本地 MDX 詞典的文件路徑
+→ 儲存</code></pre>
+<h3>5.2 本地詞典效果</h3>
+<p>配置本地詞典後，查詞結果會豐富很多：</p>
+<div class="table-wrap"><table><thead><tr><th>維度</th><th>網路詞典</th><th>本地 MDX 詞典</th></tr></thead><tbody><tr><td>網路</td><td>✅ 需要聯網</td><td>❌ 離線可用</td></tr><tr><td>釋義詳細度</td><td>基礎釋義</td><td>詳解 + 例句 + 搭配</td></tr><tr><td>速度</td><td>取決於網路</td><td>⚡ 秒開</td></tr><tr><td>支持來源</td><td>Google / MyMemory / Jisho</td><td>自定義 MDX 文件</td></tr></tbody></table></div>
+<h3>5.3 配置大模型 API Key</h3>
+<p>AI 解析功能需要大模型 API Key。目前支持的提供商：</p>
+<pre><code>設置 → Language Made Easy → AI 設置
+→ 選擇模型提供商（OpenAI / Google Gemini / OpenRouter）
+→ 輸入 API Key
+→ 儲存</code></pre>
+<div class="callout callout-tip"><div class="callout-title">💡 推薦</div><div class="callout-body"><p>- <strong>OpenAI</strong>：填入 API Key 即開即用。</p><p>- <strong>Google Gemini</strong>：有免費額度，適合作備用或深度學習。</p></div></div>
+<h3>5.4 使用 AI 解析</h3>
+<h4>5.4.1 生成 AI 解析報告</h4>
+<p>在跟讀工坊載入字幕後：</p>
+<pre><code>點選右側工具欄的「AI 解析」按鈕
+→ 等待解析完成（通常十到二十秒）
+→ 報告顯示在右側面板
+→ 點選「儲存到筆記」保留
+→ 點選圖片按鈕可「儲存為長圖片」到本地</code></pre>
+<p>AI 解析報告通常包含：</p>
+<ul>
+<li>📝 <strong>詞彙</strong>——重點詞的用法和搭配</li>
+<li>🏗️ <strong>語法</strong>——關鍵語法結構拆解</li>
+<li>🌍 <strong>文化背景</strong>——相關的文化語境</li>
+<li>💡 <strong>學習建議</strong>——針對性的學習提示</li>
+</ul>
+<p>插件內置 <strong>3 種 AI 解析提示詞</strong>，對應不同學習需求：</p>
+<div class="table-wrap"><table><thead><tr><th>提示詞</th><th>適用場景</th><th>產出</th></tr></thead><tbody><tr><td>📝 <strong>概要</strong></td><td>快速掌握影片大意</td><td>簡明摘要 + 要點</td></tr><tr><td>📖 <strong>雙語</strong></td><td>逐句精讀內容</td><td>逐句雙語對照翻譯</td></tr><tr><td>🧪 <strong>隨堂測驗</strong></td><td>檢驗學習成果</td><td>根據影片生成的測驗題</td></tr></tbody></table></div>
+<div class="callout callout-tip"><div class="callout-title">💡 你也可以自己編寫提示詞——見 <a href="#ai-custom-prompt">5.4.2 添加自定義提示詞</a>。</div><div class="callout-body"></div></div>
+<h4 id="ai-custom-prompt">5.4.2 添加自定義提示詞</h4>
+<p>你可以自己編寫提示詞，讓 AI 按你的需求生成學習材料：</p>
+<pre><code>設置 → Language Made Easy → AI 提示詞管理
+→ 添加自定義提示詞
+→ 設置提示詞名稱和內容
+→ 儲存</code></pre>
+<h3>5.5 一鍵閃卡自動填充</h3>
+<p>添加閃卡時不想手動填音標和釋義？用 <strong>AI 自動填充</strong>！</p>
+<pre><code>添加閃卡面板 → 輸入單詞
+→ 點選「AI 填充」按鈕
+→ 自動填入音標、釋義、例句
+→ 確認後儲存</code></pre>
+<h3>5.6 更多字幕載入方式</h3>
+<p>除了在跟讀工坊直接下載字幕，還有幾種方式載入字幕：</p>
+<h4>5.6.1 使用跟讀工坊的「下載字幕」按鈕</h4>
+<p>最直接的方式。載入影片後，點選右側工具欄的 <strong>「下載字幕」</strong> 按鈕，插件會自動從 YouTube / Bilibili 抓取字幕。</p>
+<div class="callout callout-warning"><div class="callout-title">⚠️ 字幕下載說明</div><div class="callout-body"><p>1. 插件下載的是<strong>當前所選學習語言</strong>的字幕——下載前請確認語言無誤。若該語言無字幕，會返回影片的默認字幕。</p><p>2. Bilibili 影片<strong>往往沒有英語字幕</strong>。選影片前，先在 Bilibili 播放器的「字幕」列表確認有所需語言。</p></div></div>
+<h4>5.6.2 使用 Obsidian Web Clipper</h4>
+<p>安裝 <a class="ext-link" href="https://obsidian.md/clipper" target="_blank" rel="noopener">Obsidian Web Clipper</a> 瀏覽器擴展，看影片時可直接把 YouTube 字幕剪藏進 Obsidian 筆記：</p>
+<pre><code>安裝 Obsidian Web Clipper 瀏覽器擴展
+→ 在 YouTube 影片頁點選擴展圖標
+→ 選擇剪藏字幕內容
+→ 自動保存為帶時間戳的筆記</code></pre>
+<h4>5.6.3 使用 ytranscript 插件</h4>
+<p><a class="ext-link" href="https://obsidian.md/plugins?id=ytranscript" target="_blank" rel="noopener">ytranscript</a> 是另一款 Obsidian 插件，可在 Obsidian 內下載 YouTube 字幕：</p>
+<pre><code>在 Obsidian 第三方插件中搜尋並安裝「ytranscript」
+→ 從命令面板用 ytranscript 抓取 YouTube 字幕
+→ 字幕帶時間戳插入筆記
+→ 打開跟讀工坊開始使用</code></pre>
+<h4>5.6.4 為本地影片載入 SRT 文件</h4>
+<p>如果你有本地影片文件和對應的 SRT 字幕文件：</p>
+<pre><code>方式一：把 SRT 文件內容複製進筆記
+         → 確認 SRT 時間戳格式正確
+         → 用 ![[video.mp4]] 把影片嵌入筆記
+         → 打開跟讀工坊解析影片和字幕
+
+方式二：把 SRT 文件放在倉庫中影片文件旁
+         → 用 ![[video.mp4]] 把影片嵌入筆記
+         → 插件自動匹配同名 SRT 文件</code></pre>
+<hr>
+<h2 id="more">六、更多用法</h2>
+<h3>6.1 快捷命令：一鍵切換主題</h3>
+<p>插件內置 <strong>10 款精心設計的界面主題</strong>，讓學習環境更賞心悅目：</p>
+<pre><code>Ctrl/Cmd + P → 搜尋「切換下一個主題」
+→ 每執行一次切換到下一個主題</code></pre>
+<div class="table-wrap"><table><thead><tr><th>主題</th><th>風格</th></tr></thead><tbody><tr><td>📜 Paper Ink</td><td>經典紙墨，溫潤柔和</td></tr><tr><td>🌿 Mint Atelier</td><td>薄荷清新，乾淨專業</td></tr><tr><td>🌸 Rose Blush</td><td>玫瑰粉柔，溫柔浪漫</td></tr><tr><td>💜 Lavender Dream</td><td>紫藤入夢，輕盈飄逸</td></tr><tr><td>🍬 Candy Pop</td><td>糖果派對，明亮活潑</td></tr><tr><td>🌳 Mindful Oasis</td><td>正念綠洲，自然愜意</td></tr><tr><td>🪸 Coral Warmth</td><td>珊瑚暖陽，溫暖有活力</td></tr><tr><td>🌊 Ocean Glass</td><td>海洋之心，深邃沉靜</td></tr><tr><td>🌌 Aurora Prism</td><td>極光稜鏡，神秘斑斕</td></tr><tr><td>🍋 Dark Lemon</td><td>夜檸檬，暗色酷感</td></tr></tbody></table></div>
+<h3>6.2 快捷命令：一鍵切換語言</h3>
+<p>同時學多門語言？快速切換：</p>
+<pre><code>Ctrl/Cmd + P → 搜尋「切換到 英語 / 德語 / 法語 / …」
+→ 立即切換當前學習語言</code></pre>
+<h3>6.3 快捷命令：AI 解析報告</h3>
+<pre><code>Ctrl/Cmd + P → 搜尋「AI 解析」
+→ 選擇倉庫中任意筆記進行 AI 解析</code></pre>
+<h3>6.4 設置生詞本保存路徑</h3>
+<p>每次把單詞加入生詞本，插件都會在倉庫中生成一個 Markdown 生詞本文件。你可以自定義保存位置：</p>
+<pre><code>設置 → Language Made Easy → 生詞本設置
+→ 設置生詞本保存路徑和文件名
+→ 儲存</code></pre>
+<h3>6.5 設置 AI 解析報告保存路徑</h3>
+<p>AI 解析報告也可以保存到自定義位置：</p>
+<pre><code>設置 → Language Made Easy → AI 解析設置
+→ 設置報告保存路徑
+→ 儲存</code></pre>
+<hr>
+<h2 id="faq">七、常見問題</h2>
+<h3>❓ 查詞沒反應？</h3>
+<blockquote><p>請檢查以下幾點：</p><p>1. 確認詞典配置無誤（網路詞典需要聯網）。</p><p>2. 若使用 MDX 詞典，請確認設置中 mdx、mdd、css 文件路徑填寫正確。</p><p>3. 確認當前學習語言設置正確。</p></blockquote>
+<h3>❓ 剛添加的閃卡看不到？</h3>
+<blockquote><p>新添加的閃卡會排在複習隊列的最末尾。</p></blockquote>
+<h3>❓ Bilibili 影片只下載到中文字幕？</h3>
+<blockquote><p>請確認影片本身是否上傳了其他語言的字幕文件。畫面上燒錄的雙語字幕，不代表作者提供了對應的字幕文件。</p></blockquote>
+<h3>❓ 打開 YouTube 影片時提示「登入」？</h3>
+<blockquote><p><strong>切換網路</strong>通常可以解決。這一般與當前網路環境有關——換個網路節點再試。</p></blockquote>
+<h3>❓ AI 解析報錯？</h3>
+<blockquote><p>請檢查：</p><p>1. API Key 是否配置正確？</p><p>2. 網路連接是否正常？</p><p>3. API 餘額是否充足？</p></blockquote>
+<h3>📮 聯繫作者</h3>
+<ul>
+<li>📧 郵箱：<a class="ext-link" href="mailto:panrunrun@gmail.com">panrunrun@gmail.com</a></li>
+<li>🌐 網站：<a class="ext-link" href="https://www.languagemadeeasy.com" target="_blank" rel="noopener">www.languagemadeeasy.com</a></li>
+</ul>
+<hr>
+<blockquote><p>🎉 <strong>祝學習愉快！有任何問題隨時聯繫。</strong></p></blockquote>
+<footer>Pandora 的數字花園出品</footer>
+</div>
+</body>
+</html>

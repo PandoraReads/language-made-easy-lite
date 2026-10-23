@@ -29,19 +29,10 @@ export class VocabTestModal extends Modal {
     }
 
     private getLangDisplayName(language: string): string {
-        const names: Record<string, { zh: string; en: string }> = {
-            english: { zh: '英语', en: 'English' },
-            french: { zh: '法语', en: 'French' },
-            german: { zh: '德语', en: 'German' },
-            spanish: { zh: '西班牙语', en: 'Spanish' },
-            japanese: { zh: '日语', en: 'Japanese' },
-            korean: { zh: '韩语', en: 'Korean' },
-            russian: { zh: '俄语', en: 'Russian' },
-        };
-        const entry = names[language];
-        if (!entry) return language;
-        const locale = getLocale();
-        return locale === 'zh-CN' ? entry.zh : entry.en;
+        // 语言名走 i18n（langNames.*），未知语种回退为原始标识
+        const key = 'langNames.' + language;
+        const localized = t(key);
+        return localized === key ? language : localized;
     }
 
     async onOpen(): Promise<void> {
@@ -370,7 +361,7 @@ export class VocabHistoryModal extends Modal {
 
                 const d = new Date(r.testTime);
                 right.createDiv('lme-vocab-history-item-date').setText(
-                    d.toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+                    d.toLocaleDateString(getLocale(), { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })
                 );
             }
         }

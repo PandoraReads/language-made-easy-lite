@@ -1,3 +1,5 @@
+import { t } from '../i18n';
+
 export type YouTubeItemStatus = 'new' | 'read' | 'imported' | 'failed';
 
 export interface YouTubeFeedEntry {
@@ -88,7 +90,7 @@ function firstAttr(parent: Element, selector: string, attr: string): string {
 
 export function parseYouTubeFeed(xml: string): YouTubeFeedEntry[] {
     const doc = new DOMParser().parseFromString(xml, 'application/xml');
-    if (doc.querySelector('parsererror')) throw new Error('无法解析 YouTube Feed XML');
+    if (doc.querySelector('parsererror')) throw new Error(t('errors.feedParseFailed'));
     const entries = Array.from(doc.getElementsByTagName('entry'));
     return entries.flatMap((entry): YouTubeFeedEntry[] => {
         const rawId = firstText(entry, 'yt\\:videoId') || firstText(entry, 'id');

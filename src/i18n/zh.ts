@@ -46,6 +46,9 @@ export default {
 	settings: {
 		title: 'Language Made Easy - 多语言学习助手',
 		generalTab: '通用设置',
+		uiLanguageName: '界面语言',
+		uiLanguageAuto: '自动（跟随 Obsidian 语言）',
+		uiLanguageDesc: '选择插件界面显示语言。「自动」会跟随 Obsidian 自身的语言设置；切换后设置页立即生效，已打开的视图重新打开后生效，命令面板与图标名称需重启 Obsidian 后更新',
 
 		// Current Learning Language
 		currentLanguage: '当前学习语言 / Current Language',
@@ -751,12 +754,28 @@ export default {
 		bingNotSupported: 'Bing 查词暂不支持',
 		germanFailed: '德语查词失败',
 		mymemoryFailed: 'MyMemory 翻译失败',
+		youtubeRequestFailed: 'YouTube 请求失败{status}，已重试 {retries} 次仍未成功；请检查网络或稍后再试',
+		feedParseFailed: '无法解析 YouTube Feed XML',
+		feedRequestFailed: 'Feed 请求失败',
+		categoryNameRequired: '请输入分类名称',
+		categoryExists: '该分类已存在',
+		youtubeChannelLinkInvalid: '请输入有效的 YouTube 频道链接或频道 ID',
+		youtubeChannelHostOnly: '目前只支持 YouTube 频道链接',
+		youtubeChannelNotVideoPage: '请输入 YouTube 频道链接，不要粘贴视频或搜索页面',
+		youtubeChannelIdNotFound: '无法从频道页面识别 channel ID，请粘贴 /channel/UC... 链接',
+		youtubeChannelPageFailed: '频道页面请求失败 ({status})',
+		geminiApiError: 'Gemini API 返回错误',
+		geminiEmptyResponse: 'Gemini API 未返回有效内容',
+		geminiCallFailed: 'Gemini 调用失败',
+		modelCallFailed: '模型调用失败',
+		noServerErrorDetails: '服务器未返回错误详情',
 		contactAuthor: '\n如需更多帮助，请联系作者（微信：PandoraReads / 邮箱：panrunrun@gmail.com）',
 	},
 
 	// ── Notifications ──────────────────────────────────────
 	notifications: {
 		langSwitched: '语言已切换: {old} → {new}',
+		uiLanguageChanged: '界面语言已切换: {name}（部分界面需重新打开或重启 Obsidian 生效）',
 		doubleClickLookupOn: '已开启双击查词',
 		doubleClickLookupOff: '已关闭双击查词',
 		themeSwitched: '主题已切换: {name}',
@@ -767,6 +786,12 @@ export default {
 		importedFile: '已导入 {cards} 张闪卡, {logs} 条复习记录',
 		analyzing: 'AI 解析生成中...',
 		aiDone: 'AI 解析完成',
+		promptBackupRestored: '检测到 {count} 条提示词备份（data.json 的提示词为空，可能因同步覆盖丢失），已自动恢复',
+		analysisPartialFailure: '⚠️ {count} 段分析失败，已返回成功部分（详见控制台）',
+		youtubeRssCorrupt: 'YouTube 订阅数据文件损坏，已重建；原文件保留为 youtube-rss.corrupt-*.json',
+		youtubeRssMigrated: 'YouTube 订阅数据已迁移到独立文件 youtube-rss.json，不再写入 data.json（防止 iCloud 同步覆盖丢失）',
+		youtubeRssChecked: 'YouTube 订阅已检查 {checked} 个频道，新增 {added} 条，{failed} 个失败',
+		youtubeRssUpdated: 'YouTube 订阅已更新，新增 {added} 条视频',
 		syncFileNotConfigured: '同步文件路径未配置，请在设置中检查',
 		syncFileNotFound: '同步文件不存在，请先从桌面端导出',
 		syncUpToDate: '同步数据已是最新，无需更新',
@@ -983,6 +1008,7 @@ export default {
 		workshopCatalogUnitDay: '天',
 		workshopCatalogUnitHour: '小时',
 		workshopCatalogUnitMin: '分',
+		workshopCatalogUnitSec: '秒',
 		workshopCatalogSourceYouTube: 'YouTube',
 		workshopCatalogSourceBilibili: 'Bilibili',
 		workshopCatalogSourceLocal: '本地',
@@ -1170,6 +1196,31 @@ export default {
 		disabledHint: '宠物养成未开启（在设置中开启）',
 	},
 
+	// ── UI Theme display names ─────────────────────────────
+	themes: {
+		paperInk: 'Paper & Ink (经典纸墨)',
+		mintCoach: 'Mint Atelier (薄荷雅境)',
+		roseBlush: 'Rose Blush (蔷薇柔粉)',
+		lavenderDream: 'Lavender Dream (紫藤之梦)',
+		candyPop: 'Candy Pop (糖果派对)',
+		mindfulOasis: 'Mindful Oasis (童心绿洲)',
+		coralWarmth: 'Coral Warmth (珊瑚暖阳)',
+		oceanGlass: 'Ocean Glass (海洋之心)',
+		auroraPrism: 'Aurora Prism (极光棱镜)',
+		neonLime: 'Dark Lemon (暗夜柠檬)',
+	},
+
+	// ── Learning language display names ───────────────────
+	langNames: {
+		english: '英语',
+		french: '法语',
+		german: '德语',
+		spanish: '西班牙语',
+		japanese: '日语',
+		korean: '韩语',
+		russian: '俄语',
+	},
+
 	// ── Upgrade Modal(社区免费版付费引导)───────────────────
 	upgrade: {
 		title: '解锁完整版',
@@ -1181,6 +1232,8 @@ export default {
 		storeBili: 'B站店铺',
 		storeWechat: '视频号店铺',
 		storesHint: '购买后下载完整版安装包，替换安装即可解锁全部功能。',
+		websiteTitle: '前往官网购买完整版：',
+		websiteButton: 'www.languagemadeeasy.com',
 		wechatQrAlt: '作者微信二维码',
 		wechatTitle: '添加作者微信',
 		wechatDesc: '想咨询插件用法、了解高级版（完整版）功能与购买优惠？欢迎扫码添加作者微信，作者亲自答疑。',

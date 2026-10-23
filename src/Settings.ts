@@ -4,18 +4,32 @@
 
 import { App, PluginSettingTab, Setting, Platform, Notice, FuzzySuggestModal, Modal, setIcon } from 'obsidian';
 import type LanguageMadeEasyPlugin from './main-unified-full';
-import { DEFAULT_SETTINGS, type LMESettings, BUILTIN_PROMPTS, type PromptTemplate, type AIProviderConfig, type LanguageId, BUILTIN_PROVIDERS, UI_THEME_LABELS } from './models';
+import { DEFAULT_SETTINGS, type LMESettings, BUILTIN_PROMPTS, type PromptTemplate, type AIProviderConfig, type LanguageId, BUILTIN_PROVIDERS, uiThemeLabel } from './models';
 import { FlashcardManagerModal } from './ui/flashcard-manager-modal';
 import { UpgradeModal } from './ui/upgrade-modal';
 import { VaultFolderSuggestModal } from './ui/vault-folder-suggest';
 import { db } from './core/Database';
 import { randomUUID } from './mocks/crypto';
-import { t } from './i18n';
+import { t, initI18n, type Locale } from './i18n';
 import { showNativeOpenDialog } from './utils/electron-remote';
 import { FREE_MDX_DICT_LIMIT } from './config/free-limits';
 
 export { DEFAULT_SETTINGS };
 export type { LMESettings };
+
+/** 界面语言下拉选项:原生语言名(不随界面语言变化),Auto 项走 i18n。 */
+const UI_LANGUAGE_OPTIONS: Array<{ value: 'auto' | Locale; label: string }> = [
+	{ value: 'zh-CN', label: '简体中文' },
+	{ value: 'zh-TW', label: '繁體中文' },
+	{ value: 'en', label: 'English' },
+	{ value: 'de', label: 'Deutsch' },
+	{ value: 'fr', label: 'Français' },
+	{ value: 'es', label: 'Español' },
+	{ value: 'ja', label: '日本語' },
+	{ value: 'ko', label: '한국어' },
+	{ value: 'ru', label: 'Русский' },
+	{ value: 'th', label: 'ไทย' },
+];
 
 /** 设置页语种展示名(带旗标):顶部 tab 导航与「当前学习语言」下拉共用。 */
 const SETTINGS_LANGUAGE_LABELS: Record<LanguageId, string> = {
@@ -256,6 +270,36 @@ export class LMESettingTab extends PluginSettingTab {
 	// 暂不参与,待整体迁移声明式时再启用。
 
 	private renderGeneralSettings(containerEl: HTMLElement) {
+		// ── Interface Language ─────────────────────────────────
+		new Setting(containerEl).setName("").setHeading();
+
+		new Setting(containerEl)
+			.setName(t('settings.uiLanguageName'))
+			.setDesc(t('settings.uiLanguageDesc'))
+			.addDropdown(drop => {
+				drop.addOption('auto', t('settings.uiLanguageAuto'));
+				for (const opt of UI_LANGUAGE_OPTIONS) {
+					drop.addOption(opt.value, opt.label);
+				}
+				drop.setValue(this.plugin.settings.uiLanguage || 'auto');
+				drop.onChange(async (v) => {
+					this.plugin.settings.uiLanguage = v as 'auto' | Locale;
+					await this.plugin.saveSettings();
+					initI18n(v === 'auto' ? undefined : (v as Locale));
+					const label = v === 'auto' ? t('settings.uiLanguageAuto') : UI_LANGUAGE_OPTIONS.find(o => o.value === v)?.label || v;
+					new Notice(t('notifications.uiLanguageChanged', { name: label }));
+					// Open views follow the UI language live.
+					this.app.workspace.iterateAllLeaves((leaf) => {
+						const viewType = leaf.view.getViewType();
+						if (typeof viewType !== 'string' || !viewType.startsWith('lme-')) return;
+						const view = leaf.view as { render?: () => unknown; refresh?: () => void };
+						if (typeof view.refresh === 'function') view.refresh();
+						else if (typeof view.render === 'function') void view.render();
+					});
+					this.display();
+				});
+			});
+
 		// ── Current Language Selection ─────────────────────────
 		new Setting(containerEl).setName("").setHeading();
 
@@ -283,7 +327,7 @@ export class LMESettingTab extends PluginSettingTab {
 			.addDropdown(drop => {
 				// 社区免费版:主题锁定为当前免费值,下拉框展示当前主题;完整版主题见描述说明
 				const current = this.plugin.settings.uiStyle || 'paper-ink';
-				drop.addOption(current, UI_THEME_LABELS[current] || current)
+				drop.addOption(current, uiThemeLabel(current))
 					.setValue(current)
 					.onChange(async () => {
 						this.plugin.settings.uiStyle = 'paper-ink';
@@ -723,7 +767,9 @@ export class LMESettingTab extends PluginSettingTab {
 		new Setting(containerEl).setName("").setHeading();
 
 		const onlineDictKey = `${language}OnlineDict` as keyof LMESettings;
-		const youdaoLanguages = new Set(['english', 'french', 'korean', 'japanese', 'spanish', 'russian', 'german']);
+		// Youdao only covers English lookups; every other learning language
+		// defaults to Google (the lookup service mirrors this rule).
+		const youdaoLanguages = new Set(['english']);
 		const defaultOnlineDict = youdaoLanguages.has(language) ? 'youdao-free' : 'google-free';
 
 		containerEl.createEl('p', {

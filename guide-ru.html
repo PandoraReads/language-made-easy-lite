@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Language Made Easy · Руководство пользователя</title>
+<style>/* ============================================================
+   LME 系统文档风格 · 书卷暖棕（Bookish Warm）
+   面向用户的系统说明文档统一风格
+   ------------------------------------------------------------
+   用法：HTML 生成脚本读取本文件，内联到 <style>。
+   单文件分发时 CSS 随 HTML 一起走，无外部依赖。
+   ============================================================ */
+
+/* ---------- 设计令牌（Design Tokens）---------- */
+:root{
+  /* 底色层：米白书页感 */
+  --bg:#FBF9F5;          /* 主底：温米白 */
+  --soft:#F4EFE6;        /* 次底：羊皮纸暖灰 */
+  --card:#FFFFFF;        /* 卡片：纯白 */
+
+  /* 文字层 */
+  --text:#2C2A26;        /* 主文字：深褐黑 */
+  --muted:#6B6358;       /* 次文字：棕灰 */
+
+  /* 主色：书脊棕 → 砖红强调（纽伯瑞奖章意象）*/
+  --primary:#8B5E3C;     /* 主色：暖棕 */
+  --accent:#C75B4A;      /* 强调：砖红 */
+  --link:#1E6FB0;        /* 链接：沉稳蓝 */
+
+  /* Hero 渐变（可被主题覆盖）*/
+  --g1:#8B5E3C;          /* 渐变起：暖棕 */
+  --g2:#C75B4A;          /* 渐变止：砖红 */
+
+  --border:#E5DED1;      /* 边框：浅米 */
+
+  /* 级别色阶（L1-L4，知识库通用）*/
+  --L1:#E8A33D;          /* L1 暖橙：起步 */
+  --L2:#5A9367;          /* L2 草绿：成长 */
+  --L3:#3D7AA8;          /* L3 海蓝：进阶 */
+  --L4:#7B5AA8;          /* L4 紫罗兰：高阶 */
+}
+
+/* ---------- 基础排版 ---------- */
+*{box-sizing:border-box}
+body{
+  margin:0; padding:0;
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  background:var(--bg); color:var(--text);
+  line-height:1.7; font-size:16px;
+}
+.wrap{max-width:960px; margin:0 auto; padding:32px 28px 80px;}
+
+/* ---------- Hero 头图 ---------- */
+/* 渐变色带 + 圆角下沿，用于文档顶部标题区 */
+header.hero{
+  position:relative; overflow:hidden;
+  background:linear-gradient(135deg,var(--g1) 0%, var(--g2) 100%);
+  color:#FBF9F5; padding:48px 28px; border-radius:0 0 24px 24px;
+  margin:-32px -28px 36px; box-shadow:0 4px 20px rgba(139,94,60,.18);
+}
+/* 书签缎带装饰：右上角双条错落，V 口 + 穿线孔经典书签造型，不贴边 */
+header.hero::after{
+  content:""; position:absolute;
+  top:0; right:64px; width:32px; height:96px;
+  background:
+    radial-gradient(circle 3px at 50% 11px, rgba(0,0,0,.20) 99%, transparent 100%),
+    rgba(255,255,255,.32);
+  clip-path:polygon(0 0, 100% 0, 100% 100%, 50% 76%, 0 100%);
+  box-shadow:0 3px 8px rgba(0,0,0,.14);
+}
+header.hero h1{margin:0 0 8px; font-size:30px; font-weight:700; letter-spacing:.5px;}
+header.hero p{margin:0; opacity:.92; font-size:15px;}
+
+/* ---------- 标题层级 ---------- */
+/* h2：章节标题，带砖红竖条前缀 */
+h2{
+  font-size:22px; color:var(--primary); margin:40px 0 16px;
+  padding-bottom:8px; border-bottom:2px solid var(--border);
+  display:flex; align-items:center; gap:10px;
+}
+h2::before{content:""; width:4px; height:22px; background:var(--accent); border-radius:2px;}
+h3{font-size:18px; color:var(--text); margin:28px 0 12px; font-weight:600;}
+h4{font-size:15px; color:var(--muted); margin:18px 0 8px; text-transform:uppercase; letter-spacing:1px;}
+p{margin:10px 0;}
+strong{color:var(--accent);}
+code{background:var(--soft); padding:2px 6px; border-radius:4px; font-size:14px; color:var(--primary);}
+
+/* ---------- 引用块 ---------- */
+blockquote{
+  margin:16px 0; padding:12px 18px; background:var(--soft);
+  border-left:4px solid var(--accent); border-radius:0 8px 8px 0; color:var(--muted);
+}
+blockquote strong{color:var(--primary);}
+hr{border:none; border-top:1px dashed var(--border); margin:36px 0;}
+
+/* ---------- 表格 ---------- */
+/* 圆角阴影容器 + 表头主色填充 + 隔行条纹 + 悬停高亮 */
+.table-wrap{overflow-x:auto; margin:18px 0; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,.04);}
+table{width:100%; border-collapse:collapse; background:var(--card); font-size:14.5px;}
+thead{background:var(--primary); color:#FBF9F5;}
+th{padding:10px 10px; text-align:left; font-weight:600; white-space:nowrap;}
+td{padding:9px 10px; border-bottom:1px solid var(--border); vertical-align:top;}
+tbody tr:nth-child(even){background:#FAF6EE;}
+tbody tr:hover{background:#F4E8D8;}
+/* 分级说明：最后一列（内容特征）加宽 */
+body.theme-fenji .table-wrap table th:last-child,
+body.theme-fenji .table-wrap table td:last-child{min-width:220px;}
+td strong:first-child{display:inline-block;}
+
+/* ---------- 列表 ---------- */
+ul,ol{margin:12px 0; padding-left:24px;}
+li{margin:6px 0;}
+ul li::marker{color:var(--accent);}
+
+/* ---------- 书名 / 文档链接 ---------- */
+/* book-link：可点跳转，虚下划线，悬停浅底 */
+a.book-link{
+  color:var(--link); text-decoration:none; border-bottom:1px dashed var(--link);
+  padding-bottom:1px; transition:all .15s;
+}
+a.book-link:hover{background:rgba(30,111,176,.08); border-bottom-style:solid;}
+.plain-link{color:inherit;}
+a.doc-link{color:var(--link);text-decoration:none;border-bottom:1px solid var(--link);padding-bottom:1px;}
+a.doc-link:hover{opacity:.7;}
+
+/* ---------- 级别徽章 ---------- */
+/* 配合级别色阶使用：<span class="lv-badge lv-L1">L1</span> */
+.lv-badge{
+  display:inline-block; padding:2px 10px; border-radius:12px;
+  color:#fff; font-size:12px; font-weight:600; margin-right:6px;
+}
+.lv-L1{background:var(--L1);}
+.lv-L2{background:var(--L2);}
+.lv-L3{background:var(--L3);}
+.lv-L4{background:var(--L4);}
+
+/* ---------- 章节卡片（可选容器）---------- */
+.section-card{
+  background:var(--card); border-radius:12px; padding:8px 22px;
+  margin:16px 0; box-shadow:0 1px 4px rgba(0,0,0,.03);
+}
+
+/* ---------- Sticky 锚点导航 ---------- */
+nav.toc{
+  position:sticky; top:0; z-index:10; background:rgba(251,249,245,.95);
+  backdrop-filter:blur(8px); padding:12px 0; margin:0 -28px 24px;
+  border-bottom:1px solid var(--border); padding-left:28px; padding-right:28px;
+  display:flex; gap:8px; flex-wrap:wrap; font-size:13px;
+}
+nav.toc a{
+  color:var(--muted); text-decoration:none; padding:4px 10px;
+  border-radius:14px; background:var(--soft); transition:all .15s;
+}
+nav.toc a:hover{background:var(--primary); color:#fff;}
+
+/* ---------- 页脚 ---------- */
+footer{text-align:center; color:var(--muted); font-size:13px; margin-top:48px; padding-top:24px; border-top:1px dashed var(--border);}
+
+/* ---------- 代码块 ---------- */
+pre{
+  background:#2C2A26; color:#F4EFE6; padding:14px 18px;
+  border-radius:8px; overflow-x:auto; margin:14px 0; font-size:13.5px;
+  line-height:1.55;
+}
+pre code{background:transparent; color:#F4EFE6; padding:0; font-size:inherit; border:none;}
+
+/* ---------- Callout 提示框 ---------- */
+/* Obsidian callout：> [!type] title \n > 内容 */
+.callout{
+  margin:16px 0; padding:14px 18px; border-radius:8px;
+  background:var(--soft); border-left:4px solid var(--primary);
+}
+.callout-title{font-weight:600; margin-bottom:6px; color:var(--primary);}
+.callout-body p{margin:6px 0;}
+.callout-body p:first-child{margin-top:0;}
+.callout-body p:last-child{margin-bottom:0;}
+.callout-tip{border-left-color:#5A9367; background:#EEF7F0;}
+.callout-tip .callout-title{color:#3D6B47;}
+.callout-info{border-left-color:#3D7AA8; background:#EBF2F9;}
+.callout-info .callout-title{color:#2B5A82;}
+.callout-warning{border-left-color:#C75B4A; background:#FBEEEA;}
+.callout-warning .callout-title{color:#A04535;}
+.callout-note{border-left-color:#8B5E3C; background:var(--soft);}
+.callout-note .callout-title{color:var(--primary);}
+
+/* ---------- 外部链接 ---------- */
+a.ext-link{color:var(--link); text-decoration:none; border-bottom:1px dashed var(--link);}
+a.ext-link:hover{border-bottom-style:solid;}
+
+/* ---------- 响应式 ---------- */
+@media(max-width:640px){
+  .wrap{padding:20px 16px 60px;}
+  header.hero{padding:32px 16px; margin:-20px -16px 24px; border-radius:0 0 16px 16px;}
+  header.hero h1{font-size:24px;}
+  th,td{padding:8px 10px; font-size:13px;}
+  header.hero::before,header.hero::after{display:none;}
+}
+
+/* ---------- 主题色板（4 文档差异化；底色/文字/链接/callout 跨主题共享）---------- */
+/* 每主题只覆盖 --primary / --accent / --g1 / --g2 四变量 */
+body.theme-readme{--primary:#8B5E3C;--accent:#C75B4A;--g1:#8B5E3C;--g2:#C75B4A;}   /* 首页·书卷暖棕（默认）*/
+body.theme-fenji{--primary:#3D6B7A;--accent:#5A9367;--g1:#3D6B7A;--g2:#5A9367;}     /* 分级说明·体系森林 */
+body.theme-shudan{--primary:#8C3A3A;--accent:#C8862E;--g1:#8C3A3A;--g2:#C8862E;}    /* 推荐书单·藏书酒红 */
+body.theme-lme{--primary:#4A5A8C;--accent:#7B5AA8;--g1:#4A5A8C;--g2:#7B5AA8;}       /* LME 手册·工具靛紫 */
+</style>
+</head>
+<body class="theme-lme">
+<div class="wrap">
+<header class="hero">
+  <h1>Language Made Easy · Руководство пользователя</h1>
+  <p>Иммерсивный плагин для Obsidian для изучения языков · Поиск слов / Карточки / Шэдоуинг / ИИ</p>
+</header>
+<nav class="toc"><a href="#install">Установка</a><a href="#lookup">Поиск слов</a><a href="#flashcards">Карточки</a><a href="#shadowing">Шэдоуинг</a><a href="#ai">ИИ</a><a href="#more">Ещё</a><a href="#faq">FAQ</a></nav>
+
+<blockquote><p><strong>Language Made Easy</strong> — плагин для Obsidian, который встраивает <strong>поиск слов, флеш-карточки, видео-шэдоуинг и ИИ-анализ</strong> прямо в вашу работу с заметками — чтобы вы усваивали язык естественно: читая статьи, смотря видео и ведя заметки.</p></blockquote>
+<hr>
+<h2 id="install">1. Установка плагина</h2>
+<h3>📦 Скачивание и установка</h3>
+<ol>
+<li>Скопируйте файлы плагина (<code>main.js</code>, <code>manifest.json</code>, <code>style.css</code>) в папку плагинов вашего хранилища Obsidian:</li>
+</ol>
+<pre><code>your-vault/
+└── .obsidian/
+    └── plugins/
+        └── language-made-easy/
+            ├── main.js
+            ├── manifest.json
+            └── style.css</code></pre>
+<div class="callout callout-tip"><div class="callout-title">💡 Как найти папку плагинов?</div><div class="callout-body"><p>В Obsidian откройте <strong>Настройки → Сторонние плагины → нажмите значок 📁</strong>, чтобы сразу перейти в папку плагинов.</p></div></div>
+<ol>
+<li>Вернитесь в Obsidian, откройте <strong>Настройки → Сторонние плагины</strong>, найдите <strong>Language Made Easy</strong> и включите его.</li>
+</ol>
+<h3>🆓 3 дня бесплатного пробного периода → Полная версия</h3>
+<p>С первого запуска начинается <strong>3-дневный пробный период</strong> — все языки открыты для обучения (поиск слов, флеш-карточки FSRS, видео-шэдоуинг, ИИ-анализ) с базовым набором функций; обратный отсчёт показывается в строке состояния.</p>
+<p>Когда пробный период закончится, продолжайте пользоваться плагином, приобретя <strong>Полную версию</strong> (разовая покупка, пожизненные обновления). Она открывает все продвинутые модули:</p>
+<ul>
+<li>Ещё 7 языков: английский / немецкий / французский / испанский / корейский / русский / японский</li>
+<li>Неограниченные карточки, 5 локальных словарей, офлайн-словари на мобильных</li>
+<li>Синхронизация карточек между устройствами, импорт / экспорт данных</li>
+<li>Массовая генерация карточек ИИ, экспорт отчётов ИИ</li>
+<li>9 дополнительных тем оформления, режимы повторения «Аудирование» / «Ввод»</li>
+<li>Видеозаметки-закладки, обучающие карточки, скачивание в один клик и пакетное скачивание со страницы подписок</li>
+</ul>
+<blockquote><p>🌐 Приобрести Полную версию: https://languagemadeeasy.com</p></blockquote>
+<hr>
+<h2 id="lookup">2. Использование поиска слов</h2>
+<p>📖 Вот пример английского текста:</p>
+<blockquote><p>The best way to learn a new language is not through memorization, but through immersion. When you read, listen, and speak in context, your brain absorbs vocabulary and grammar naturally — just like how you learned your first language as a child.</p></blockquote>
+<p>Попробуйте <strong>двойной щелчок</strong> на любом незнакомом слове в тексте выше, чтобы попробовать поиск!</p>
+<h3>Открыть помощник по словам</h3>
+<p>Открыть его можно несколькими способами:</p>
+<pre><code>Вариант 1: нажмите значок книги 📖 на левой панели
+Вариант 2: Ctrl/Cmd + P → автоматически найдёт слово через «Помощник по словам»</code></pre>
+<h3>Действия поиска</h3>
+<p><strong>Двойной щелчок по слову</strong> в заметке или <strong>удержание <code>Ctrl/Cmd + Shift</code> и выделение текста</strong> — панель с результатом автоматически появится справа.</p>
+<h3>Панель результата поиска</h3>
+<p>После поиска слова вы увидите:</p>
+<div class="table-wrap"><table><thead><tr><th>Функция</th><th>Описание</th></tr></thead><tbody><tr><td>🔊 <strong>Произношение</strong></td><td>Нажмите, чтобы услышать правильное произношение</td></tr><tr><td>📝 <strong>Добавить в словарик</strong></td><td>Сохранить как карточку в один клик для последующего повторения</td></tr><tr><td>🔤 <strong>Транскрипция</strong></td><td>Показывает транскрипцию</td></tr><tr><td>📖 <strong>Значение</strong></td><td>Показывает часть речи и значение</td></tr></tbody></table></div>
+<div class="callout callout-tip"><div class="callout-title">✨ Совет</div><div class="callout-body"><p>В панели результата тоже можно <strong>искать слова двойным щелчком</strong> — сам словарь отличный учебный материал!</p></div></div>
+<h3>Поддерживаемые языки</h3>
+<div class="table-wrap"><table><thead><tr><th>Язык</th><th>Код</th></tr></thead><tbody><tr><td>🇬🇧 English</td><td><code>en</code></td></tr><tr><td>🇩🇪 German</td><td><code>de</code></td></tr><tr><td>🇫🇷 French</td><td><code>fr</code></td></tr><tr><td>🇪🇸 Spanish</td><td><code>es</code></td></tr><tr><td>🇰🇷 Korean</td><td><code>ko</code></td></tr><tr><td>🇷🇺 Russian</td><td><code>ru</code></td></tr><tr><td>🇯🇵 Japanese</td><td><code>ja</code></td></tr></tbody></table></div>
+<div class="callout callout-info"><div class="callout-title">🌐 Больше языков будут поддержаны в будущем.</div><div class="callout-body"></div></div>
+<hr>
+<h2 id="flashcards">3. Добавление и управление карточками</h2>
+<p>🎴 Когда вы собрали много новых слов из чтения и поиска, вот как наладить систематическое повторение:</p>
+<h3>Автоматические карточки</h3>
+<p>Когда вы нажимаете <strong>«Добавить в словарик»</strong> после поиска, плагин автоматически создаёт карточку. Каждая карточка включает:</p>
+<ul>
+<li>✅ Слово + транскрипция</li>
+<li>✅ Значение</li>
+<li>✅ Контекст слова (из заметки, где вы его нашли)</li>
+<li>✅ Ссылка на исходную заметку</li>
+<li>✅ Дата добавления</li>
+</ul>
+<h3>Добавить карточку вручную</h3>
+<pre><code>Откройте панель повторения карточек → нажмите кнопку «Добавить карточку» внизу
+→ Заполните слово, транскрипцию (необязательно), значение, пример (необязательно)
+→ Сохранить</code></pre>
+<h3>Начните повторение</h3>
+<p>Откройте панель повторения карточек:</p>
+<pre><code>Вариант 1: нажмите значок мозга 🧠 на левой панели
+Вариант 2: Ctrl/Cmd + P → найдите «Начать повторение карточек»</code></pre>
+<h4>Процесс повторения</h4>
+<pre><code>👀 Смотрите лицевую сторону карточки → 🤔 Попробуйте вспомнить значение
+→ 🖱️ Нажмите, чтобы перевернуть и увидеть значение → ⭐ Оцените, насколько хорошо вспомнили</code></pre>
+<h4>Шкала оценок</h4>
+<div class="callout callout-info"><div class="callout-title">🧠 Об алгоритме FSRS</div><div class="callout-body"><p>Повторение работает на <strong>алгоритме FSRS</strong> (современный алгоритм интервального повторения). На основе ваших оценок он интеллектуально планирует следующее показывание каждой карточки — вы возвращаетесь к слову ровно на грани забывания.</p></div></div>
+<div class="table-wrap"><table><thead><tr><th>Оценка</th><th>Значение</th><th>Эффект</th></tr></thead><tbody><tr><td>😵 <strong>Забыл</strong></td><td>Совсем не вспомнил</td><td>Покажется снова скоро</td></tr><tr><td>😐 <strong>Трудно</strong></td><td>Едва вспомнил</td><td>Интервал сокращён</td></tr><tr><td>🙂 <strong>Хорошо</strong></td><td>Вспомнил нормально</td><td>Стандартный интервал</td></tr><tr><td>😎 <strong>Легко</strong></td><td>Знал сразу</td><td>Интервал значительно увеличен</td></tr></tbody></table></div>
+<div class="callout callout-warning"><div class="callout-title">🧹 Автоочистка</div><div class="callout-body"><p>После того как слово <strong>несколько раз оценено «Легко»</strong>, оно автоматически удаляется из ротации повторения. Настроить условия «автоочистки» можно в <strong>Настройки → Language Made Easy</strong>.</p></div></div>
+<h3>Управление данными карточек</h3>
+<pre><code>Ctrl/Cmd + P → найдите «Управлять данными карточек»</code></pre>
+<p>В менеджере можно:</p>
+<ul>
+<li>📋 Фильтровать карточки по языку и статусу</li>
+<li>🗑️ Массово удалять ненужные карточки</li>
+<li>📤 Экспортировать данные карточек</li>
+</ul>
+<div class="callout callout-tip"><div class="callout-title">💡 Два важных замечания</div><div class="callout-body"><p>1. Данные карточек хранятся в <strong>локальной IndexedDB</strong>. При обновлении плагина достаточно заменить три файла <code>main.js</code>, <code>manifest.json</code> и <code>style.css</code> — <strong>ваши карточки не пострадают</strong>. Обновляйтесь спокойно!</p><p>2. Карточки поддерживают <strong>импорт и экспорт</strong> в разных форматах — <code>txt</code>, <code>markdown</code>, <code>csv</code>, <code>json</code> и других — для удобного резервного копирования и переноса.</p></div></div>
+<hr>
+<h2 id="shadowing">4. Использование шэдоуинг-мастерской</h2>
+<p>🎬 Language Made Easy помогает эффективнее учиться по <strong>видео YouTube / Bilibili</strong> — усваивать живую речь и тренировать слух.</p>
+<h3>Открыть шэдоуинг-мастерскую</h3>
+<pre><code>Вариант 1: нажмите значок воспроизведения ▶️ на левой панели
+Вариант 2: Ctrl/Cmd + P → найдите «Шэдоуинг-мастерская»</code></pre>
+<h3>Загрузите видео</h3>
+<p>Вставьте ссылку на видео в заметку — плагин распознает и загрузит его автоматически:</p>
+<pre><code>✅ Видео YouTube → вставьте ссылку для автозагрузки
+✅ Видео Bilibili → вставьте ссылку для автозагрузки (автоматически скачивается и кешируется)
+✅ Локальное аудио/видео → вставьте через ![[video.mp4]] или ![[audio.mp3]]</code></pre>
+<h3>Скачайте субтитры</h3>
+<p>После загрузки видео нажмите кнопку <strong>«Скачать субтитры»</strong> на правой панели инструментов. Плагин заберёт субтитры с YouTube / Bilibili и вставит их в заметку.</p>
+<p>Пример формата субтитров:</p>
+<pre><code>[00:12] Hello, how are you today?
+[00:15] I&#x27;m fine, thank you. And you?
+[01:23] What a beautiful day! Let&#x27;s go for a walk.</code></pre>
+<div class="callout callout-tip"><div class="callout-title">📝 Примечание</div><div class="callout-body"><p>Шэдоуинг-мастерская поддерживает <strong>несколько форматов таймкодов</strong> — будь то <code>HH:MM:SS</code>, <code>MM:SS</code> или <code>[00:12]</code>, все они распознаются и загружаются автоматически.</p></div></div>
+<h3>Управление воспроизведением</h3>
+<p>Внизу плеера шэдоуинг-мастерской есть ряд кнопок управления:</p>
+<div class="table-wrap"><table><thead><tr><th>Кнопка</th><th>Функция</th><th>Примечание</th></tr></thead><tbody><tr><td>⏮️ <strong>Повтор</strong></td><td>К началу текущей фразы</td><td>Прослушать с начала фразы</td></tr><tr><td>🔁 <strong>Цикл</strong></td><td>Повтор одной фразы</td><td>Удобно для отработки одной фразы</td></tr><tr><td>▶️ / ⏸️ <strong>Пуск/Пауза</strong></td><td>Управление воспроизведением</td><td>Пробел</td></tr><tr><td>🐢🐇 <strong>Скорость</strong></td><td>0.8x / 1.0x / 1.2x</td><td>Подстройте под свой уровень</td></tr></tbody></table></div>
+<h3>🎧 Режим диктанта</h3>
+<p>Хотите проверить слух? Попробуйте <strong>режим диктанта</strong>!</p>
+<pre><code>Правая панель шэдоуинг-мастерской → нажмите кнопку «Диктант»
+→ Играет фраза — печатайте то, что слышите
+→ После отправки ваш ввод сравнивается с оригиналом
+→ Ошибки помечаются красным, правильные части — зелёным</code></pre>
+<hr>
+<h2 id="ai">5. Прокачайте обучение с ИИ</h2>
+<p>Хотите более мощный учебный опыт? Продвинутые настройки ниже открывают <strong>локальные словари</strong> и <strong>ИИ-анализ</strong>.</p>
+<h3>5.1 Настройте локальный словарь</h3>
+<p>Локальный словарь (формат MDX) даёт более богатые значения — с примерами, устойчивыми сочетаниями и синонимами — даже <strong>офлайн</strong>.</p>
+<pre><code>Настройки → Language Made Easy → Настройки словарей
+→ Укажите путь к локальному MDX-словарю
+→ Сохранить</code></pre>
+<h3>5.2 Локальный словарь в действии</h3>
+<p>С настроенным локальным словарём результаты поиска становятся намного богаче:</p>
+<div class="table-wrap"><table><thead><tr><th>Аспект</th><th>Онлайн-словарь</th><th>Локальный MDX-словарь</th></tr></thead><tbody><tr><td>Сеть</td><td>✅ Нужна</td><td>❌ Работает офлайн</td></tr><tr><td>Детализация значений</td><td>Базовые значения</td><td>Подробно + примеры + сочетания</td></tr><tr><td>Скорость</td><td>Зависит от сети</td><td>⚡ Мгновенно</td></tr><tr><td>Источники</td><td>Google / MyMemory / Jisho</td><td>Свои MDX-файлы</td></tr></tbody></table></div>
+<h3>5.3 Настройте API-ключ языковой модели</h3>
+<p>Для ИИ-анализа нужен API-ключ большой языковой модели. Поддерживаемые провайдеры:</p>
+<pre><code>Настройки → Language Made Easy → Настройки ИИ
+→ Выберите провайдера (OpenAI / Google Gemini / OpenRouter)
+→ Введите API-ключ
+→ Сохранить</code></pre>
+<div class="callout callout-tip"><div class="callout-title">💡 Рекомендации</div><div class="callout-body"><p>- <strong>OpenAI</strong>: работает сразу после ввода ключа.</p><p>- <strong>Google Gemini</strong>: есть бесплатный лимит; отлично подходит как запасной вариант или для глубокой учёбы.</p></div></div>
+<h3>5.4 Использование ИИ-анализа</h3>
+<h4>5.4.1 Сгенерируйте отчёт ИИ-анализа</h4>
+<p>После загрузки субтитров в шэдоуинг-мастерской:</p>
+<pre><code>Нажмите кнопку «ИИ-анализ» на правой панели инструментов
+→ Дождитесь завершения анализа (обычно 10-20 секунд)
+→ Отчёт появится в правой панели
+→ Нажмите «Сохранить в заметку», чтобы сохранить его
+→ Нажмите кнопку с изображением, чтобы «Сохранить как длинный снимок» локально</code></pre>
+<p>Отчёт ИИ-анализа обычно включает:</p>
+<ul>
+<li>📝 <strong>Лексика</strong> — Употребление и сочетания ключевых слов</li>
+<li>🏗️ <strong>Грамматика</strong> — Разбор ключевых конструкций</li>
+<li>🌍 <strong>Культурные заметки</strong> — Релевантный культурный контекст</li>
+<li>💡 <strong>Советы по обучению</strong> — Целевые рекомендации</li>
+</ul>
+<p>В плагине есть <strong>3 встроенных промпта ИИ-анализа</strong> под разные учебные задачи:</p>
+<div class="table-wrap"><table><thead><tr><th>Промпт</th><th>Для чего</th><th>Результат</th></tr></thead><tbody><tr><td>📝 <strong>Краткий пересказ</strong></td><td>Быстро уловить суть видео</td><td>Краткое изложение + ключевые пункты</td></tr><tr><td>📖 <strong>Двуязычный</strong></td><td>Изучать содержание построчно</td><td>Построчный двуязычный перевод</td></tr><tr><td>🧪 <strong>Мини-тест</strong></td><td>Проверить, что вы усвоили</td><td>Вопросы, созданные по видео</td></tr></tbody></table></div>
+<div class="callout callout-tip"><div class="callout-title">💡 Можно также написать свои промпты — см. <a href="#ai-custom-prompt">5.4.2 Добавить свой промпт</a>.</div><div class="callout-body"></div></div>
+<h4 id="ai-custom-prompt">5.4.2 Добавить свой промпт</h4>
+<p>Вы можете писать свои промпты, чтобы ИИ создавал учебные материалы под ваши задачи:</p>
+<pre><code>Настройки → Language Made Easy → Управление промптами ИИ
+→ Добавьте свой промпт
+→ Задайте имя и содержание промпта
+→ Сохранить</code></pre>
+<h3>5.5 Автозаполнение карточек в один клик</h3>
+<p>Не хочется вручную вводить транскрипцию и значение при добавлении карточки? Используйте <strong>автозаполнение ИИ</strong>!</p>
+<pre><code>Панель добавления карточки → введите слово
+→ Нажмите кнопку «Автозаполнение ИИ»
+→ Транскрипция, значение и пример заполнятся автоматически
+→ Проверьте и сохраните</code></pre>
+<h3>5.6 Другие способы загрузки субтитров</h3>
+<p>Помимо скачивания субтитров прямо в шэдоуинг-мастерской есть и другие способы:</p>
+<h4>5.6.1 Кнопка «Скачать субтитры» в шэдоуинг-мастерской</h4>
+<p>Самый прямой способ. После загрузки видео нажмите <strong>«Скачать субтитры»</strong> на правой панели — плагин автоматически заберёт субтитры с YouTube / Bilibili.</p>
+<div class="callout callout-warning"><div class="callout-title">⚠️ Примечания к скачиванию субтитров</div><div class="callout-body"><p>1. Плагин скачивает субтитры <strong>выбранного в данный момент языка</strong> — проверьте язык перед скачиванием. Если субтитров на этом языке нет, вернутся субтитры по умолчанию.</p><p>2. У видео Bilibili <strong>часто нет английских субтитров</strong>. Перед выбором видео проверьте список «字幕» (субтитры) в плеере Bilibili — доступен ли нужный вам язык.</p></div></div>
+<h4>5.6.2 Obsidian Web Clipper</h4>
+<p>С расширением браузера <a class="ext-link" href="https://obsidian.md/clipper" target="_blank" rel="noopener">Obsidian Web Clipper</a> можно сохранять субтитры YouTube прямо в заметку Obsidian во время просмотра.</p>
+<pre><code>Установите расширение Obsidian Web Clipper
+→ На странице видео YouTube нажмите значок расширения
+→ Выберите сохранить содержимое субтитров
+→ Оно автоматически сохранится как заметка с таймкодами</code></pre>
+<h4>5.6.3 Плагин ytranscript</h4>
+<p><a class="ext-link" href="https://obsidian.md/plugins?id=ytranscript" target="_blank" rel="noopener">ytranscript</a> — ещё один плагин Obsidian, помогающий скачивать субтитры YouTube прямо в Obsidian:</p>
+<pre><code>Найдите и установите «ytranscript» из сторонних плагинов Obsidian
+→ Вызовите ytranscript из палитры команд, чтобы получить субтитры YouTube
+→ Субтитры вставятся в заметку с таймкодами
+→ Откройте шэдоуинг-мастерскую и начинайте</code></pre>
+<h4>5.6.4 Загрузка SRT-файлов для локальных видео</h4>
+<p>Если у вас есть локальный видеофайл и соответствующий файл субтитров SRT:</p>
+<pre><code>Вариант 1: скопируйте содержимое SRT в заметку
+         → Убедитесь, что формат таймкодов SRT корректен
+         → Вставьте видео в заметку через ![[video.mp4]]
+         → Откройте шэдоуинг-мастерскую, чтобы разобрать видео и субтитры
+
+Вариант 2: положите SRT-файл рядом с видеофайлом в хранилище
+         → Вставьте видео в заметку через ![[video.mp4]]
+         → Плагин сам подберёт SRT-файл с тем же именем</code></pre>
+<hr>
+<h2 id="more">6. Дополнительно</h2>
+<h3>6.1 Быстрая команда: переключение темы в один клик</h3>
+<p>В плагине <strong>10 тщательно проработанных тем оформления</strong>, чтобы учебная среда радовала глаз:</p>
+<pre><code>Ctrl/Cmd + P → найдите «Переключить на следующую тему»
+→ Каждый запуск циклически меняет тему</code></pre>
+<div class="table-wrap"><table><thead><tr><th>Тема</th><th>Стиль</th></tr></thead><tbody><tr><td>📜 Paper Ink</td><td>Классические чернила на бумаге, тепло и мягко</td></tr><tr><td>🌿 Mint Atelier</td><td>Мятная свежесть, чисто и профессионально</td></tr><tr><td>🌸 Rose Blush</td><td>Нежный розовый, мягко и романтично</td></tr><tr><td>💜 Lavender Dream</td><td>Лавандовая мечта, легко и воздушно</td></tr><tr><td>🍬 Candy Pop</td><td>Конфетная вечеринка, ярко и живо</td></tr><tr><td>🌳 Mindful Oasis</td><td>Оазис спокойствия, природно и уютно</td></tr><tr><td>🪸 Coral Warmth</td><td>Тёплый коралл, тепло и энергично</td></tr><tr><td>🌊 Ocean Glass</td><td>Сердце океана, глубоко и спокойно</td></tr><tr><td>🌌 Aurora Prism</td><td>Призма полярного сияния, загадочно и красочно</td></tr><tr><td>🍋 Dark Lemon</td><td>Ночной лимон, темно и прохладно</td></tr></tbody></table></div>
+<h3>6.2 Быстрая команда: переключение языка в один клик</h3>
+<p>Изучаете несколько языков? Быстро переключайтесь между ними:</p>
+<pre><code>Ctrl/Cmd + P → найдите «Переключиться на английский / немецкий / французский / …»
+→ Текущий язык обучения меняется мгновенно</code></pre>
+<h3>6.3 Быстрая команда: отчёт ИИ-анализа</h3>
+<pre><code>Ctrl/Cmd + P → найдите «ИИ-анализ»
+→ Выберите любую заметку в хранилище для ИИ-анализа</code></pre>
+<h3>6.4 Путь сохранения словарика</h3>
+<p>Каждый раз, когда вы добавляете слово в словарик, плагин создаёт Markdown-файл словарика в хранилище. Место сохранения можно настроить:</p>
+<pre><code>Настройки → Language Made Easy → Настройки словарика
+→ Укажите путь и имя файла словарика
+→ Сохранить</code></pre>
+<h3>6.5 Путь сохранения отчётов ИИ-анализа</h3>
+<p>Отчёты ИИ-анализа тоже можно сохранять в своё место:</p>
+<pre><code>Настройки → Language Made Easy → Настройки ИИ-анализа
+→ Укажите путь сохранения отчётов
+→ Сохранить</code></pre>
+<hr>
+<h2 id="faq">7. FAQ</h2>
+<h3>❓ Поиск слов не реагирует?</h3>
+<blockquote><p>Проверьте следующее:</p><p>1. Убедитесь, что словарь настроен правильно (онлайн-словарям нужно сетевое подключение).</p><p>2. Если вы используете MDX-словарь, перепроверьте, что пути к файлам mdx, mdd и css правильно заполнены в настройках.</p><p>3. Убедитесь, что текущий язык обучения задан верно.</p></blockquote>
+<h3>❓ Не вижу только что добавленную карточку?</h3>
+<blockquote><p>Новые карточки появляются в самом конце очереди повторения.</p></blockquote>
+<h3>❓ У видео Bilibili скачиваются только китайские субтитры?</h3>
+<blockquote><p>Проверьте, есть ли у видео вообще субтитры на других языках. Вшитые в кадр двуязычные субтитры не означают, что автор загрузил файлы субтитров на этих языках.</p></blockquote>
+<h3>❓ Шэдоуинг-мастерская просит «войти» при открытии видео YouTube?</h3>
+<blockquote><p>Обычно помогает <strong>смена сети</strong>. Это связано с вашей сетевой средой — попробуйте другой сетевой узел и повторите.</p></blockquote>
+<h3>❓ ИИ-анализ выдаёт ошибку?</h3>
+<blockquote><p>Проверьте:</p><p>1. Правильно ли настроен API-ключ?</p><p>2. Работает ли сетевое подключение?</p><p>3. Достаточно ли баланса API?</p></blockquote>
+<h3>📮 Связаться с автором</h3>
+<ul>
+<li>📧 Почта: <a class="ext-link" href="mailto:panrunrun@gmail.com">panrunrun@gmail.com</a></li>
+<li>🌐 Сайт: <a class="ext-link" href="https://www.languagemadeeasy.com" target="_blank" rel="noopener">www.languagemadeeasy.com</a></li>
+</ul>
+<hr>
+<blockquote><p>🎉 <strong>Удачной учёбы! Если есть вопросы — обращайтесь в любое время.</strong></p></blockquote>
+<footer>Составлено Pandora&#x27;s Digital Garden</footer>
+</div>
+</body>
+</html>

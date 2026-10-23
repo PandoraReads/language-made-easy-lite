@@ -6,7 +6,7 @@
 import { requestUrl } from 'obsidian';
 import type { RequestUrlResponse } from 'obsidian';
 import type { LMESettings, AIProviderConfig, AIProviderKind, PronunciationScore } from '../models';
-import { t } from '../i18n';
+import { t, getLocale, uiLanguageEnglishName } from '../i18n';
 
 export interface WordLookupResult {
     phonetic: string;
@@ -241,22 +241,36 @@ export class AIService {
             throw new Error(t('errors.apiKeyMissing'));
         }
 
-        const levelLabel: Record<string, string> = {
-            beginner: '初学者 (Beginner)',
-            intermediate: '中级 (Intermediate)',
-            advanced: '高级 (Advanced)',
-            native: '母语者 (Native)',
-        };
+        // Prompt-facing level labels: the Chinese UI keeps bilingual labels;
+        // other UIs run English prompt text, so plain English labels.
+        const levelLabel: Record<string, string> = getLocale() === 'zh-CN'
+            ? {
+                beginner: '初学者 (Beginner)',
+                intermediate: '中级 (Intermediate)',
+                advanced: '高级 (Advanced)',
+                native: '母语者 (Native)',
+            }
+            : {
+                beginner: 'Beginner',
+                intermediate: 'Intermediate',
+                advanced: 'Advanced',
+                native: 'Native',
+            };
 
-        // Chinese UI: no English-only locale instruction.
-        const localeInstruction = '';
+        // Non-Chinese UIs force the report language to the UI language (English
+        // prompt text there); zh-CN keeps each prompt's own Chinese instructions.
+        const localeInstruction = getLocale() === 'zh-CN'
+            ? ''
+            : `IMPORTANT: Write the entire final report - every heading, explanation, summary and piece of visible text - in ${uiLanguageEnglishName()}. Do not mix in any other language.\n\n`;
 
         // Default analysis report is a single self-contained HTML report whose
         // template already caps each section's count, so output size is bounded —
         // no chunking needed.
         if (!customPrompt) {
             const formattedSubs = AIService.formatSubtitles(subtitles);
-            const prompt = localeInstruction + AIService.buildDefaultPrompt(formattedSubs, level, levelLabel);
+            const prompt = localeInstruction + (getLocale() === 'zh-CN'
+                ? AIService.buildDefaultPromptZh(formattedSubs, level, levelLabel)
+                : AIService.buildDefaultPromptEn(formattedSubs, level, levelLabel));
             onProgress?.(1, 1);
             return await AIService.runChat(provider, apiKey, modelName, prompt, providers);
         }
@@ -332,7 +346,7 @@ export class AIService {
         return chunks;
     }
 
-    private static buildDefaultPrompt(
+    private static buildDefaultPromptZh(
         formattedSubs: string,
         level: string,
         levelLabel: Record<string, string>
@@ -418,6 +432,93 @@ export class AIService {
             '\n- 根据学习者水平调整深度：初学者侧重基础词汇和句型，高级侧重语感差异和地道用法';
     }
 
+    /** English variant of the default analysis prompt (non-Chinese UIs). */
+    private static buildDefaultPromptEn(
+        formattedSubs: string,
+        level: string,
+        levelLabel: Record<string, string>
+    ): string {
+        const template = '\n<div style="background:#FFF8F0;border:2px solid #8B7E74;padding:24px;border-radius:12px;font-family:Georgia,serif;line-height:1.6;color:#8B7E74;box-shadow:4px 4px 0 #F0E6D8;">'
+            + '\n<div style="text-align:center;border-bottom:4px double #8B7E74;padding-bottom:16px;margin-bottom:24px;">'
+            + '\n<h1 style="font-size:1.8em;margin:8px 0;font-weight:900;letter-spacing:-0.5px;">{{Video topic}}</h1>'
+            + '\n<div style="background:#FFB5A7;color:#fff;display:inline-block;padding:3px 14px;font-size:0.85em;letter-spacing:1px;">Level: ' + (levelLabel[level] || level) + '</div>'
+            + '\n</div>'
+            + '\n<div style="display:flex;gap:20px;margin-bottom:28px;">'
+            + '\n<div style="flex:1;border-right:1px solid #E8D5C8;padding-right:16px;">'
+            + '\n<p style="font-size:1.05em;font-style:italic;color:#8B7E74;margin-top:0;">{{Quote}}</p>'
+            + '\n</div>'
+            + '\n<div style="flex:1.2;font-size:0.92em;">'
+            + '\n<b style="font-size:1.1em;border-bottom:2px solid #FFB5A7;">Summary</b>'
+            + '\n<p style="margin-top:8px;">{{2-3 sentence summary}}</p>'
+            + '\n</div>'
+            + '\n</div>'
+            + '\n<hr style="border:0;border-top:1px solid #F0E6D8;margin:24px 0;">'
+            + '\n<h3 style="background:#B5D8C7;color:#fff;display:inline-block;padding:4px 12px;font-size:1em;margin-bottom:16px;">Timeline</h3>'
+            + '\n<div style="background:#FFF0E8;padding:16px;border-radius:10px;margin-bottom:28px;">'
+            + '\n{{Timeline list}}'
+            + '\n</div>'
+            + '\n<h3 style="background:#C5B3E6;color:#fff;display:inline-block;padding:4px 12px;font-size:1em;margin-bottom:16px;">Language Lab</h3>'
+            + '\n{{Language point cards}}'
+            + '\n<hr style="border:0;border-top:1px solid #F0E6D8;margin:24px 0;">'
+            + '\n<h3 style="background:#FFB5A7;color:#fff;display:inline-block;padding:4px 12px;font-size:1em;margin-bottom:16px;">Key Vocabulary</h3>'
+            + '\n<div style="border:1px solid #F0E6D8;padding:16px;border-radius:12px;background:#FFFAF6;">'
+            + '\n{{Vocabulary list}}'
+            + '\n</div>'
+            + '\n<hr style="border:0;border-top:1px solid #F0E6D8;margin:24px 0;">'
+            + '\n<div style="border:2px solid #C5B3E6;padding:16px;background:#F8F0FC;border-radius:10px;">'
+            + '\n<h4 style="margin:0 0 12px 0;text-align:center;letter-spacing:2px;">Expressions</h4>'
+            + '\n{{Expression cards}}'
+            + '\n</div>'
+            + '\n<div style="margin-top:30px;display:flex;justify-content:space-between;align-items:center;font-size:0.75em;color:#B8A99A;">'
+            + '\n<span></span>'
+            + '\n<span style="letter-spacing:2px;">© 2026 PANDORA\'S DIGITAL GARDEN</span>'
+            + '\n<span></span>'
+            + '\n</div>'
+            + '\n</div>';
+
+        const timelineExample = 'Timeline entry format:\n'
+            + '<div style="margin-bottom:10px;border-bottom:1px dashed #D4C4B5;padding-bottom:6px;">'
+            + '<span style="color:#FFB5A7;font-weight:bold;">[MM:SS - MM:SS]</span>'
+            + ' <b>Topic title</b>: one-line description</div>\n'
+            + 'Timestamps are derived from the actual subtitle times.';
+
+        const langPointExample = 'One card per language point:\n'
+            + '<div style="border:1px solid #E8D5C8;padding:12px;margin-bottom:14px;position:relative;border-radius:8px;">'
+            + '<span style="position:absolute;top:-10px;left:10px;background:#FFF8F0;padding:0 5px;font-weight:bold;font-size:0.8em;">Type tag</span>'
+            + '<p style="font-size:0.93em;"><b>"Original line (mark the key words with &lt;span style=&quot;background:#FCD5CE;padding:0 2px;&quot;&gt;a highlight&lt;/span&gt;)"</b></p>'
+            + '<p style="font-size:0.85em;color:#9B8E82;"><b>Explanation:</b> explain what this language point means and how it is used, in the report language. Add one short example sentence with its translation.</p>'
+            + '</div>\n'
+            + 'Type tags to choose from: syntax analysis ANALYSIS, idiomatic structure STRUCTURE, usage tip USAGE, etc. Pick a different tag per card.';
+
+        const vocabExample = 'One line per word, format:\n'
+            + '<p style="margin:6px 0;"><b>Word</b> <small>/phonetic/</small><br>Meaning in the report language. A usage tip.</p>';
+
+        const expressionExample = 'One card per expression:\n'
+            + '<div style="background:#FFF8F0;padding:6px 14px;border:1px solid #C5B3E6;display:inline-block;margin:4px;font-size:0.9em;border-radius:16px;">'
+            + '<b>Expression</b><br><small>Explanation in the report language</small></div>';
+
+        return 'You are an experienced language teacher analyzing the subtitles of a video in the language your student is learning.' +
+            '\nThe learner\'s level: ' + (levelLabel[level] || level) +
+            '\n\nSubtitle content:\n' + formattedSubs +
+            '\n\nOutput the complete report strictly following the HTML template below. The {{...}} marks in the template are placeholders - replace them with real content.' +
+            '\n\nTemplate structure:' + template +
+            '\n\nHow to fill each placeholder:' +
+            '\n\n1. {{Video topic}}: summarize the video topic in 5-8 words' +
+            '\n\n2. {{Quote}}: pick the most representative line from the subtitles (in the original language) as the opening quote' +
+            '\n\n3. {{2-3 sentence summary}}: summarize the core content of the video in 2-3 sentences' +
+            '\n\n4. {{Timeline list}}: split the video into 4-8 segments by subtitle time.' + timelineExample +
+            '\n\n5. {{Language point cards}}: pick 4-6 language points worth learning (grammar, sentence patterns, collocations, etc.).' + langPointExample +
+            '\n\n6. {{Vocabulary list}}: pick 5-7 key words.' + vocabExample +
+            '\n\n7. {{Expression cards}}: pick 4-6 idiomatic expressions and arrange them as cards.' + expressionExample +
+            '\n\nRequirements:' +
+            '\n- All explanations must be written in the report language, natural and easy to follow, like a teacher walking the student through the material' +
+            '\n- Bold the quoted original lines and highlight the key words in pink' +
+            '\n- Timestamps must use the [MM:SS - MM:SS] format, bold and pink' +
+            '\n- Strictly no greeting or filler phrases' +
+            '\n- The output must be a complete HTML document starting at <div style="background:#FFF8F0;...> and ending at </div>; do not wrap it in ```' +
+            '\n- Adjust the depth to the learner\'s level: beginners focus on basic vocabulary and sentence patterns; advanced learners focus on nuance and idiomatic usage';
+    }
+
     static defaultModelForProvider(provider: string): string {
         if (provider === 'deepseek') return AIService.DEFAULT_DEEPSEEK_MODEL;
         if (provider === 'gemini') return AIService.DEFAULT_GEMINI_MODEL;
@@ -464,17 +565,17 @@ export class AIService {
             }), AIService.AI_CHAT_TIMEOUT_MS, 'AI request timeout');
 
             if (resp.status < 200 || resp.status >= 300) {
-                throw new Error(AIService.describeApiFailure(resp.status, resp.text || '', 'Gemini API 返回错误'));
+                throw new Error(AIService.describeApiFailure(resp.status, resp.text || '', t('errors.geminiApiError')));
             }
             const json = resp.json as GeminiGenerateContentResponse | undefined;
             const text = json?.candidates?.[0]?.content?.parts?.[0]?.text;
             if (!text) {
-                throw new Error('Gemini API 未返回有效内容: ' + JSON.stringify(json || {}).slice(0, 400));
+                throw new Error(t('errors.geminiEmptyResponse') + ': ' + JSON.stringify(json || {}).slice(0, 400));
             }
             return text.trim();
         } catch (err: unknown) {
             console.error('[EME] Gemini analysis error', err);
-            throw new Error('Gemini 调用失败: ' + err.message);
+            throw new Error(t('errors.geminiCallFailed') + ': ' + (err instanceof Error ? err.message : String(err)));
         }
     }
 
@@ -487,7 +588,7 @@ export class AIService {
     ): Promise<string> {
         let url = baseUrl.replace(/\/+$/, '');
         if (!url.startsWith('http://') && !url.startsWith('https://')) {
-            throw new Error('Base URL 必须以 http:// 或 https:// 开头');
+            throw new Error(t('errors.baseUrlInvalid'));
         }
         if (!url.endsWith('/chat/completions')) {
             url += '/chat/completions';
@@ -516,7 +617,7 @@ export class AIService {
             payload.reasoning_effort = 'low';
         }
 
-        const json = await AIService.postWithRateLimitRetry(url, apiKey, payload, '模型调用失败');
+        const json = await AIService.postWithRateLimitRetry(url, apiKey, payload, t('errors.modelCallFailed'));
         // content 优先;万一某次 content 空,fall back 到 reasoning_content 兜底。
         const msg = json.choices[0].message;
         return (msg.content || msg.reasoning_content || '').trim();
@@ -538,30 +639,45 @@ export class AIService {
             throw new Error(t('errors.apiKeyMissing'));
         }
 
-        const langNames: Record<string, string> = {
-            english: '英语',
-            german: '德语',
-            french: '法语',
-            spanish: '西班牙语',
-            korean: '韩语',
-            russian: '俄语',
-            japanese: '日语',
+        const langNames: Record<string, { zh: string; en: string }> = {
+            english: { zh: '英语', en: 'English' },
+            german: { zh: '德语', en: 'German' },
+            french: { zh: '法语', en: 'French' },
+            spanish: { zh: '西班牙语', en: 'Spanish' },
+            korean: { zh: '韩语', en: 'Korean' },
+            russian: { zh: '俄语', en: 'Russian' },
+            japanese: { zh: '日语', en: 'Japanese' },
         };
-        const langName = langNames[language] || language;
+        const isZhUi = getLocale() === 'zh-CN';
+        const langName = langNames[language]?.[isZhUi ? 'zh' : 'en'] || language;
 
         const phoneticSpec = language === 'japanese'
-            ? '假名读音。汉字词优先用平假名，外来语可保留片假名；不要输出罗马音或 IPA'
-            : '国际音标IPA';
+            ? (isZhUi
+                ? '假名读音。汉字词优先用平假名，外来语可保留片假名；不要输出罗马音或 IPA'
+                : 'kana reading. Prefer hiragana for kanji words; loanwords may keep katakana; do not output romaji or IPA')
+            : (isZhUi ? '国际音标IPA' : 'IPA in slashes');
         const phoneticRule = language === 'japanese'
-            ? '- phonetic: 输出日语假名读音。汉字词用平假名读法；外来语可保留片假名；不要输出罗马音或 IPA\n'
-            : '- phonetic: 标准国际音标(IPA)，用斜线包裹如 /ɪˈpɪfəni/\n';
-        const prompt = '你是一位专业的' + langName + '词典编纂专家。请查词 "' + word + '"，严格按照以下 JSON 格式返回结果，不要包含任何其他文字、解释或 markdown 代码块标记：\n\n'
-            + '{"phonetic":"' + phoneticSpec + '","definition":"中文释义（含词性标注，支持 Markdown 加粗，多义词用分号分隔）","example":"一句地道的' + langName + '例句（含中文翻译）"}\n\n'
-            + '要求：\n'
-            + phoneticRule
-            + '- definition: 格式为 **词性.** 释义，例如 **n.** 顿悟；突然的感悟。多个词性用换行分隔\n'
-            + '- example: 一句能体现该词用法的地道例句，后跟中文翻译。格式：英文例句\\n中文翻译\n'
-            + '- 直接输出 JSON，不要包含 ```json``` 包裹';
+            ? (isZhUi
+                ? '- phonetic: 输出日语假名读音。汉字词用平假名读法；外来语可保留片假名；不要输出罗马音或 IPA\n'
+                : '- phonetic: output the Japanese kana reading. Use hiragana for kanji words; loanwords may keep katakana; do not output romaji or IPA\n')
+            : (isZhUi
+                ? '- phonetic: 标准国际音标(IPA)，用斜线包裹如 /ɪˈpɪfəni/\n'
+                : '- phonetic: standard IPA wrapped in slashes, e.g. /ɪˈpɪfəni/\n');
+        const prompt = isZhUi
+            ? '你是一位专业的' + langName + '词典编纂专家。请查词 "' + word + '"，严格按照以下 JSON 格式返回结果，不要包含任何其他文字、解释或 markdown 代码块标记：\n\n'
+                + '{"phonetic":"' + phoneticSpec + '","definition":"中文释义（含词性标注，支持 Markdown 加粗，多义词用分号分隔）","example":"一句地道的' + langName + '例句（含中文翻译）"}\n\n'
+                + '要求：\n'
+                + phoneticRule
+                + '- definition: 格式为 **词性.** 释义，例如 **n.** 顿悟；突然的感悟。多个词性用换行分隔\n'
+                + '- example: 一句能体现该词用法的地道例句，后跟中文翻译。格式：英文例句\\n中文翻译\n'
+                + '- 直接输出 JSON，不要包含 ```json``` 包裹'
+            : 'You are a professional ' + langName + ' lexicographer. Look up the word "' + word + '" and return strictly the following JSON - no extra text, explanations, or markdown code fences:\n\n'
+                + '{"phonetic":"' + phoneticSpec + '","definition":"definition in the report language (with part-of-speech tags, Markdown bold allowed, separate senses with semicolons)","example":"one idiomatic ' + langName + ' example sentence (followed by a translation in the report language)"}\n\n'
+                + 'Requirements:\n'
+                + phoneticRule
+                + '- definition: format as **pos.** meaning, e.g. **n.** a sudden insight or realization. Separate multiple parts of speech with line breaks\n'
+                + '- example: one idiomatic sentence showing the word\'s usage, followed by a translation in the report language. Format: example sentence\\ntranslation\n'
+                + '- Output raw JSON only; do not wrap it in ```json```';
 
         const raw: string = await AIService.runChat(provider, apiKey, modelName, prompt, providers);
 
@@ -645,9 +761,10 @@ If the audio is too quiet, unclear, or empty, still return a valid JSON with low
     ): Promise<PronunciationScore> {
         const base64Audio = await AIService.blobToBase64(audioBlob);
         const mimeType = audioBlob.type || 'audio/webm';
-        const localeInstruction = locale === 'en'
-            ? 'IMPORTANT: All text content (summary, tips) must be in English.'
-            : '重要：所有文字内容（summary、tips）必须用中文回复。';
+        // Scoring tips follow the UI language (zh-CN keeps Chinese tips).
+        const localeInstruction = getLocale() === 'zh-CN'
+            ? '重要：所有文字内容（summary、tips）必须用中文回复。'
+            : `IMPORTANT: All text content (summary, tips) must be written in ${uiLanguageEnglishName()}.`;
         const prompt = AIService.SCORING_PROMPT
             .replace('{originalText}', originalText)
             .replace('{localeInstruction}', localeInstruction);
@@ -697,9 +814,10 @@ If the audio is too quiet, unclear, or empty, still return a valid JSON with low
     ): Promise<PronunciationScore> {
         const base64Audio = await AIService.blobToBase64(audioBlob);
         const mimeType = audioBlob.type || 'audio/webm';
-        const localeInstruction = locale === 'en'
-            ? 'IMPORTANT: All text content (summary, tips) must be in English.'
-            : '重要：所有文字内容（summary、tips）必须用中文回复。';
+        // Scoring tips follow the UI language (zh-CN keeps Chinese tips).
+        const localeInstruction = getLocale() === 'zh-CN'
+            ? '重要：所有文字内容（summary、tips）必须用中文回复。'
+            : `IMPORTANT: All text content (summary, tips) must be written in ${uiLanguageEnglishName()}.`;
         const prompt = AIService.SCORING_PROMPT
             .replace('{originalText}', originalText)
             .replace('{localeInstruction}', localeInstruction);
@@ -915,7 +1033,7 @@ If the audio is too quiet, unclear, or empty, still return a valid JSON with low
     private static describeApiFailure(status: number, body: string, prefix: string): string {
         const detail = (body || '').trim();
         const snippet = detail.length > 400 ? detail.slice(0, 400) + '…' : detail;
-        return prefix + ' (HTTP ' + (status || '?') + '): ' + (snippet || '服务器未返回错误详情');
+        return prefix + ' (HTTP ' + (status || '?') + '): ' + (snippet || t('errors.noServerErrorDetails'));
     }
 
     private static blobToBase64(blob: Blob): Promise<string> {

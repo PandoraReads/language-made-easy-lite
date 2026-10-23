@@ -11,7 +11,7 @@ import { AIService } from '../core/AIService';
 import { AI_ANALYSIS_VIEW_TYPE } from './ai-analysis-view';
 import type { AIAnalysisView } from './ai-analysis-view';
 import { ShadowingPractice } from './shadowing-practice';
-import { BUILTIN_PROMPTS } from '../models';
+import { BUILTIN_PROMPTS, resolvePromptText } from '../models';
 import type { PromptTemplate } from '../models';
 import { UpgradeModal } from '../ui/upgrade-modal';
 import { checkSubtitleWeeklyQuota, recordSubtitleDownload } from '../core/free-quota';
@@ -439,7 +439,17 @@ export class ShadowingView extends ItemView {
     }
 
     private getActiveLanguageName(): string {
-        const names: Record<string, string> = { english: '英语' };
+        // Note metadata field — uses each language's own name (language-neutral).
+        const names: Record<string, string> = {
+            english: 'English',
+            german: 'Deutsch',
+            french: 'Français',
+            spanish: 'Español',
+            japanese: '日本語',
+            korean: '한국어',
+            russian: 'Русский',
+            chinese: '中文',
+        };
         return names[this.plugin.settings.activeLanguage] || '';
     }
 
@@ -448,8 +458,8 @@ export class ShadowingView extends ItemView {
         const seconds = Math.floor(totalSeconds);
         const minutes = Math.floor(seconds / 60);
         const remainder = seconds % 60;
-        if (minutes >= 60) return `${Math.floor(minutes / 60)}小时${minutes % 60}分${remainder}秒`;
-        return `${minutes}分${remainder}秒`;
+        if (minutes >= 60) return `${Math.floor(minutes / 60)}${t('nav.workshopCatalogUnitHour')}${minutes % 60}${t('nav.workshopCatalogUnitMin')}${remainder}${t('nav.workshopCatalogUnitSec')}`;
+        return `${minutes}${t('nav.workshopCatalogUnitMin')}${remainder}${t('nav.workshopCatalogUnitSec')}`;
     }
 
     private buildVideoNoteTitle(url: string): string {
@@ -4511,6 +4521,8 @@ export class ShadowingView extends ItemView {
     private async executeAnalysis(promptContent: string, promptMeta?: { name: string; isBuiltIn: boolean }): Promise<void> {
         const settings = this.plugin.settings;
         console.debug('[EME] executeAnalysis called');
+        // Builtin prompts switch to their English text under non-Chinese UIs.
+        promptContent = resolvePromptText(promptMeta, promptContent);
         const notice = new Notice(t('shadowing.aiGenerating'), 0);
 
         try {
@@ -4551,7 +4563,7 @@ export class ShadowingView extends ItemView {
 
             notice.hide();
             if (failedChunks > 0) {
-                new Notice(`⚠️ ${failedChunks} 段分析失败,已返回成功部分(详见控制台)`, 8000);
+                new Notice(t('notifications.analysisPartialFailure', { count: failedChunks }), 8000);
             } else {
                 new Notice(t('shadowing.aiDone'));
             }

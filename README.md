@@ -2,7 +2,7 @@
 
 > English documentation: see [README-EN.md](./README-EN.md)
 
-**Language Made Easy (LME)** 把你的 Obsidian 仓库变成一个完整的沉浸式英语学习工作台：阅读时即时查词、FSRS 间隔重复闪卡、字幕同步的视频跟读、AI 智能解析——全部在同一个地方完成，所有学习成果都以普通笔记的形式留在你的仓库里。
+**Language Made Easy (LME)** 把你的 Obsidian 仓库变成一个完整的沉浸式英语学习工作台：阅读时即时查词、FSRS 间隔重复闪卡、字幕同步的视频跟读、AI 智能解析——全部在同一个地方完成，所有学习成果都以普通笔记的形式留在你的仓库里。A complete immersive English-learning workspace in Obsidian: instant word lookup, FSRS spaced-repetition flashcards, video shadowing with synced subtitles, and AI-powered analysis — all in one place.
 
 <p align="center"><img src="./assets/screenshots/hero-overview.png" width="640" alt="一站式外语学习解决方案"></p>
 

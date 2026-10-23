@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Language Made Easy · User Guide</title>
+<style>/* ============================================================
+   LME 系统文档风格 · 书卷暖棕（Bookish Warm）
+   面向用户的系统说明文档统一风格
+   ------------------------------------------------------------
+   用法：HTML 生成脚本读取本文件，内联到 <style>。
+   单文件分发时 CSS 随 HTML 一起走，无外部依赖。
+   ============================================================ */
+
+/* ---------- 设计令牌（Design Tokens）---------- */
+:root{
+  /* 底色层：米白书页感 */
+  --bg:#FBF9F5;          /* 主底：温米白 */
+  --soft:#F4EFE6;        /* 次底：羊皮纸暖灰 */
+  --card:#FFFFFF;        /* 卡片：纯白 */
+
+  /* 文字层 */
+  --text:#2C2A26;        /* 主文字：深褐黑 */
+  --muted:#6B6358;       /* 次文字：棕灰 */
+
+  /* 主色：书脊棕 → 砖红强调（纽伯瑞奖章意象）*/
+  --primary:#8B5E3C;     /* 主色：暖棕 */
+  --accent:#C75B4A;      /* 强调：砖红 */
+  --link:#1E6FB0;        /* 链接：沉稳蓝 */
+
+  /* Hero 渐变（可被主题覆盖）*/
+  --g1:#8B5E3C;          /* 渐变起：暖棕 */
+  --g2:#C75B4A;          /* 渐变止：砖红 */
+
+  --border:#E5DED1;      /* 边框：浅米 */
+
+  /* 级别色阶（L1-L4，知识库通用）*/
+  --L1:#E8A33D;          /* L1 暖橙：起步 */
+  --L2:#5A9367;          /* L2 草绿：成长 */
+  --L3:#3D7AA8;          /* L3 海蓝：进阶 */
+  --L4:#7B5AA8;          /* L4 紫罗兰：高阶 */
+}
+
+/* ---------- 基础排版 ---------- */
+*{box-sizing:border-box}
+body{
+  margin:0; padding:0;
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  background:var(--bg); color:var(--text);
+  line-height:1.7; font-size:16px;
+}
+.wrap{max-width:960px; margin:0 auto; padding:32px 28px 80px;}
+
+/* ---------- Hero 头图 ---------- */
+/* 渐变色带 + 圆角下沿，用于文档顶部标题区 */
+header.hero{
+  position:relative; overflow:hidden;
+  background:linear-gradient(135deg,var(--g1) 0%, var(--g2) 100%);
+  color:#FBF9F5; padding:48px 28px; border-radius:0 0 24px 24px;
+  margin:-32px -28px 36px; box-shadow:0 4px 20px rgba(139,94,60,.18);
+}
+/* 书签缎带装饰：右上角双条错落，V 口 + 穿线孔经典书签造型，不贴边 */
+header.hero::after{
+  content:""; position:absolute;
+  top:0; right:64px; width:32px; height:96px;
+  background:
+    radial-gradient(circle 3px at 50% 11px, rgba(0,0,0,.20) 99%, transparent 100%),
+    rgba(255,255,255,.32);
+  clip-path:polygon(0 0, 100% 0, 100% 100%, 50% 76%, 0 100%);
+  box-shadow:0 3px 8px rgba(0,0,0,.14);
+}
+header.hero h1{margin:0 0 8px; font-size:30px; font-weight:700; letter-spacing:.5px;}
+header.hero p{margin:0; opacity:.92; font-size:15px;}
+
+/* ---------- 标题层级 ---------- */
+/* h2：章节标题，带砖红竖条前缀 */
+h2{
+  font-size:22px; color:var(--primary); margin:40px 0 16px;
+  padding-bottom:8px; border-bottom:2px solid var(--border);
+  display:flex; align-items:center; gap:10px;
+}
+h2::before{content:""; width:4px; height:22px; background:var(--accent); border-radius:2px;}
+h3{font-size:18px; color:var(--text); margin:28px 0 12px; font-weight:600;}
+h4{font-size:15px; color:var(--muted); margin:18px 0 8px; text-transform:uppercase; letter-spacing:1px;}
+p{margin:10px 0;}
+strong{color:var(--accent);}
+code{background:var(--soft); padding:2px 6px; border-radius:4px; font-size:14px; color:var(--primary);}
+
+/* ---------- 引用块 ---------- */
+blockquote{
+  margin:16px 0; padding:12px 18px; background:var(--soft);
+  border-left:4px solid var(--accent); border-radius:0 8px 8px 0; color:var(--muted);
+}
+blockquote strong{color:var(--primary);}
+hr{border:none; border-top:1px dashed var(--border); margin:36px 0;}
+
+/* ---------- 表格 ---------- */
+/* 圆角阴影容器 + 表头主色填充 + 隔行条纹 + 悬停高亮 */
+.table-wrap{overflow-x:auto; margin:18px 0; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,.04);}
+table{width:100%; border-collapse:collapse; background:var(--card); font-size:14.5px;}
+thead{background:var(--primary); color:#FBF9F5;}
+th{padding:10px 10px; text-align:left; font-weight:600; white-space:nowrap;}
+td{padding:9px 10px; border-bottom:1px solid var(--border); vertical-align:top;}
+tbody tr:nth-child(even){background:#FAF6EE;}
+tbody tr:hover{background:#F4E8D8;}
+/* 分级说明：最后一列（内容特征）加宽 */
+body.theme-fenji .table-wrap table th:last-child,
+body.theme-fenji .table-wrap table td:last-child{min-width:220px;}
+td strong:first-child{display:inline-block;}
+
+/* ---------- 列表 ---------- */
+ul,ol{margin:12px 0; padding-left:24px;}
+li{margin:6px 0;}
+ul li::marker{color:var(--accent);}
+
+/* ---------- 书名 / 文档链接 ---------- */
+/* book-link：可点跳转，虚下划线，悬停浅底 */
+a.book-link{
+  color:var(--link); text-decoration:none; border-bottom:1px dashed var(--link);
+  padding-bottom:1px; transition:all .15s;
+}
+a.book-link:hover{background:rgba(30,111,176,.08); border-bottom-style:solid;}
+.plain-link{color:inherit;}
+a.doc-link{color:var(--link);text-decoration:none;border-bottom:1px solid var(--link);padding-bottom:1px;}
+a.doc-link:hover{opacity:.7;}
+
+/* ---------- 级别徽章 ---------- */
+/* 配合级别色阶使用：<span class="lv-badge lv-L1">L1</span> */
+.lv-badge{
+  display:inline-block; padding:2px 10px; border-radius:12px;
+  color:#fff; font-size:12px; font-weight:600; margin-right:6px;
+}
+.lv-L1{background:var(--L1);}
+.lv-L2{background:var(--L2);}
+.lv-L3{background:var(--L3);}
+.lv-L4{background:var(--L4);}
+
+/* ---------- 章节卡片（可选容器）---------- */
+.section-card{
+  background:var(--card); border-radius:12px; padding:8px 22px;
+  margin:16px 0; box-shadow:0 1px 4px rgba(0,0,0,.03);
+}
+
+/* ---------- Sticky 锚点导航 ---------- */
+nav.toc{
+  position:sticky; top:0; z-index:10; background:rgba(251,249,245,.95);
+  backdrop-filter:blur(8px); padding:12px 0; margin:0 -28px 24px;
+  border-bottom:1px solid var(--border); padding-left:28px; padding-right:28px;
+  display:flex; gap:8px; flex-wrap:wrap; font-size:13px;
+}
+nav.toc a{
+  color:var(--muted); text-decoration:none; padding:4px 10px;
+  border-radius:14px; background:var(--soft); transition:all .15s;
+}
+nav.toc a:hover{background:var(--primary); color:#fff;}
+
+/* ---------- 页脚 ---------- */
+footer{text-align:center; color:var(--muted); font-size:13px; margin-top:48px; padding-top:24px; border-top:1px dashed var(--border);}
+
+/* ---------- 代码块 ---------- */
+pre{
+  background:#2C2A26; color:#F4EFE6; padding:14px 18px;
+  border-radius:8px; overflow-x:auto; margin:14px 0; font-size:13.5px;
+  line-height:1.55;
+}
+pre code{background:transparent; color:#F4EFE6; padding:0; font-size:inherit; border:none;}
+
+/* ---------- Callout 提示框 ---------- */
+/* Obsidian callout：> [!type] title \n > 内容 */
+.callout{
+  margin:16px 0; padding:14px 18px; border-radius:8px;
+  background:var(--soft); border-left:4px solid var(--primary);
+}
+.callout-title{font-weight:600; margin-bottom:6px; color:var(--primary);}
+.callout-body p{margin:6px 0;}
+.callout-body p:first-child{margin-top:0;}
+.callout-body p:last-child{margin-bottom:0;}
+.callout-tip{border-left-color:#5A9367; background:#EEF7F0;}
+.callout-tip .callout-title{color:#3D6B47;}
+.callout-info{border-left-color:#3D7AA8; background:#EBF2F9;}
+.callout-info .callout-title{color:#2B5A82;}
+.callout-warning{border-left-color:#C75B4A; background:#FBEEEA;}
+.callout-warning .callout-title{color:#A04535;}
+.callout-note{border-left-color:#8B5E3C; background:var(--soft);}
+.callout-note .callout-title{color:var(--primary);}
+
+/* ---------- 外部链接 ---------- */
+a.ext-link{color:var(--link); text-decoration:none; border-bottom:1px dashed var(--link);}
+a.ext-link:hover{border-bottom-style:solid;}
+
+/* ---------- 响应式 ---------- */
+@media(max-width:640px){
+  .wrap{padding:20px 16px 60px;}
+  header.hero{padding:32px 16px; margin:-20px -16px 24px; border-radius:0 0 16px 16px;}
+  header.hero h1{font-size:24px;}
+  th,td{padding:8px 10px; font-size:13px;}
+  header.hero::before,header.hero::after{display:none;}
+}
+
+/* ---------- 主题色板（4 文档差异化；底色/文字/链接/callout 跨主题共享）---------- */
+/* 每主题只覆盖 --primary / --accent / --g1 / --g2 四变量 */
+body.theme-readme{--primary:#8B5E3C;--accent:#C75B4A;--g1:#8B5E3C;--g2:#C75B4A;}   /* 首页·书卷暖棕（默认）*/
+body.theme-fenji{--primary:#3D6B7A;--accent:#5A9367;--g1:#3D6B7A;--g2:#5A9367;}     /* 分级说明·体系森林 */
+body.theme-shudan{--primary:#8C3A3A;--accent:#C8862E;--g1:#8C3A3A;--g2:#C8862E;}    /* 推荐书单·藏书酒红 */
+body.theme-lme{--primary:#4A5A8C;--accent:#7B5AA8;--g1:#4A5A8C;--g2:#7B5AA8;}       /* LME 手册·工具靛紫 */
+</style>
+</head>
+<body class="theme-lme">
+<div class="wrap">
+<header class="hero">
+  <h1>Language Made Easy · User Guide</h1>
+  <p>An immersive Obsidian plugin for language learning · Lookup / Flashcards / Shadowing / AI</p>
+</header>
+<nav class="toc"><a href="#install">Install</a><a href="#lookup">Lookup</a><a href="#flashcards">Flashcards</a><a href="#shadowing">Shadowing</a><a href="#ai">AI</a><a href="#more">More</a><a href="#faq">FAQ</a></nav>
+
+<blockquote><p><strong>Language Made Easy</strong> is an Obsidian plugin that brings <strong>word lookup, flashcards, video shadowing, and AI analysis</strong> right into your note-taking workflow — so you pick up a language naturally while reading articles, watching videos, and taking notes.</p></blockquote>
+<hr>
+<h2 id="install">1. Install the Plugin</h2>
+<h3>📦 Download &amp; Install</h3>
+<ol>
+<li>Copy the plugin files (<code>main.js</code>, <code>manifest.json</code>, <code>style.css</code>) into your Obsidian vault's plugins folder:</li>
+</ol>
+<pre><code>your-vault/
+└── .obsidian/
+    └── plugins/
+        └── language-made-easy/
+            ├── main.js
+            ├── manifest.json
+            └── style.css</code></pre>
+<div class="callout callout-tip"><div class="callout-title">💡 How do I find the plugins folder?</div><div class="callout-body"><p>In Obsidian, open <strong>Settings → Community plugins → click the 📁 icon</strong> to jump straight to the plugins folder.</p></div></div>
+<ol>
+<li>Back in Obsidian, go to <strong>Settings → Community plugins</strong>, find <strong>Language Made Easy</strong>, and toggle it on.</li>
+</ol>
+<h3>🆓 3-Day Free Trial → Full Edition</h3>
+<p>Your <strong>3-day free trial</strong> starts on first launch — every language is open for learning (word lookup, FSRS flashcards, video shadowing, AI analysis) with the Basic feature set; the countdown shows in the status bar.</p>
+<p>When the trial ends, keep using the plugin by getting the <strong>Full Edition</strong> (one-time purchase, lifetime updates). It unlocks every advanced module:</p>
+<ul>
+<li>7 more languages: English / German / French / Spanish / Korean / Russian / Japanese</li>
+<li>Unlimited flashcards, 5 local dictionaries, mobile offline dictionaries</li>
+<li>Cross-device flashcard sync, data import / export</li>
+<li>AI batch flashcard generation, AI report export</li>
+<li>9 extra interface themes, listening / typing review modes</li>
+<li>Video bookmark notes, video teaching cards, one-click & batch downloads from the subscriptions page</li>
+</ul>
+<blockquote><p>🌐 Visit https://languagemadeeasy.com to get the Full Edition.</p></blockquote>
+<hr>
+<h2 id="lookup">2. Using the Lookup Feature</h2>
+<p>📖 Here's a sample English passage:</p>
+<blockquote><p>The best way to learn a new language is not through memorization, but through immersion. When you read, listen, and speak in context, your brain absorbs vocabulary and grammar naturally — just like how you learned your first language as a child.</p></blockquote>
+<p>Try <strong>double-clicking</strong> any word you don't know in the passage above to try the lookup feature!</p>
+<h3>Open the Word Helper</h3>
+<p>There are several ways to open it:</p>
+<pre><code>Option 1: Click the 📖 book icon in the left sidebar
+Option 2: Ctrl/Cmd + P → automatically looks up the word with "Word Helper"</code></pre>
+<h3>Lookup Actions</h3>
+<p><strong>Double-click a word</strong> in a note, or <strong>hold <code>Ctrl/Cmd + Shift</code> and select text</strong>, and the result panel appears on the right automatically.</p>
+<h3>Lookup Result Panel</h3>
+<p>After looking up a word, you'll see:</p>
+<div class="table-wrap"><table><thead><tr><th>Feature</th><th>Description</th></tr></thead><tbody><tr><td>🔊 <strong>Pronunciation</strong></td><td>Click to hear the correct pronunciation</td></tr><tr><td>📝 <strong>Add to word book</strong></td><td>Save it as a flashcard in one click for later review</td></tr><tr><td>🔤 <strong>Phonetics</strong></td><td>Shows the phonetic transcription</td></tr><tr><td>📖 <strong>Definition</strong></td><td>Shows the part of speech and definition</td></tr></tbody></table></div>
+<div class="callout callout-tip"><div class="callout-title">✨ Tip</div><div class="callout-body"><p>You can also <strong>double-click to look up</strong> words inside the result panel — the dictionary itself is great study material!</p></div></div>
+<h3>Supported Languages</h3>
+<div class="table-wrap"><table><thead><tr><th>Language</th><th>Code</th></tr></thead><tbody><tr><td>🇬🇧 English</td><td><code>en</code></td></tr><tr><td>🇩🇪 German</td><td><code>de</code></td></tr><tr><td>🇫🇷 French</td><td><code>fr</code></td></tr><tr><td>🇪🇸 Spanish</td><td><code>es</code></td></tr><tr><td>🇰🇷 Korean</td><td><code>ko</code></td></tr><tr><td>🇷🇺 Russian</td><td><code>ru</code></td></tr><tr><td>🇯🇵 Japanese</td><td><code>ja</code></td></tr></tbody></table></div>
+<div class="callout callout-info"><div class="callout-title">🌐 More languages will be supported in the future.</div><div class="callout-body"></div></div>
+<hr>
+<h2 id="flashcards">3. Adding &amp; Managing Flashcards</h2>
+<p>🎴 Once you've collected plenty of new words from reading and lookups, here's how to review them systematically:</p>
+<h3>Auto-generated Flashcards</h3>
+<p>When you click <strong>"Add to word book"</strong> after a lookup, the plugin generates a flashcard for you automatically. Each card includes:</p>
+<ul>
+<li>✅ Word + phonetics</li>
+<li>✅ Definition</li>
+<li>✅ Word context (from where you looked it up in the note)</li>
+<li>✅ Link to the source note</li>
+<li>✅ Date added</li>
+</ul>
+<h3>Add a Flashcard Manually</h3>
+<pre><code>Open the flashcard review panel → click the "Add Flashcard" button at the bottom
+→ Fill in word, phonetics (optional), definition, example sentence (optional)
+→ Save</code></pre>
+<h3>Start Reviewing</h3>
+<p>Open the flashcard review panel:</p>
+<pre><code>Option 1: Click the 🧠 brain icon in the left sidebar
+Option 2: Ctrl/Cmd + P → search "Start flashcard review"</code></pre>
+<h4>Review Flow</h4>
+<pre><code>👀 See the front of the card → 🤔 Try to recall the meaning
+→ 🖱️ Click to flip and reveal the definition → ⭐ Rate how well you remembered</code></pre>
+<h4>Rating Scale</h4>
+<div class="callout callout-info"><div class="callout-title">🧠 About the FSRS Algorithm</div><div class="callout-body"><p>Flashcard review is powered by the <strong>FSRS algorithm</strong> (a modern spaced-repetition algorithm). Based on your ratings, it intelligently schedules each card's next review so you revisit it right at the edge of forgetting.</p></div></div>
+<div class="table-wrap"><table><thead><tr><th>Rating</th><th>Meaning</th><th>Effect</th></tr></thead><tbody><tr><td>😵 <strong>Forgot</strong></td><td>Couldn't recall it at all</td><td>Shows up again soon</td></tr><tr><td>😐 <strong>Hard</strong></td><td>Barely recalled</td><td>Interval shortened</td></tr><tr><td>🙂 <strong>Good</strong></td><td>Recalled normally</td><td>Standard interval scheduled</td></tr><tr><td>😎 <strong>Easy</strong></td><td>Knew it instantly</td><td>Interval greatly extended</td></tr></tbody></table></div>
+<div class="callout callout-warning"><div class="callout-title">🧹 Auto-cleanup</div><div class="callout-body"><p>After a word is <strong>marked "Easy" several times</strong>, it's automatically removed from the review rotation. You can customize the trigger for the "auto-cleanup" feature under <strong>Settings → Language Made Easy</strong>.</p></div></div>
+<h3>Manage Flashcard Data</h3>
+<pre><code>Ctrl/Cmd + P → search "Manage flashcard data"</code></pre>
+<p>In the manager you can:</p>
+<ul>
+<li>📋 Filter flashcards by language and status</li>
+<li>🗑️ Batch-delete flashcards you no longer need</li>
+<li>📤 Export your flashcard data</li>
+</ul>
+<div class="callout callout-tip"><div class="callout-title">💡 Two important notes</div><div class="callout-body"><p>1. Flashcard data is stored in <strong>local IndexedDB</strong>. When updating the plugin, you only need to replace the three files <code>main.js</code>, <code>manifest.json</code>, and <code>style.css</code> — <strong>your existing flashcards won't be affected</strong>. Update with confidence!</p><p>2. Flashcards support <strong>import and export</strong> in multiple formats — <code>txt</code>, <code>markdown</code>, <code>csv</code>, <code>json</code>, and more — for easy backup and migration.</p></div></div>
+<hr>
+<h2 id="shadowing">4. Using the Shadowing Studio</h2>
+<p>🎬 Language Made Easy helps you learn more efficiently from <strong>YouTube / Bilibili videos</strong>, so you can pick up natural spoken language and sharpen your listening skills.</p>
+<h3>Open the Shadowing Studio</h3>
+<pre><code>Option 1: Click the ▶️ play icon in the left sidebar
+Option 2: Ctrl/Cmd + P → search "Shadowing Studio"</code></pre>
+<h3>Load a Video</h3>
+<p>Paste a video link into a note and the plugin recognizes and loads it automatically:</p>
+<pre><code>✅ YouTube video → paste the link to auto-load
+✅ Bilibili video → paste the link to auto-load (auto-downloaded &amp; cached)
+✅ Local audio/video → embed with ![[video.mp4]] or ![[audio.mp3]]</code></pre>
+<h3>Download Subtitles</h3>
+<p>After loading a video, click the <strong>"Download Subtitles"</strong> button in the right toolbar. The plugin fetches subtitles from YouTube / Bilibili and inserts them into your note.</p>
+<p>Subtitle format example:</p>
+<pre><code>[00:12] Hello, how are you today?
+[00:15] I&#x27;m fine, thank you. And you?
+[01:23] What a beautiful day! Let&#x27;s go for a walk.</code></pre>
+<div class="callout callout-tip"><div class="callout-title">📝 Note</div><div class="callout-body"><p>The Shadowing Studio supports <strong>multiple timestamp formats</strong> — whether <code>HH:MM:SS</code>, <code>MM:SS</code>, or <code>[00:12]</code>, they're all recognized and loaded automatically.</p></div></div>
+<h3>Playback Controls</h3>
+<p>The Shadowing Studio player has a row of playback controls at the bottom:</p>
+<div class="table-wrap"><table><thead><tr><th>Button</th><th>Function</th><th>Shortcut</th></tr></thead><tbody><tr><td>⏮️ <strong>Replay</strong></td><td>Jump to the start of the current sentence</td><td>Re-listen from the sentence start</td></tr><tr><td>🔁 <strong>Repeat</strong></td><td>Single-sentence loop</td><td>Great for drilling one sentence</td></tr><tr><td>▶️ / ⏸️ <strong>Play/Pause</strong></td><td>Control playback</td><td>Spacebar</td></tr><tr><td>🐢🐇 <strong>Speed</strong></td><td>0.8x / 1.0x / 1.2x</td><td>Adjust to your level</td></tr></tbody></table></div>
+<h3>🎧 Dictation Mode</h3>
+<p>Want to challenge your listening? Try <strong>Dictation Mode</strong>!</p>
+<pre><code>Shadowing Studio right toolbar → click the "Dictation Mode" button
+→ A sentence plays and you type what you hear
+→ On submit, your input is compared with the original
+→ Mistakes are marked red; correct parts are marked green</code></pre>
+<hr>
+<h2 id="ai">5. Level Up Your Learning with AI</h2>
+<p>Want a more powerful learning experience? The advanced setups below unlock features like <strong>local dictionaries</strong> and <strong>AI analysis</strong>.</p>
+<h3>5.1 Set Up a Local Dictionary</h3>
+<p>A local dictionary (MDX format) can provide richer definitions — including example sentences, collocations, and synonyms — even <strong>offline</strong>.</p>
+<pre><code>Settings → Language Made Easy → Dictionary settings
+→ Set the file path for your local MDX dictionary
+→ Save</code></pre>
+<h3>5.2 Local Dictionary in Action</h3>
+<p>With a local dictionary configured, lookup results become much richer:</p>
+<div class="table-wrap"><table><thead><tr><th>Aspect</th><th>Online dictionary</th><th>Local MDX dictionary</th></tr></thead><tbody><tr><td>Network</td><td>✅ Required</td><td>❌ Works offline</td></tr><tr><td>Definition detail</td><td>Basic definitions</td><td>Detailed + examples + collocations</td></tr><tr><td>Speed</td><td>Depends on network</td><td>⚡ Instant</td></tr><tr><td>Supported sources</td><td>Google / MyMemory / Jisho</td><td>Custom MDX files</td></tr></tbody></table></div>
+<h3>5.3 Configure an LLM API Key</h3>
+<p>The AI analysis feature needs a large-language-model API key. Currently supported providers:</p>
+<pre><code>Settings → Language Made Easy → AI settings
+→ Choose a model provider (OpenAI / Google Gemini / OpenRouter)
+→ Enter your API key
+→ Save</code></pre>
+<div class="callout callout-tip"><div class="callout-title">💡 Recommendations</div><div class="callout-body"><p>- <strong>OpenAI</strong>: plug-and-play with an API key, works out of the box.</p><p>- <strong>Google Gemini</strong>: Free tier available; great as a backup or for in-depth study.</p></div></div>
+<h3>5.4 Using AI Analysis</h3>
+<h4>5.4.1 Generate an AI Analysis Report</h4>
+<p>After loading subtitles in the Shadowing Studio:</p>
+<pre><code>Click the "AI Analysis" button in the right toolbar
+→ Wait for the analysis to finish (usually ten to twenty seconds)
+→ The report appears in the right panel
+→ Click "Save to note" to keep it
+→ Click the image button to "Save as long image" locally</code></pre>
+<p>An AI analysis report typically includes:</p>
+<ul>
+<li>📝 <strong>Vocabulary</strong> — Usage and collocations of key words</li>
+<li>🏗️ <strong>Grammar</strong> — Breakdown of key grammar structures</li>
+<li>🌍 <strong>Cultural notes</strong> — Relevant cultural context</li>
+<li>💡 <strong>Study tips</strong> — Targeted learning suggestions</li>
+</ul>
+<p>The plugin ships with <strong>3 built-in AI analysis prompts</strong> for different learning needs:</p>
+<div class="table-wrap"><table><thead><tr><th>Prompt</th><th>Best for</th><th>Output</th></tr></thead><tbody><tr><td>📝 <strong>Summary</strong></td><td>Grasp the gist of the video quickly</td><td>Concise summary + key points</td></tr><tr><td>📖 <strong>Bilingual</strong></td><td>Study the content line by line</td><td>Sentence-by-sentence bilingual translation</td></tr><tr><td>🧪 <strong>Mini quiz</strong></td><td>Test what you learned</td><td>Quiz questions generated from the video</td></tr></tbody></table></div>
+<div class="callout callout-tip"><div class="callout-title">💡 You can also write your own prompts — see <a href="#ai-custom-prompt">5.4.2 Add a Custom Prompt</a>.</div><div class="callout-body"></div></div>
+<h4 id="ai-custom-prompt">5.4.2 Add a Custom Prompt</h4>
+<p>You can write your own prompts and have the AI generate study material tailored to your needs:</p>
+<pre><code>Settings → Language Made Easy → AI prompt management
+→ Add a custom prompt
+→ Set the prompt name and content
+→ Save</code></pre>
+<h3>5.5 One-click Flashcard Auto-fill</h3>
+<p>Don't want to fill in phonetics and definitions by hand when adding a flashcard? Use <strong>AI auto-fill</strong>!</p>
+<pre><code>Add Flashcard panel → enter the word
+→ Click the "AI Fill" button
+→ Phonetics, definition, and example sentence are filled in automatically
+→ Confirm and save</code></pre>
+<h3>5.6 More Ways to Load Subtitles</h3>
+<p>Beyond downloading subtitles directly in the Shadowing Studio, there are several other ways to load subtitles:</p>
+<h4>5.6.1 Use the Shadowing Studio's "Download Subtitles" button</h4>
+<p>The most direct method. After loading a video, click the <strong>"Download Subtitles"</strong> button in the right toolbar — the plugin fetches subtitles from YouTube / Bilibili automatically.</p>
+<div class="callout callout-warning"><div class="callout-title">⚠️ Subtitle download notes</div><div class="callout-body"><p>1. The plugin downloads subtitles for the <strong>currently selected language</strong> — please double-check the language before downloading. If no subtitle is found for that language, the video's default subtitles are returned instead.</p><p>2. Bilibili videos <strong>often do not include English subtitles</strong>. Before choosing a video, check the "字幕" (Subtitles) list in Bilibili's player to confirm the language you need is available.</p></div></div>
+<h4>5.6.2 Use the Obsidian Web Clipper</h4>
+<p>With the <a class="ext-link" href="https://obsidian.md/clipper" target="_blank" rel="noopener">Obsidian Web Clipper</a> browser extension, you can clip YouTube subtitles straight into an Obsidian note while watching.</p>
+<pre><code>Install the Obsidian Web Clipper browser extension
+→ On the YouTube video page, click the extension icon
+→ Choose to clip the subtitle content
+→ It's automatically saved as a timestamped note</code></pre>
+<h4>5.6.3 Use the ytranscript plugin</h4>
+<p><a class="ext-link" href="https://obsidian.md/plugins?id=ytranscript" target="_blank" rel="noopener">ytranscript</a> is another Obsidian plugin that helps you download YouTube subtitles inside Obsidian:</p>
+<pre><code>Search for and install "ytranscript" from Obsidian's community plugins
+→ Use ytranscript from the command palette to fetch YouTube subtitles
+→ Subtitles are inserted into the note with timestamps
+→ Open the Shadowing Studio to start using them</code></pre>
+<h4>5.6.4 Load SRT files for local videos</h4>
+<p>If you have a local video file and a matching SRT subtitle file:</p>
+<pre><code>Option 1: Copy the SRT file content into a note
+         → Make sure the SRT timestamp format is correct
+         → Embed the video in the note with ![[video.mp4]]
+         → Open the Shadowing Studio to parse the video and subtitles
+
+Option 2: Place the SRT file next to the video file in your vault
+         → Embed the video in the note with ![[video.mp4]]
+         → The plugin auto-matches the SRT file with the same name</code></pre>
+<hr>
+<h2 id="more">6. More Usage</h2>
+<h3>6.1 Quick command: one-click theme switch</h3>
+<p>The plugin ships with <strong>10 carefully designed UI themes</strong> to make your study environment a pleasure to use:</p>
+<pre><code>Ctrl/Cmd + P → search "Switch to next theme"
+→ Each run cycles to the next theme</code></pre>
+<div class="table-wrap"><table><thead><tr><th>Theme</th><th>Style</th></tr></thead><tbody><tr><td>📜 Paper Ink</td><td>Classic ink on paper, warm and soft</td></tr><tr><td>🌿 Mint Atelier</td><td>Mint freshness, clean and professional</td></tr><tr><td>🌸 Rose Blush</td><td>Soft rose pink, gentle and romantic</td></tr><tr><td>💜 Lavender Dream</td><td>Wisteria dream, light and airy</td></tr><tr><td>🍬 Candy Pop</td><td>Candy party, bright and lively</td></tr><tr><td>🌳 Mindful Oasis</td><td>Mindful oasis, natural and cozy</td></tr><tr><td>🪸 Coral Warmth</td><td>Coral warmth, warm and energetic</td></tr><tr><td>🌊 Ocean Glass</td><td>Heart of the ocean, deep and calm</td></tr><tr><td>🌌 Aurora Prism</td><td>Aurora prism, mysterious and colorful</td></tr><tr><td>🍋 Dark Lemon</td><td>Night lemon, dark and cool</td></tr></tbody></table></div>
+<h3>6.2 Quick command: one-click language switch</h3>
+<p>Studying multiple languages? Switch between them quickly:</p>
+<pre><code>Ctrl/Cmd + P → search "Switch to English / German / French / ..."
+→ Immediately switches the current study language</code></pre>
+<h3>6.3 Quick command: AI analysis report</h3>
+<pre><code>Ctrl/Cmd + P → search "AI Analysis"
+→ Pick any note in your vault to run an AI analysis on</code></pre>
+<h3>6.4 Set the word-book save path</h3>
+<p>Every time you add a word to your word book, the plugin generates a Markdown word-book file in your vault. You can customize where it's saved:</p>
+<pre><code>Settings → Language Made Easy → Word book settings
+→ Set the save path and filename for the word book
+→ Save</code></pre>
+<h3>6.5 Set the AI analysis report save path</h3>
+<p>AI analysis reports can be saved to a custom location too:</p>
+<pre><code>Settings → Language Made Easy → AI analysis settings
+→ Set the report save path
+→ Save</code></pre>
+<hr>
+<h2 id="faq">7. FAQ</h2>
+<h3>❓ Lookup isn't responding?</h3>
+<blockquote><p>Please check the following:</p><p>1. Make sure a dictionary is properly configured (online dictionaries need a network connection).</p><p>2. If you're using an MDX dictionary, double-check that the mdx, mdd, and css file paths are filled in correctly in the settings.</p><p>3. Confirm the current study language is set correctly.</p></blockquote>
+<h3>❓ Can't see the flashcard I just added?</h3>
+<blockquote><p>Newly added flashcards appear at the very end of the review queue.</p></blockquote>
+<h3>❓ Bilibili videos only download Chinese subtitles?</h3>
+<blockquote><p>Check whether the video actually has subtitles in other languages uploaded. Burned-in bilingual subtitles on screen don't mean the uploader provided all of those subtitle files.</p></blockquote>
+<h3>❓ The Shadowing Studio asks me to "sign in" when opening a YouTube video?</h3>
+<blockquote><p><strong>Switching networks</strong> usually resolves this. It's typically related to your current network environment — try a different network node and retry.</p></blockquote>
+<h3>❓ AI analysis throws an error?</h3>
+<blockquote><p>Please check:</p><p>1. Is the API key configured correctly?</p><p>2. Is your network connection working?</p><p>3. Is the API balance sufficient?</p></blockquote>
+<h3>📮 Contact the Author</h3>
+<ul>
+<li>📧 Email: <a class="ext-link" href="mailto:panrunrun@gmail.com">panrunrun@gmail.com</a></li>
+<li>🌐 Website: <a class="ext-link" href="https://www.languagemadeeasy.com" target="_blank" rel="noopener">www.languagemadeeasy.com</a></li>
+</ul>
+<hr>
+<blockquote><p>🎉 <strong>Happy learning! Reach out anytime if you have questions.</strong></p></blockquote>
+<footer>Curated by Pandora's Digital Garden</footer>
+</div>
+</body>
+</html>

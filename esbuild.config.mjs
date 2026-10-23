@@ -44,6 +44,9 @@ const context = await esbuild.context({
         ...nodeBuiltinExternals],
     format: 'cjs',
     target: 'es2018',
+    // Keep non-ASCII (guide/i18n text) as UTF-8 instead of \uXXXX escapes:
+    // smaller bundle and readable output; Obsidian loads main.js as UTF-8.
+    charset: 'utf8',
     // 社区市场要求产物非压缩可读(政策:混淆/压缩视同闭源,case-by-case)。
     minify: false,
     logLevel: "info",

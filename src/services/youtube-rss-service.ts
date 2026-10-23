@@ -1,4 +1,5 @@
 import { Notice, requestUrl } from 'obsidian';
+import { t } from '../i18n';
 import { randomUUID } from '../mocks/crypto';
 import type LanguageMadeEasyPlugin from '../main-unified-full';
 import {
@@ -72,7 +73,8 @@ async function fetchYouTubeFeed(url: string, headers: Record<string, string> = {
         }
     }
     const status = statusFromError(lastError);
-    throw new Error(`YouTube 请求失败${status ? `(HTTP ${status})` : '(网络错误)'},已重试 ${RETRY_DELAYS_MS.length} 次仍未成功;请检查网络/代理是否可稳定访问 YouTube`);
+    const statusText = status ? `(HTTP ${status})` : ` (${t('errors.noServerErrorDetails')})`;
+    throw new Error(t('errors.youtubeRequestFailed', { status: statusText, retries: RETRY_DELAYS_MS.length }));
 }
 
 const YOUTUBE_HOSTS = new Set(['youtube.com', 'www.youtube.com', 'm.youtube.com']);
@@ -145,7 +147,7 @@ export class YouTubeRssService {
                     needsWrite = true;
                     try {
                         await adapter.write(`${this.storePath}.corrupt-${Date.now()}`, raw);
-                        new Notice('YouTube 订阅数据文件损坏,已重建;原文件保留为 youtube-rss.corrupt-*.json', 8000);
+                        new Notice(t('notifications.youtubeRssCorrupt'), 8000);
                     } catch (e) {
                         console.warn('[LME] youtube-rss.json 损坏原件备份失败', e);
                     }
@@ -202,7 +204,7 @@ export class YouTubeRssService {
             this.plugin.settings.youtubeFeedItems = [];
             this.plugin.settings.youtubeSubscriptionCategories = [];
             await this.plugin.saveSettings();
-            new Notice('YouTube 订阅数据已迁移到独立文件 youtube-rss.json,不再写入 data.json(防止 iCloud 同步覆盖丢失)', 8000);
+            new Notice(t('notifications.youtubeRssMigrated'), 8000);
         }
     }
 
@@ -226,7 +228,7 @@ export class YouTubeRssService {
 
         const response = await fetchYouTubeFeed(subscription.feedUrl);
         if (response.status < 200 || response.status >= 300) {
-            throw new Error(`YouTube Feed 请求失败 (${response.status})`);
+            throw new Error(t('errors.youtubeChannelPageFailed', { status: response.status }));
         }
         const entries = parseYouTubeFeed(response.text);
         if (entries.length > 0 && entries[0].channelName) subscription.channelName = entries[0].channelName;
@@ -339,7 +341,7 @@ export class YouTubeRssService {
                 failed++;
                 this.store = patchSubscriptionInStore(this.store, subscription.id, {
                     lastCheckedAt: now,
-                    lastError: error instanceof Error ? error.message.slice(0, 300) : 'Feed 请求失败',
+                    lastError: error instanceof Error ? error.message.slice(0, 300) : t('errors.feedRequestFailed'),
                 });
             }
         }
@@ -395,7 +397,7 @@ export class YouTubeRssService {
         try { url = new URL(value); } catch { throw new Error('请输入有效的 YouTube 频道链接或频道 ID'); }
         if (!YOUTUBE_HOSTS.has(url.hostname.toLowerCase())) throw new Error('目前只支持 YouTube 频道链接');
         if (!/^\/(?:channel\/UC[a-zA-Z0-9_-]+|@[a-zA-Z0-9._-]+|c\/[a-zA-Z0-9._-]+|user\/[a-zA-Z0-9._-]+)(?:\/(?:videos|shorts|streams))?\/?$/i.test(url.pathname)) {
-            throw new Error('请输入 YouTube 频道链接，不要粘贴视频或搜索页面');
+            throw new Error(t('errors.youtubeChannelNotVideoPage'));
         }
         const response = await fetchYouTubeFeedPage(url.toString());
         const channelId = extractChannelIdFromHtml(response);
