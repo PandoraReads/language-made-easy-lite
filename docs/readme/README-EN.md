@@ -1,10 +1,10 @@
 # Language Made Easy — Immersive Obsidian English Learning Workspace
 
-> 🌐 Documentation in other languages: English · [简体中文](./README.md) · [繁體中文](./README-ZH-TW.md) · [Deutsch](./README-DE.md) · [Français](./README-FR.md) · [Español](./README-ES.md) · [日本語](./README-JA.md) · [한국어](./README-KO.md) · [Русский](./README-RU.md) · [ไทย](./README-TH.md)
+> 🌐 Documentation in other languages: English · [简体中文](../../README.md) · [繁體中文](./README-ZH-TW.md) · [Deutsch](./README-DE.md) · [Français](./README-FR.md) · [Español](./README-ES.md) · [日本語](./README-JA.md) · [한국어](./README-KO.md) · [Русский](./README-RU.md) · [ไทย](./README-TH.md)
 
 **Language Made Easy (LME)** turns your Obsidian vault into a complete immersive English-learning workspace: instant dictionary lookup while reading, FSRS spaced-repetition flashcards, video shadowing with synced subtitles, and AI-powered analysis — all in one place, all stored as plain notes in your vault.
 
-<p align="center"><img src="./assets/screenshots/hero-overview.png" width="640" alt="One-stop language learning solution"></p>
+<p align="center"><img src="../../assets/screenshots/hero-overview.png" width="640" alt="One-stop language learning solution"></p>
 
 
 > ### 💡 Freemium notice
@@ -22,13 +22,13 @@ Paste a YouTube / Bilibili link and the plugin fetches the title, channel, and c
 - **Shadowing workshop**: click the workshop icon in the left ribbon and parse a link in the input box
 - **YouTube subscriptions page**: generate notes for any video while browsing your feed, **with multi-select batch download** (Full Edition)
 
-<p align="center"><img src="./assets/screenshots/video-note.png" width="640" alt="Generated video note"></p>
+<p align="center"><img src="../../assets/screenshots/video-note.png" width="640" alt="Generated video note"></p>
 
-<p align="center"><img src="./assets/screenshots/nav-video-note.gif" width="640" alt="Enter a video link on the navigation panel to generate a video note in one click"></p>
+<p align="center"><img src="../../assets/screenshots/nav-video-note.gif" width="640" alt="Enter a video link on the navigation panel to generate a video note in one click"></p>
 
 **Unified note management**: all video notes live in the workshop catalog page with sorting, filtering, and grouping; click a card to start shadowing, Shift+click to preview the note.
 
-<p align="center"><img src="./assets/screenshots/workshop-catalog.png" width="640" alt="Workshop catalog page"></p>
+<p align="center"><img src="../../assets/screenshots/workshop-catalog.png" width="640" alt="Workshop catalog page"></p>
 
 ### 📖 Dictionary Assistant — read anything, look up instantly
 - **Instant lookup**: `Ctrl/Cmd + double-click` any word (or select text) — definitions appear in the sidebar instantly
@@ -38,7 +38,7 @@ Paste a YouTube / Bilibili link and the plugin fetches the title, channel, and c
 - **Pronunciation**: audio playback with smart preloading
 - **One-click add** to your vocabulary notebook (IndexedDB + auto-maintained markdown file)
 
-<p align="center"><img src="./assets/screenshots/dictionary-lookup.png" width="640" alt="Double-click lookup with sidebar definitions"></p>
+<p align="center"><img src="../../assets/screenshots/dictionary-lookup.png" width="640" alt="Double-click lookup with sidebar definitions"></p>
 
 ### 🧠 FSRS Flashcards — remember what you learn
 - State-of-the-art **FSRS scheduler** (`ts-fsrs`) computes optimal review intervals for every card
@@ -47,10 +47,10 @@ Paste a YouTube / Bilibili link and the plugin fetches the title, channel, and c
 - **Flashcard manager**: search, filter by language/mastery, sort, inline edit, bulk delete
 - **Learning companion pet** 🐣: a small companion that hatches, levels up, and grows with your streaks
 
-<p align="center"><img src="./assets/screenshots/flashcard-review.png" width="300" alt="Flashcard review"> <img src="./assets/screenshots/flashcard-review-2.png" width="300" alt="Flashcard review stats"></p>
+<p align="center"><img src="../../assets/screenshots/flashcard-review.png" width="300" alt="Flashcard review"> <img src="../../assets/screenshots/flashcard-review-2.png" width="300" alt="Flashcard review stats"></p>
 
-<p align="center"><img src="./assets/screenshots/one-click-cards.png" width="640" alt="One-click card creation process"></p>
-<p align="center"><img src="./assets/screenshots/batch-generate.png" width="640" alt="AI batch flashcard generation (Full Edition)"></p>
+<p align="center"><img src="../../assets/screenshots/one-click-cards.png" width="640" alt="One-click card creation process"></p>
+<p align="center"><img src="../../assets/screenshots/batch-generate.png" width="640" alt="AI batch flashcard generation (Full Edition)"></p>
 
 ### 🎬 Video Shadowing Workshop — learn from real videos
 - **YouTube, Bilibili, and local video/audio** files in one workspace
@@ -60,12 +60,12 @@ Paste a YouTube / Bilibili link and the plugin fetches the title, channel, and c
 - **Precise playback control**: 0.8x / 1.0x / 1.25x speed, quick -5s / -10s jumps
 - **Workshop catalog page**: all your subtitle notes organized with sorting, filtering, and grouping
 
-<p align="center"><img src="./assets/screenshots/shadowing-mode.png" width="315" alt="Shadowing mode"> <img src="./assets/screenshots/dictation-mode.png" width="315" alt="Dictation mode"></p>
+<p align="center"><img src="../../assets/screenshots/shadowing-mode.png" width="315" alt="Shadowing mode"> <img src="../../assets/screenshots/dictation-mode.png" width="315" alt="Dictation mode"></p>
 <p align="center"><em>Shadowing mode (left) and dictation mode (right)</em></p>
 
-<p align="center"><img src="./assets/screenshots/listening-mode-2.png" width="640" alt="Listening mode"></p>
-<p align="center"><img src="./assets/screenshots/record-pronunciation.png" width="640" alt="Record and get AI pronunciation scoring"></p>
-<p align="center"><img src="./assets/screenshots/focus-mode.png" width="640" alt="Focus mode"></p>
+<p align="center"><img src="../../assets/screenshots/listening-mode-2.png" width="640" alt="Listening mode"></p>
+<p align="center"><img src="../../assets/screenshots/record-pronunciation.png" width="640" alt="Record and get AI pronunciation scoring"></p>
+<p align="center"><img src="../../assets/screenshots/focus-mode.png" width="640" alt="Focus mode"></p>
 <p align="center"><em>Focus mode</em></p>
 
 ### ✨ AI-Powered Analysis — bring your own API key
@@ -76,14 +76,14 @@ Paste a YouTube / Bilibili link and the plugin fetches the title, channel, and c
 - **One-click flashcard auto-fill**: let AI complete missing fields on your cards
 - Works with **OpenAI, DeepSeek, Google Gemini, Kimi, GLM, Qwen, OpenRouter, or any OpenAI-compatible endpoint** — your key, your choice, your data
 
-<p align="center"><img src="./assets/screenshots/ai-analysis-2.png" width="640" alt="AI-powered analysis report"></p>
+<p align="center"><img src="../../assets/screenshots/ai-analysis-2.png" width="640" alt="AI-powered analysis report"></p>
 
 ### 📺 YouTube Channel Subscriptions
 - Subscribe to channels with **categories, RSS polling, and new-video notifications**
 - Browse your feed in card/list views and **preview videos in-app** without leaving Obsidian
 - **One-click video-note generation with subtitles**, including multi-select batch download
 
-<p align="center"><img src="./assets/screenshots/youtube-subscriptions.png" width="640" alt="YouTube channel subscriptions"></p>
+<p align="center"><img src="../../assets/screenshots/youtube-subscriptions.png" width="640" alt="YouTube channel subscriptions"></p>
 
 ### 📝 And more
 - **SRT to note** conversion (single & batch) for your own subtitle files
@@ -131,7 +131,7 @@ The Full Edition is a **one-time purchase** (no subscription) with **lifetime fr
 
 Questions about usage or the Full Edition? Scan the QR code to add the author on WeChat:
 
-<p align="center"><img src="./assets/wechat-qr.jpg" width="200" alt="Add the author on WeChat" /></p>
+<p align="center"><img src="../../assets/wechat-qr.jpg" width="200" alt="Add the author on WeChat" /></p>
 
 ---
 
@@ -183,7 +183,7 @@ The plugin works fully offline except for the following optional, user-initiated
 
 ## 📄 License
 
-[GPL-3.0](./LICENSE)
+[GPL-3.0](../../LICENSE)
 
 ## ❤️ Support
 

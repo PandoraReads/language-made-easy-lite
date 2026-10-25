@@ -2,16 +2,16 @@
 
 import { ItemView, WorkspaceLeaf } from 'obsidian';
 import { t, getLocale, type Locale } from '../i18n';
-import guideZh from '../../LME外语助手（使用说明）.html';
-import guideZhTW from '../../guide-zh-TW.html';
-import guideEn from '../../guide-en.html';
-import guideDe from '../../guide-de.html';
-import guideFr from '../../guide-fr.html';
-import guideEs from '../../guide-es.html';
-import guideJa from '../../guide-ja.html';
-import guideKo from '../../guide-ko.html';
-import guideRu from '../../guide-ru.html';
-import guideTh from '../../guide-th.html';
+import guideZh from '../../docs/guide/LME外语助手（使用说明）.html';
+import guideZhTW from '../../docs/guide/guide-zh-TW.html';
+import guideEn from '../../docs/guide/guide-en.html';
+import guideDe from '../../docs/guide/guide-de.html';
+import guideFr from '../../docs/guide/guide-fr.html';
+import guideEs from '../../docs/guide/guide-es.html';
+import guideJa from '../../docs/guide/guide-ja.html';
+import guideKo from '../../docs/guide/guide-ko.html';
+import guideRu from '../../docs/guide/guide-ru.html';
+import guideTh from '../../docs/guide/guide-th.html';
 
 export const HTML_GUIDE_VIEW_TYPE = 'lme-html-guide-view';
 

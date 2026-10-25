@@ -1,10 +1,10 @@
 # Language Made Easy — иммерсивное рабочее пространство для изучения английского в Obsidian
 
-> 🌐 Другие языки: [English](./README-EN.md) · [简体中文](./README.md) · [繁體中文](./README-ZH-TW.md) · [Deutsch](./README-DE.md) · [Français](./README-FR.md) · [Español](./README-ES.md) · [日本語](./README-JA.md) · [한국어](./README-KO.md) · Русский · [ไทย](./README-TH.md)
+> 🌐 Другие языки: [English](./README-EN.md) · [简体中文](../../README.md) · [繁體中文](./README-ZH-TW.md) · [Deutsch](./README-DE.md) · [Français](./README-FR.md) · [Español](./README-ES.md) · [日本語](./README-JA.md) · [한국어](./README-KO.md) · Русский · [ไทย](./README-TH.md)
 
 **Language Made Easy (LME)** превращает ваше хранилище Obsidian в полноценное иммерсивное пространство для изучения английского: мгновенный поиск слов прямо во время чтения, интервальные карточки по алгоритму FSRS, шэдоуинг (повторение за диктором) с синхронизированными субтитрами и анализ с помощью ИИ — всё в одном месте, и всё хранится в виде обычных заметок в вашем хранилище.
 
-<p align="center"><img src="./assets/screenshots/hero-overview.png" width="640" alt="Комплексное решение для изучения языков"></p>
+<p align="center"><img src="../../assets/screenshots/hero-overview.png" width="640" alt="Комплексное решение для изучения языков"></p>
 
 
 > ### 💡 О модели Freemium
@@ -22,13 +22,13 @@
 - **Мастерская шэдоуинга**: нажмите значок мастерской на левой панели и вставьте ссылку в поле ввода
 - **Страница подписок YouTube**: создавайте заметки для любого видео прямо при просмотре ленты, **с пакетным скачиванием для нескольких выбранных видео** (Полное издание)
 
-<p align="center"><img src="./assets/screenshots/video-note.png" width="640" alt="Созданная видеозаметка"></p>
+<p align="center"><img src="../../assets/screenshots/video-note.png" width="640" alt="Созданная видеозаметка"></p>
 
-<p align="center"><img src="./assets/screenshots/nav-video-note.gif" width="640" alt="Введите ссылку на видео на панели навигации, чтобы создать видеозаметку в один клик"></p>
+<p align="center"><img src="../../assets/screenshots/nav-video-note.gif" width="640" alt="Введите ссылку на видео на панели навигации, чтобы создать видеозаметку в один клик"></p>
 
 **Единое управление заметками**: все видеозаметки собраны на странице каталога мастерской с сортировкой, фильтрацией и группировкой; кликните по карточке, чтобы начать шэдоуинг, Shift+клик — чтобы открыть предпросмотр заметки.
 
-<p align="center"><img src="./assets/screenshots/workshop-catalog.png" width="640" alt="Страница каталога мастерской"></p>
+<p align="center"><img src="../../assets/screenshots/workshop-catalog.png" width="640" alt="Страница каталога мастерской"></p>
 
 ### 📖 Словарный помощник — читайте что угодно, узнавайте значения мгновенно
 - **Мгновенный поиск**: `Ctrl/Cmd + двойной клик` по любому слову (или выделите текст) — определения тут же появляются в боковой панели
@@ -38,7 +38,7 @@
 - **Произношение**: воспроизведение звука с умной предварительной загрузкой
 - **Добавление в один клик** в ваш словарный блокнот (IndexedDB + автоматически поддерживаемый markdown-файл)
 
-<p align="center"><img src="./assets/screenshots/dictionary-lookup.png" width="640" alt="Поиск по двойному клику с определениями в боковой панели"></p>
+<p align="center"><img src="../../assets/screenshots/dictionary-lookup.png" width="640" alt="Поиск по двойному клику с определениями в боковой панели"></p>
 
 ### 🧠 Карточки FSRS — запоминайте то, что выучили
 - Передовой **планировщик FSRS** (`ts-fsrs`) вычисляет оптимальные интервалы повторения для каждой карточки
@@ -47,10 +47,10 @@
 - **Менеджер карточек**: поиск, фильтрация по языку/уровню освоения, сортировка, редактирование на месте, массовое удаление
 - **Питомец-спутник для обучения** 🐣: маленький компаньон, который вылупляется, растёт и развивается вместе с вашими учебными сериями
 
-<p align="center"><img src="./assets/screenshots/flashcard-review.png" width="300" alt="Повторение карточек"> <img src="./assets/screenshots/flashcard-review-2.png" width="300" alt="Статистика повторения карточек"></p>
+<p align="center"><img src="../../assets/screenshots/flashcard-review.png" width="300" alt="Повторение карточек"> <img src="../../assets/screenshots/flashcard-review-2.png" width="300" alt="Статистика повторения карточек"></p>
 
-<p align="center"><img src="./assets/screenshots/one-click-cards.png" width="640" alt="Процесс создания карточек в один клик"></p>
-<p align="center"><img src="./assets/screenshots/batch-generate.png" width="640" alt="Пакетная генерация карточек с помощью ИИ (Полное издание)"></p>
+<p align="center"><img src="../../assets/screenshots/one-click-cards.png" width="640" alt="Процесс создания карточек в один клик"></p>
+<p align="center"><img src="../../assets/screenshots/batch-generate.png" width="640" alt="Пакетная генерация карточек с помощью ИИ (Полное издание)"></p>
 
 ### 🎬 Мастерская шэдоуинга — учитесь на настоящих видео
 - **YouTube, Bilibili и локальные видео/аудио** файлы в одном рабочем пространстве
@@ -60,12 +60,12 @@
 - **Точное управление воспроизведением**: скорость 0.8x / 1.0x / 1.25x, быстрый откат на -5 с / -10 с
 - **Страница каталога мастерской**: все ваши заметки с субтитрами организованы с сортировкой, фильтрацией и группировкой
 
-<p align="center"><img src="./assets/screenshots/shadowing-mode.png" width="315" alt="Режим шэдоуинга"> <img src="./assets/screenshots/dictation-mode.png" width="315" alt="Режим диктанта"></p>
+<p align="center"><img src="../../assets/screenshots/shadowing-mode.png" width="315" alt="Режим шэдоуинга"> <img src="../../assets/screenshots/dictation-mode.png" width="315" alt="Режим диктанта"></p>
 <p align="center"><em>Режим шэдоуинга (слева) и режим диктанта (справа)</em></p>
 
-<p align="center"><img src="./assets/screenshots/listening-mode-2.png" width="640" alt="Режим аудирования"></p>
-<p align="center"><img src="./assets/screenshots/record-pronunciation.png" width="640" alt="Запись и оценка произношения с помощью ИИ"></p>
-<p align="center"><img src="./assets/screenshots/focus-mode.png" width="640" alt="Режим фокусировки"></p>
+<p align="center"><img src="../../assets/screenshots/listening-mode-2.png" width="640" alt="Режим аудирования"></p>
+<p align="center"><img src="../../assets/screenshots/record-pronunciation.png" width="640" alt="Запись и оценка произношения с помощью ИИ"></p>
+<p align="center"><img src="../../assets/screenshots/focus-mode.png" width="640" alt="Режим фокусировки"></p>
 <p align="center"><em>Режим фокусировки</em></p>
 
 ### ✨ Анализ с помощью ИИ — используйте свой API-ключ
@@ -76,14 +76,14 @@
 - **Автозаполнение карточек в один клик**: позвольте ИИ дополнить недостающие поля на ваших карточках
 - Работает с **OpenAI, DeepSeek, Google Gemini, Kimi, GLM, Qwen, OpenRouter или любым совместимым с OpenAI endpoint** — ваш ключ, ваш выбор, ваши данные
 
-<p align="center"><img src="./assets/screenshots/ai-analysis-2.png" width="640" alt="Отчёт анализа с помощью ИИ"></p>
+<p align="center"><img src="../../assets/screenshots/ai-analysis-2.png" width="640" alt="Отчёт анализа с помощью ИИ"></p>
 
 ### 📺 Подписки на YouTube-каналы
 - Подписывайтесь на каналы с **категориями, RSS-опросом и уведомлениями о новых видео**
 - Просматривайте ленту в виде карточек или списка и **смотрите предпросмотр видео прямо в приложении**, не покидая Obsidian
 - **Генерация видеозаметок с субтитрами в один клик**, включая пакетное скачивание для нескольких выбранных видео
 
-<p align="center"><img src="./assets/screenshots/youtube-subscriptions.png" width="640" alt="Подписки на YouTube-каналы"></p>
+<p align="center"><img src="../../assets/screenshots/youtube-subscriptions.png" width="640" alt="Подписки на YouTube-каналы"></p>
 
 ### 📝 И многое другое
 - Конвертация **SRT в заметку** (по одной и пакетно) для ваших собственных файлов субтитров
@@ -131,7 +131,7 @@
 
 Есть вопросы по использованию или Полному изданию? Отсканируйте QR-код, чтобы добавить автора в WeChat:
 
-<p align="center"><img src="./assets/wechat-qr.jpg" width="200" alt="Добавить автора в WeChat" /></p>
+<p align="center"><img src="../../assets/wechat-qr.jpg" width="200" alt="Добавить автора в WeChat" /></p>
 
 ---
 
@@ -183,7 +183,7 @@
 
 ## 📄 Лицензия
 
-[GPL-3.0](./LICENSE)
+[GPL-3.0](../../LICENSE)
 
 ## ❤️ Поддержка
 

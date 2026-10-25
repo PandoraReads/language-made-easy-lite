@@ -1,10 +1,10 @@
 # Language Made Easy — Immersive Obsidian-Lernumgebung für Englisch
 
-> 🌐 Andere Sprachen: [English](./README-EN.md) · [简体中文](./README.md) · [繁體中文](./README-ZH-TW.md) · Deutsch · [Français](./README-FR.md) · [Español](./README-ES.md) · [日本語](./README-JA.md) · [한국어](./README-KO.md) · [Русский](./README-RU.md) · [ไทย](./README-TH.md)
+> 🌐 Andere Sprachen: [English](./README-EN.md) · [简体中文](../../README.md) · [繁體中文](./README-ZH-TW.md) · Deutsch · [Français](./README-FR.md) · [Español](./README-ES.md) · [日本語](./README-JA.md) · [한국어](./README-KO.md) · [Русский](./README-RU.md) · [ไทย](./README-TH.md)
 
 **Language Made Easy (LME)** verwandelt deinen Obsidian-Vault in eine komplette immersive Lernumgebung für Englisch: sofortige Wörterbuch-Nachschlagefunktion beim Lesen, FSRS-Lernkarten mit verteiltem Wiederholen, Video-Shadowing mit synchronisierten Untertiteln und KI-gestützte Analyse — alles an einem Ort, alles als einfache Notizen in deinem Vault gespeichert.
 
-<p align="center"><img src="./assets/screenshots/hero-overview.png" width="640" alt="Alles-in-einem-Lösung für Sprachenlernen"></p>
+<p align="center"><img src="../../assets/screenshots/hero-overview.png" width="640" alt="Alles-in-einem-Lösung für Sprachenlernen"></p>
 
 
 > ### 💡 Hinweis zum Freemium-Modell
@@ -22,13 +22,13 @@ Füge einen YouTube-/Bilibili-Link ein, und das Plugin ruft Titel, Kanal und Tit
 - **Shadowing-Werkstatt**: auf das Werkstatt-Symbol in der linken Seitenleiste klicken und einen Link im Eingabefeld einfügen
 - **YouTube-Abonnementseite**: beim Durchsehen deines Feeds für jedes Video Notizen erstellen, **mit Mehrfachauswahl und Stapeldownload** (Vollversion)
 
-<p align="center"><img src="./assets/screenshots/video-note.png" width="640" alt="Erstellte Videonotiz"></p>
+<p align="center"><img src="../../assets/screenshots/video-note.png" width="640" alt="Erstellte Videonotiz"></p>
 
-<p align="center"><img src="./assets/screenshots/nav-video-note.gif" width="640" alt="Videolink im Navigationspanel eingeben, um mit einem Klick eine Videonotiz zu erstellen"></p>
+<p align="center"><img src="../../assets/screenshots/nav-video-note.gif" width="640" alt="Videolink im Navigationspanel eingeben, um mit einem Klick eine Videonotiz zu erstellen"></p>
 
 **Einheitliche Notizverwaltung**: alle Videonotizen befinden sich auf der Katalogseite der Werkstatt mit Sortierung, Filterung und Gruppierung; auf eine Karte klicken, um mit dem Shadowing zu beginnen, Shift+Klick für die Vorschau der Notiz.
 
-<p align="center"><img src="./assets/screenshots/workshop-catalog.png" width="640" alt="Katalogseite der Werkstatt"></p>
+<p align="center"><img src="../../assets/screenshots/workshop-catalog.png" width="640" alt="Katalogseite der Werkstatt"></p>
 
 ### 📖 Wörterbuch-Assistent — alles lesen, sofort nachschlagen
 - **Sofortiges Nachschlagen**: `Strg/Cmd + Doppelklick` auf ein beliebiges Wort (oder Text markieren) — die Definitionen erscheinen sofort in der Seitenleiste
@@ -38,7 +38,7 @@ Füge einen YouTube-/Bilibili-Link ein, und das Plugin ruft Titel, Kanal und Tit
 - **Aussprache**: Audiowiedergabe mit intelligentem Vorladen
 - **Hinzufügen mit einem Klick** zu deinem Vokabelheft (IndexedDB + automatisch gepflegte Markdown-Datei)
 
-<p align="center"><img src="./assets/screenshots/dictionary-lookup.png" width="640" alt="Nachschlagen per Doppelklick mit Definitionen in der Seitenleiste"></p>
+<p align="center"><img src="../../assets/screenshots/dictionary-lookup.png" width="640" alt="Nachschlagen per Doppelklick mit Definitionen in der Seitenleiste"></p>
 
 ### 🧠 FSRS-Lernkarten — behalte, was du lernst
 - State-of-the-art **FSRS-Scheduler** (`ts-fsrs`) berechnet optimale Wiederholungsintervalle für jede Karte
@@ -47,10 +47,10 @@ Füge einen YouTube-/Bilibili-Link ein, und das Plugin ruft Titel, Kanal und Tit
 - **Lernkarten-Verwaltung**: Suchen, nach Sprache/Beherrschung filtern, sortieren, direkt bearbeiten, Sammellöschung
 - **Lernbegleiter-Haustier** 🐣: ein kleiner Begleiter, der schlüpft, aufsteigt und mit deinen Lernserien mitwächst
 
-<p align="center"><img src="./assets/screenshots/flashcard-review.png" width="300" alt="Lernkarten-Wiederholung"> <img src="./assets/screenshots/flashcard-review-2.png" width="300" alt="Statistiken der Lernkarten-Wiederholung"></p>
+<p align="center"><img src="../../assets/screenshots/flashcard-review.png" width="300" alt="Lernkarten-Wiederholung"> <img src="../../assets/screenshots/flashcard-review-2.png" width="300" alt="Statistiken der Lernkarten-Wiederholung"></p>
 
-<p align="center"><img src="./assets/screenshots/one-click-cards.png" width="640" alt="Kartenerstellung mit einem Klick"></p>
-<p align="center"><img src="./assets/screenshots/batch-generate.png" width="640" alt="KI-gestützte Stapelerstellung von Lernkarten (Vollversion)"></p>
+<p align="center"><img src="../../assets/screenshots/one-click-cards.png" width="640" alt="Kartenerstellung mit einem Klick"></p>
+<p align="center"><img src="../../assets/screenshots/batch-generate.png" width="640" alt="KI-gestützte Stapelerstellung von Lernkarten (Vollversion)"></p>
 
 ### 🎬 Video-Shadowing-Werkstatt — lerne mit echten Videos
 - **YouTube-, Bilibili- und lokale Video-/Audiodateien** in einem Arbeitsbereich
@@ -60,12 +60,12 @@ Füge einen YouTube-/Bilibili-Link ein, und das Plugin ruft Titel, Kanal und Tit
 - **Präzise Wiedergabesteuerung**: 0,8x / 1,0x / 1,25x Geschwindigkeit, schnelle Sprünge von -5 s / -10 s
 - **Katalogseite der Werkstatt**: alle deine Untertitelnotizen organisiert mit Sortierung, Filterung und Gruppierung
 
-<p align="center"><img src="./assets/screenshots/shadowing-mode.png" width="315" alt="Shadowing-Modus"> <img src="./assets/screenshots/dictation-mode.png" width="315" alt="Diktiermodus"></p>
+<p align="center"><img src="../../assets/screenshots/shadowing-mode.png" width="315" alt="Shadowing-Modus"> <img src="../../assets/screenshots/dictation-mode.png" width="315" alt="Diktiermodus"></p>
 <p align="center"><em>Shadowing-Modus (links) und Diktiermodus (rechts)</em></p>
 
-<p align="center"><img src="./assets/screenshots/listening-mode-2.png" width="640" alt="Hörmodus"></p>
-<p align="center"><img src="./assets/screenshots/record-pronunciation.png" width="640" alt="Aufnehmen und KI-Aussprachebewertung erhalten"></p>
-<p align="center"><img src="./assets/screenshots/focus-mode.png" width="640" alt="Fokusmodus"></p>
+<p align="center"><img src="../../assets/screenshots/listening-mode-2.png" width="640" alt="Hörmodus"></p>
+<p align="center"><img src="../../assets/screenshots/record-pronunciation.png" width="640" alt="Aufnehmen und KI-Aussprachebewertung erhalten"></p>
+<p align="center"><img src="../../assets/screenshots/focus-mode.png" width="640" alt="Fokusmodus"></p>
 <p align="center"><em>Fokusmodus</em></p>
 
 ### ✨ KI-gestützte Analyse — bring deinen eigenen API-Schlüssel mit
@@ -76,14 +76,14 @@ Füge einen YouTube-/Bilibili-Link ein, und das Plugin ruft Titel, Kanal und Tit
 - **Lernkarten-Autovervollständigung mit einem Klick**: die KI vervollständigt fehlende Felder auf deinen Karten
 - Funktioniert mit **OpenAI, DeepSeek, Google Gemini, Kimi, GLM, Qwen, OpenRouter oder jedem OpenAI-kompatiblen Endpunkt** — dein Schlüssel, deine Wahl, deine Daten
 
-<p align="center"><img src="./assets/screenshots/ai-analysis-2.png" width="640" alt="KI-gestützter Analysebericht"></p>
+<p align="center"><img src="../../assets/screenshots/ai-analysis-2.png" width="640" alt="KI-gestützter Analysebericht"></p>
 
 ### 📺 YouTube-Kanalabonnements
 - Kanäle abonnieren mit **Kategorien, RSS-Abruf und Benachrichtigungen über neue Videos**
 - Deinen Feed in Karten-/Listenansicht durchsehen und **Videos direkt in der App ansehen**, ohne Obsidian zu verlassen
 - **Videonotizen-Erstellung mit einem Klick inklusive Untertiteln**, einschließlich Mehrfachauswahl und Stapeldownload
 
-<p align="center"><img src="./assets/screenshots/youtube-subscriptions.png" width="640" alt="YouTube-Kanalabonnements"></p>
+<p align="center"><img src="../../assets/screenshots/youtube-subscriptions.png" width="640" alt="YouTube-Kanalabonnements"></p>
 
 ### 📝 Und mehr
 - **SRT-zu-Notiz**-Konvertierung (einzeln & stapelweise) für deine eigenen Untertiteldateien
@@ -131,7 +131,7 @@ Die Vollversion ist ein **Einmalkauf** (kein Abo) mit **lebenslangen kostenlosen
 
 Fragen zur Nutzung oder zur Vollversion? Scanne den QR-Code, um den Autor auf WeChat hinzuzufügen:
 
-<p align="center"><img src="./assets/wechat-qr.jpg" width="200" alt="Autor auf WeChat hinzufügen" /></p>
+<p align="center"><img src="../../assets/wechat-qr.jpg" width="200" alt="Autor auf WeChat hinzufügen" /></p>
 
 ---
 
@@ -183,7 +183,7 @@ Das Plugin funktioniert vollständig offline, mit Ausnahme der folgenden optiona
 
 ## 📄 Lizenz
 
-[GPL-3.0](./LICENSE)
+[GPL-3.0](../../LICENSE)
 
 ## ❤️ Unterstützung
 

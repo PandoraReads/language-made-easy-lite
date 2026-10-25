@@ -1,10 +1,10 @@
 # Language Made Easy — Un espace de travail d'apprentissage immersif de l'anglais pour Obsidian
 
-> 🌐 Autres langues : [English](./README-EN.md) · [简体中文](./README.md) · [繁體中文](./README-ZH-TW.md) · [Deutsch](./README-DE.md) · Français · [Español](./README-ES.md) · [日本語](./README-JA.md) · [한국어](./README-KO.md) · [Русский](./README-RU.md) · [ไทย](./README-TH.md)
+> 🌐 Autres langues : [English](./README-EN.md) · [简体中文](../../README.md) · [繁體中文](./README-ZH-TW.md) · [Deutsch](./README-DE.md) · Français · [Español](./README-ES.md) · [日本語](./README-JA.md) · [한국어](./README-KO.md) · [Русский](./README-RU.md) · [ไทย](./README-TH.md)
 
 **Language Made Easy (LME)** transforme votre coffre Obsidian en un espace de travail complet et immersif pour apprendre l'anglais : recherche instantanée dans le dictionnaire pendant la lecture, cartes mémo avec répétition espacée FSRS, shadowing vidéo avec sous-titres synchronisés et analyse assistée par IA — le tout au même endroit, sauvegardé sous forme de simples notes dans votre coffre.
 
-<p align="center"><img src="./assets/screenshots/hero-overview.png" width="640" alt="Une solution tout-en-un pour l'apprentissage des langues"></p>
+<p align="center"><img src="../../assets/screenshots/hero-overview.png" width="640" alt="Une solution tout-en-un pour l'apprentissage des langues"></p>
 
 
 > ### 💡 Note sur le modèle freemium
@@ -22,13 +22,13 @@ Collez un lien YouTube / Bilibili et le plugin récupère le titre, la chaîne e
 - **Atelier de shadowing** : cliquez sur l'icône de l'atelier dans le ruban à gauche et collez un lien dans le champ de saisie
 - **Page d'abonnements YouTube** : générez des notes pour n'importe quelle vidéo tout en parcourant votre fil, **avec téléchargement par lots multi-sélection** (Édition Complète)
 
-<p align="center"><img src="./assets/screenshots/video-note.png" width="640" alt="Note vidéo générée"></p>
+<p align="center"><img src="../../assets/screenshots/video-note.png" width="640" alt="Note vidéo générée"></p>
 
-<p align="center"><img src="./assets/screenshots/nav-video-note.gif" width="640" alt="Saisir un lien vidéo dans le panneau de navigation pour générer une note vidéo en un clic"></p>
+<p align="center"><img src="../../assets/screenshots/nav-video-note.gif" width="640" alt="Saisir un lien vidéo dans le panneau de navigation pour générer une note vidéo en un clic"></p>
 
 **Gestion unifiée des notes** : toutes les notes vidéo sont regroupées dans la page catalogue de l'atelier, avec tri, filtrage et regroupement ; cliquez sur une carte pour commencer le shadowing, Shift+clic pour prévisualiser la note.
 
-<p align="center"><img src="./assets/screenshots/workshop-catalog.png" width="640" alt="Page catalogue de l'atelier"></p>
+<p align="center"><img src="../../assets/screenshots/workshop-catalog.png" width="640" alt="Page catalogue de l'atelier"></p>
 
 ### 📖 Assistant de dictionnaire — lisez tout, cherchez instantanément
 - **Recherche instantanée** : `Ctrl/Cmd + double-clic` sur n'importe quel mot (ou sélection de texte) — les définitions apparaissent instantanément dans le panneau latéral
@@ -38,7 +38,7 @@ Collez un lien YouTube / Bilibili et le plugin récupère le titre, la chaîne e
 - **Prononciation** : lecture audio avec préchargement intelligent
 - **Ajout en un clic** à votre carnet de vocabulaire (IndexedDB + fichier markdown tenu à jour automatiquement)
 
-<p align="center"><img src="./assets/screenshots/dictionary-lookup.png" width="640" alt="Recherche par double-clic avec définitions dans le panneau latéral"></p>
+<p align="center"><img src="../../assets/screenshots/dictionary-lookup.png" width="640" alt="Recherche par double-clic avec définitions dans le panneau latéral"></p>
 
 ### 🧠 Cartes mémo FSRS — retenez ce que vous apprenez
 - Un planificateur **FSRS** à la pointe de la technologie (`ts-fsrs`) calcule les intervalles de révision optimaux pour chaque carte
@@ -47,10 +47,10 @@ Collez un lien YouTube / Bilibili et le plugin récupère le titre, la chaîne e
 - **Gestionnaire de cartes mémo** : recherche, filtrage par langue/niveau de maîtrise, tri, édition en ligne, suppression groupée
 - **Animal de compagnie d'apprentissage** 🐣 : un petit compagnon qui éclot, monte en niveau et grandit avec vos séries d'apprentissage
 
-<p align="center"><img src="./assets/screenshots/flashcard-review.png" width="300" alt="Révision des cartes mémo"> <img src="./assets/screenshots/flashcard-review-2.png" width="300" alt="Statistiques de révision des cartes mémo"></p>
+<p align="center"><img src="../../assets/screenshots/flashcard-review.png" width="300" alt="Révision des cartes mémo"> <img src="../../assets/screenshots/flashcard-review-2.png" width="300" alt="Statistiques de révision des cartes mémo"></p>
 
-<p align="center"><img src="./assets/screenshots/one-click-cards.png" width="640" alt="Processus de création de cartes en un clic"></p>
-<p align="center"><img src="./assets/screenshots/batch-generate.png" width="640" alt="Génération de cartes mémo par lots avec l'IA (Édition Complète)"></p>
+<p align="center"><img src="../../assets/screenshots/one-click-cards.png" width="640" alt="Processus de création de cartes en un clic"></p>
+<p align="center"><img src="../../assets/screenshots/batch-generate.png" width="640" alt="Génération de cartes mémo par lots avec l'IA (Édition Complète)"></p>
 
 ### 🎬 Atelier de shadowing vidéo — apprenez avec de vraies vidéos
 - Fichiers **YouTube, Bilibili et vidéos/audios locaux** dans un seul espace de travail
@@ -60,12 +60,12 @@ Collez un lien YouTube / Bilibili et le plugin récupère le titre, la chaîne e
 - **Contrôle de lecture précis** : vitesses 0,8x / 1,0x / 1,25x, retours rapides de -5 s / -10 s
 - **Page catalogue de l'atelier** : toutes vos notes de sous-titres organisées avec tri, filtrage et regroupement
 
-<p align="center"><img src="./assets/screenshots/shadowing-mode.png" width="315" alt="Mode shadowing"> <img src="./assets/screenshots/dictation-mode.png" width="315" alt="Mode dictée"></p>
+<p align="center"><img src="../../assets/screenshots/shadowing-mode.png" width="315" alt="Mode shadowing"> <img src="../../assets/screenshots/dictation-mode.png" width="315" alt="Mode dictée"></p>
 <p align="center"><em>Mode shadowing (à gauche) et mode dictée (à droite)</em></p>
 
-<p align="center"><img src="./assets/screenshots/listening-mode-2.png" width="640" alt="Mode écoute"></p>
-<p align="center"><img src="./assets/screenshots/record-pronunciation.png" width="640" alt="Enregistrer et obtenir une évaluation de prononciation par IA"></p>
-<p align="center"><img src="./assets/screenshots/focus-mode.png" width="640" alt="Mode concentration"></p>
+<p align="center"><img src="../../assets/screenshots/listening-mode-2.png" width="640" alt="Mode écoute"></p>
+<p align="center"><img src="../../assets/screenshots/record-pronunciation.png" width="640" alt="Enregistrer et obtenir une évaluation de prononciation par IA"></p>
+<p align="center"><img src="../../assets/screenshots/focus-mode.png" width="640" alt="Mode concentration"></p>
 <p align="center"><em>Mode concentration</em></p>
 
 ### ✨ Analyse assistée par IA — apportez votre propre clé API
@@ -76,14 +76,14 @@ Collez un lien YouTube / Bilibili et le plugin récupère le titre, la chaîne e
 - **Remplissage automatique des cartes mémo en un clic** : laissez l'IA compléter les champs manquants de vos cartes
 - Compatible avec **OpenAI, DeepSeek, Google Gemini, Kimi, GLM, Qwen, OpenRouter ou tout point de terminaison compatible OpenAI** — votre clé, votre choix, vos données
 
-<p align="center"><img src="./assets/screenshots/ai-analysis-2.png" width="640" alt="Rapport d'analyse assisté par IA"></p>
+<p align="center"><img src="../../assets/screenshots/ai-analysis-2.png" width="640" alt="Rapport d'analyse assisté par IA"></p>
 
 ### 📺 Abonnements aux chaînes YouTube
 - Abonnez-vous à des chaînes avec **catégories, interrogation RSS et notifications de nouvelles vidéos**
 - Parcourez votre fil en vue carte/liste et **prévisualisez les vidéos dans l'application** sans quitter Obsidian
 - **Génération de notes vidéo avec sous-titres en un clic**, y compris le téléchargement par lots multi-sélection
 
-<p align="center"><img src="./assets/screenshots/youtube-subscriptions.png" width="640" alt="Abonnements aux chaînes YouTube"></p>
+<p align="center"><img src="../../assets/screenshots/youtube-subscriptions.png" width="640" alt="Abonnements aux chaînes YouTube"></p>
 
 ### 📝 Et bien plus
 - Conversion **SRT vers note** (unitaire et par lots) pour vos propres fichiers de sous-titres
@@ -131,7 +131,7 @@ L'Édition Complète est un **achat unique** (sans abonnement) avec **mises à j
 
 Des questions sur l'utilisation ou l'Édition Complète ? Scannez le code QR pour ajouter l'auteur sur WeChat :
 
-<p align="center"><img src="./assets/wechat-qr.jpg" width="200" alt="Ajouter l'auteur sur WeChat" /></p>
+<p align="center"><img src="../../assets/wechat-qr.jpg" width="200" alt="Ajouter l'auteur sur WeChat" /></p>
 
 ---
 
@@ -183,7 +183,7 @@ Le plugin fonctionne entièrement hors ligne, à l'exception des requêtes facul
 
 ## 📄 Licence
 
-[GPL-3.0](./LICENSE)
+[GPL-3.0](../../LICENSE)
 
 ## ❤️ Soutenir le projet
 

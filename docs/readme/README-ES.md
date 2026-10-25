@@ -1,10 +1,10 @@
 # Language Made Easy — Espacio de trabajo inmersivo para aprender inglés en Obsidian
 
-> 🌐 Otros idiomas: [English](./README-EN.md) · [简体中文](./README.md) · [繁體中文](./README-ZH-TW.md) · [Deutsch](./README-DE.md) · [Français](./README-FR.md) · Español · [日本語](./README-JA.md) · [한국어](./README-KO.md) · [Русский](./README-RU.md) · [ไทย](./README-TH.md)
+> 🌐 Otros idiomas: [English](./README-EN.md) · [简体中文](../../README.md) · [繁體中文](./README-ZH-TW.md) · [Deutsch](./README-DE.md) · [Français](./README-FR.md) · Español · [日本語](./README-JA.md) · [한국어](./README-KO.md) · [Русский](./README-RU.md) · [ไทย](./README-TH.md)
 
 **Language Made Easy (LME)** convierte tu bóveda de Obsidian en un espacio de trabajo inmersivo completo para aprender inglés: búsqueda instantánea en el diccionario mientras lees, tarjetas de repaso espaciado con FSRS, shadowing de videos con subtítulos sincronizados y análisis potenciado por IA — todo en un solo lugar y guardado como notas simples en tu bóveda.
 
-<p align="center"><img src="./assets/screenshots/hero-overview.png" width="640" alt="Solución integral para el aprendizaje de idiomas"></p>
+<p align="center"><img src="../../assets/screenshots/hero-overview.png" width="640" alt="Solución integral para el aprendizaje de idiomas"></p>
 
 
 > ### 💡 Aviso sobre el modelo freemium
@@ -22,13 +22,13 @@ Pega un enlace de YouTube / Bilibili y el plugin obtiene el título, el canal y 
 - **Taller de shadowing**: haz clic en el icono del taller en la cinta lateral y analiza un enlace en el cuadro de entrada
 - **Página de suscripciones de YouTube**: genera notas de cualquier video mientras navegas tu feed, **con descarga por lotes de selección múltiple** (Edición Completa)
 
-<p align="center"><img src="./assets/screenshots/video-note.png" width="640" alt="Nota de video generada"></p>
+<p align="center"><img src="../../assets/screenshots/video-note.png" width="640" alt="Nota de video generada"></p>
 
-<p align="center"><img src="./assets/screenshots/nav-video-note.gif" width="640" alt="Introduce un enlace de video en el panel de navegación para generar una nota de video con un clic"></p>
+<p align="center"><img src="../../assets/screenshots/nav-video-note.gif" width="640" alt="Introduce un enlace de video en el panel de navegación para generar una nota de video con un clic"></p>
 
 **Gestión unificada de notas**: todas las notas de video se encuentran en la página de catálogo del taller, con ordenación, filtrado y agrupación; haz clic en una tarjeta para empezar el shadowing, o Shift+clic para previsualizar la nota.
 
-<p align="center"><img src="./assets/screenshots/workshop-catalog.png" width="640" alt="Página del catálogo del taller"></p>
+<p align="center"><img src="../../assets/screenshots/workshop-catalog.png" width="640" alt="Página del catálogo del taller"></p>
 
 ### 📖 Asistente de diccionario — lee cualquier cosa, consulta al instante
 - **Búsqueda instantánea**: `Ctrl/Cmd + doble clic` sobre cualquier palabra (o selecciona texto) — las definiciones aparecen al instante en la barra lateral
@@ -38,7 +38,7 @@ Pega un enlace de YouTube / Bilibili y el plugin obtiene el título, el canal y 
 - **Pronunciación**: reproducción de audio con precarga inteligente
 - **Añadir con un clic** a tu cuaderno de vocabulario (IndexedDB + archivo markdown mantenido automáticamente)
 
-<p align="center"><img src="./assets/screenshots/dictionary-lookup.png" width="640" alt="Búsqueda con doble clic y definiciones en la barra lateral"></p>
+<p align="center"><img src="../../assets/screenshots/dictionary-lookup.png" width="640" alt="Búsqueda con doble clic y definiciones en la barra lateral"></p>
 
 ### 🧠 Tarjetas FSRS — recuerda lo que aprendes
 - El avanzado **planificador FSRS** (`ts-fsrs`) calcula los intervalos de repaso óptimos para cada tarjeta
@@ -47,10 +47,10 @@ Pega un enlace de YouTube / Bilibili y el plugin obtiene el título, el canal y 
 - **Gestor de tarjetas**: buscar, filtrar por idioma/dominio, ordenar, edición en línea y borrado masivo
 - **Mascota compañera de aprendizaje** 🐣: una pequeña compañera que eclosiona, sube de nivel y crece con tus rachas
 
-<p align="center"><img src="./assets/screenshots/flashcard-review.png" width="300" alt="Repaso de tarjetas"> <img src="./assets/screenshots/flashcard-review-2.png" width="300" alt="Estadísticas del repaso de tarjetas"></p>
+<p align="center"><img src="../../assets/screenshots/flashcard-review.png" width="300" alt="Repaso de tarjetas"> <img src="../../assets/screenshots/flashcard-review-2.png" width="300" alt="Estadísticas del repaso de tarjetas"></p>
 
-<p align="center"><img src="./assets/screenshots/one-click-cards.png" width="640" alt="Proceso de creación de tarjetas con un clic"></p>
-<p align="center"><img src="./assets/screenshots/batch-generate.png" width="640" alt="Generación de tarjetas por lotes con IA (Edición Completa)"></p>
+<p align="center"><img src="../../assets/screenshots/one-click-cards.png" width="640" alt="Proceso de creación de tarjetas con un clic"></p>
+<p align="center"><img src="../../assets/screenshots/batch-generate.png" width="640" alt="Generación de tarjetas por lotes con IA (Edición Completa)"></p>
 
 ### 🎬 Taller de shadowing de videos — aprende con videos reales
 - **Archivos de YouTube, Bilibili y video/audio locales** en un solo espacio de trabajo
@@ -60,12 +60,12 @@ Pega un enlace de YouTube / Bilibili y el plugin obtiene el título, el canal y 
 - **Control preciso de la reproducción**: velocidad 0.8x / 1.0x / 1.25x y saltos rápidos de -5 s / -10 s
 - **Página de catálogo del taller**: todas tus notas de subtítulos organizadas con ordenación, filtrado y agrupación
 
-<p align="center"><img src="./assets/screenshots/shadowing-mode.png" width="315" alt="Modo shadowing"> <img src="./assets/screenshots/dictation-mode.png" width="315" alt="Modo dictado"></p>
+<p align="center"><img src="../../assets/screenshots/shadowing-mode.png" width="315" alt="Modo shadowing"> <img src="../../assets/screenshots/dictation-mode.png" width="315" alt="Modo dictado"></p>
 <p align="center"><em>Modo shadowing (izquierda) y modo dictado (derecha)</em></p>
 
-<p align="center"><img src="./assets/screenshots/listening-mode-2.png" width="640" alt="Modo de escucha"></p>
-<p align="center"><img src="./assets/screenshots/record-pronunciation.png" width="640" alt="Graba y obtén puntuación de pronunciación con IA"></p>
-<p align="center"><img src="./assets/screenshots/focus-mode.png" width="640" alt="Modo de concentración"></p>
+<p align="center"><img src="../../assets/screenshots/listening-mode-2.png" width="640" alt="Modo de escucha"></p>
+<p align="center"><img src="../../assets/screenshots/record-pronunciation.png" width="640" alt="Graba y obtén puntuación de pronunciación con IA"></p>
+<p align="center"><img src="../../assets/screenshots/focus-mode.png" width="640" alt="Modo de concentración"></p>
 <p align="center"><em>Modo de concentración</em></p>
 
 ### ✨ Análisis potenciado por IA — usa tu propia clave de API
@@ -76,14 +76,14 @@ Pega un enlace de YouTube / Bilibili y el plugin obtiene el título, el canal y 
 - **Autocompletado de tarjetas con un clic**: deja que la IA complete los campos que falten en tus tarjetas
 - Funciona con **OpenAI, DeepSeek, Google Gemini, Kimi, GLM, Qwen, OpenRouter o cualquier endpoint compatible con OpenAI** — tu clave, tu elección, tus datos
 
-<p align="center"><img src="./assets/screenshots/ai-analysis-2.png" width="640" alt="Informe de análisis potenciado por IA"></p>
+<p align="center"><img src="../../assets/screenshots/ai-analysis-2.png" width="640" alt="Informe de análisis potenciado por IA"></p>
 
 ### 📺 Suscripciones a canales de YouTube
 - Suscríbete a canales con **categorías, sondeo RSS y notificaciones de videos nuevos**
 - Explora tu feed en vistas de tarjeta/lista y **previsualiza videos dentro de la app** sin salir de Obsidian
 - **Generación de notas de video con subtítulos con un clic**, incluida la descarga por lotes de selección múltiple
 
-<p align="center"><img src="./assets/screenshots/youtube-subscriptions.png" width="640" alt="Suscripciones a canales de YouTube"></p>
+<p align="center"><img src="../../assets/screenshots/youtube-subscriptions.png" width="640" alt="Suscripciones a canales de YouTube"></p>
 
 ### 📝 Y mucho más
 - Conversión de **SRT a nota** (individual y por lotes) para tus propios archivos de subtítulos
@@ -131,7 +131,7 @@ La Edición Completa es una **compra única** (sin suscripción) con **actualiza
 
 ¿Preguntas sobre el uso o la Edición Completa? Escanea el código QR para añadir al autor en WeChat:
 
-<p align="center"><img src="./assets/wechat-qr.jpg" width="200" alt="Añade al autor en WeChat" /></p>
+<p align="center"><img src="../../assets/wechat-qr.jpg" width="200" alt="Añade al autor en WeChat" /></p>
 
 ---
 
@@ -183,7 +183,7 @@ El plugin funciona totalmente sin conexión, salvo por las siguientes peticiones
 
 ## 📄 Licencia
 
-[GPL-3.0](./LICENSE)
+[GPL-3.0](../../LICENSE)
 
 ## ❤️ Apoyo
 

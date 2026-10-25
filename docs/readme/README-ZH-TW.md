@@ -1,10 +1,10 @@
 # Language Made Easy — 沉浸式 Obsidian 英語學習工作區
 
-> 🌐 其他語言版本: [English](./README-EN.md) · [简体中文](./README.md) · 繁體中文 · [Deutsch](./README-DE.md) · [Français](./README-FR.md) · [Español](./README-ES.md) · [日本語](./README-JA.md) · [한국어](./README-KO.md) · [Русский](./README-RU.md) · [ไทย](./README-TH.md)
+> 🌐 其他語言版本: [English](./README-EN.md) · [简体中文](../../README.md) · 繁體中文 · [Deutsch](./README-DE.md) · [Français](./README-FR.md) · [Español](./README-ES.md) · [日本語](./README-JA.md) · [한국어](./README-KO.md) · [Русский](./README-RU.md) · [ไทย](./README-TH.md)
 
 **Language Made Easy (LME)** 能把你的 Obsidian 筆記庫變成一套完整的沉浸式英語學習工作區：閱讀時即時查詞典、FSRS 間隔重複背單字卡、字幕同步跟讀影片，再加上 AI 智慧分析——全部整合在同一個地方，而且全部以純文字筆記的形式保存在你的筆記庫裡。
 
-<p align="center"><img src="./assets/screenshots/hero-overview.png" width="640" alt="一站式語言學習方案"></p>
+<p align="center"><img src="../../assets/screenshots/hero-overview.png" width="640" alt="一站式語言學習方案"></p>
 
 
 > ### 💡 免費加值說明
@@ -22,13 +22,13 @@
 - **跟讀工坊**：點擊左側功能區的工坊圖示，在輸入框中解析連結
 - **YouTube 訂閱頁面**：瀏覽訂閱動態時即可為任何影片產生筆記，**支援多選批次下載**（完整版）
 
-<p align="center"><img src="./assets/screenshots/video-note.png" width="640" alt="產生的影片筆記"></p>
+<p align="center"><img src="../../assets/screenshots/video-note.png" width="640" alt="產生的影片筆記"></p>
 
-<p align="center"><img src="./assets/screenshots/nav-video-note.gif" width="640" alt="在導覽面板輸入影片連結，一鍵產生影片筆記"></p>
+<p align="center"><img src="../../assets/screenshots/nav-video-note.gif" width="640" alt="在導覽面板輸入影片連結，一鍵產生影片筆記"></p>
 
 **統一的筆記管理**：所有影片筆記都集中在工坊目錄頁，支援排序、篩選與分組；點擊卡片即可開始跟讀，Shift+點擊可預覽筆記。
 
-<p align="center"><img src="./assets/screenshots/workshop-catalog.png" width="640" alt="工坊目錄頁面"></p>
+<p align="center"><img src="../../assets/screenshots/workshop-catalog.png" width="640" alt="工坊目錄頁面"></p>
 
 ### 📖 詞典助理——什麼都能讀，隨手即時查
 - **即時查詞**：對任何單字按 `Ctrl/Cmd + 雙擊`（或選取文字）——釋義立即出現在側邊欄
@@ -38,7 +38,7 @@
 - **發音**：音訊播放，並具備智慧預載入
 - **一鍵加入**你的單字本（IndexedDB + 自動維護的 markdown 檔案）
 
-<p align="center"><img src="./assets/screenshots/dictionary-lookup.png" width="640" alt="雙擊查詞，側邊欄顯示釋義"></p>
+<p align="center"><img src="../../assets/screenshots/dictionary-lookup.png" width="640" alt="雙擊查詞，側邊欄顯示釋義"></p>
 
 ### 🧠 FSRS 單字卡——學過的都記得住
 - 最先進的 **FSRS 排程器**（`ts-fsrs`）為每一張卡片計算最佳複習間隔
@@ -47,10 +47,10 @@
 - **單字卡管理器**：搜尋、依語言/熟練度篩選、排序、行內編輯、批次刪除
 - **學習小夥伴** 🐣：一個會孵化、升級、隨你的連續學習天數一起成長的小夥伴
 
-<p align="center"><img src="./assets/screenshots/flashcard-review.png" width="300" alt="單字卡複習"> <img src="./assets/screenshots/flashcard-review-2.png" width="300" alt="單字卡複習統計"></p>
+<p align="center"><img src="../../assets/screenshots/flashcard-review.png" width="300" alt="單字卡複習"> <img src="../../assets/screenshots/flashcard-review-2.png" width="300" alt="單字卡複習統計"></p>
 
-<p align="center"><img src="./assets/screenshots/one-click-cards.png" width="640" alt="一鍵建立單字卡流程"></p>
-<p align="center"><img src="./assets/screenshots/batch-generate.png" width="640" alt="AI 批次產生單字卡（完整版）"></p>
+<p align="center"><img src="../../assets/screenshots/one-click-cards.png" width="640" alt="一鍵建立單字卡流程"></p>
+<p align="center"><img src="../../assets/screenshots/batch-generate.png" width="640" alt="AI 批次產生單字卡（完整版）"></p>
 
 ### 🎬 影片跟讀工坊——從真實影片中學習
 - **YouTube、Bilibili 與本地影片/音訊**檔案，集中在一個工作區
@@ -60,12 +60,12 @@
 - **精準的播放控制**：0.8x / 1.0x / 1.25x 倍速，快速後退 -5s / -10s
 - **工坊目錄頁**：所有字幕筆記井然有序，支援排序、篩選與分組
 
-<p align="center"><img src="./assets/screenshots/shadowing-mode.png" width="315" alt="跟讀模式"> <img src="./assets/screenshots/dictation-mode.png" width="315" alt="聽寫模式"></p>
+<p align="center"><img src="../../assets/screenshots/shadowing-mode.png" width="315" alt="跟讀模式"> <img src="../../assets/screenshots/dictation-mode.png" width="315" alt="聽寫模式"></p>
 <p align="center"><em>左為跟讀模式，右為聽寫模式</em></p>
 
-<p align="center"><img src="./assets/screenshots/listening-mode-2.png" width="640" alt="聽力模式"></p>
-<p align="center"><img src="./assets/screenshots/record-pronunciation.png" width="640" alt="錄音並取得 AI 發音評分"></p>
-<p align="center"><img src="./assets/screenshots/focus-mode.png" width="640" alt="專注模式"></p>
+<p align="center"><img src="../../assets/screenshots/listening-mode-2.png" width="640" alt="聽力模式"></p>
+<p align="center"><img src="../../assets/screenshots/record-pronunciation.png" width="640" alt="錄音並取得 AI 發音評分"></p>
+<p align="center"><img src="../../assets/screenshots/focus-mode.png" width="640" alt="專注模式"></p>
 <p align="center"><em>專注模式</em></p>
 
 ### ✨ AI 智慧分析——使用你自己的 API 金鑰
@@ -76,14 +76,14 @@
 - **一鍵 AI 自動補全單字卡**：讓 AI 填補卡片上缺少的欄位
 - 相容於 **OpenAI、DeepSeek、Google Gemini、Kimi、GLM、Qwen、OpenRouter 或任何 OpenAI 相容端點**——你的金鑰、你的選擇、你的資料
 
-<p align="center"><img src="./assets/screenshots/ai-analysis-2.png" width="640" alt="AI 智慧分析報告"></p>
+<p align="center"><img src="../../assets/screenshots/ai-analysis-2.png" width="640" alt="AI 智慧分析報告"></p>
 
 ### 📺 YouTube 頻道訂閱
 - 訂閱頻道，支援**分類、RSS 輪詢與新影片通知**
 - 以卡片/清單檢視瀏覽訂閱動態，並可**在應用程式內預覽影片**，不必離開 Obsidian
 - **一鍵產生含字幕的影片筆記**，包括多選批次下載
 
-<p align="center"><img src="./assets/screenshots/youtube-subscriptions.png" width="640" alt="YouTube 頻道訂閱"></p>
+<p align="center"><img src="../../assets/screenshots/youtube-subscriptions.png" width="640" alt="YouTube 頻道訂閱"></p>
 
 ### 📝 還有更多
 - **SRT 轉筆記**（單檔與批次），適用你自己的字幕檔
@@ -131,7 +131,7 @@
 
 對使用方式或完整版有疑問？掃描 QR Code 加入作者的微信：
 
-<p align="center"><img src="./assets/wechat-qr.jpg" width="200" alt="加入作者的微信" /></p>
+<p align="center"><img src="../../assets/wechat-qr.jpg" width="200" alt="加入作者的微信" /></p>
 
 ---
 
@@ -183,7 +183,7 @@
 
 ## 📄 授權條款
 
-[GPL-3.0](./LICENSE)
+[GPL-3.0](../../LICENSE)
 
 ## ❤️ 支持我們
 

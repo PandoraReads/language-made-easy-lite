@@ -1,10 +1,10 @@
 # Language Made Easy — พื้นที่เรียนภาษาอังกฤษแบบดื่มด่ำใน Obsidian
 
-> 🌐 ภาษาอื่น ๆ: [English](./README-EN.md) · [简体中文](./README.md) · [繁體中文](./README-ZH-TW.md) · [Deutsch](./README-DE.md) · [Français](./README-FR.md) · [Español](./README-ES.md) · [日本語](./README-JA.md) · [한국어](./README-KO.md) · [Русский](./README-RU.md) · ไทย
+> 🌐 ภาษาอื่น ๆ: [English](./README-EN.md) · [简体中文](../../README.md) · [繁體中文](./README-ZH-TW.md) · [Deutsch](./README-DE.md) · [Français](./README-FR.md) · [Español](./README-ES.md) · [日本語](./README-JA.md) · [한국어](./README-KO.md) · [Русский](./README-RU.md) · ไทย
 
 **Language Made Easy (LME)** เปลี่ยน vault ของคุณใน Obsidian ให้กลายเป็นพื้นที่เรียนภาษาอังกฤษแบบดื่มด่ำครบวงจร: ค้นพจนานุกรมได้ทันทีระหว่างอ่าน, การ์ดคำศัพท์แบบทบทวนตามรอบด้วย FSRS, ฝึกออกเสียงตามวิดีโอพร้อมซับไตเติลที่ซิงก์กัน และการวิเคราะห์ด้วย AI — ทั้งหมดอยู่ในที่เดียว และถูกเก็บเป็นโน้ตธรรมดาใน vault ของคุณ
 
-<p align="center"><img src="./assets/screenshots/hero-overview.png" width="640" alt="โซลูชันเรียนภาษาแบบครบวงจรในที่เดียว"></p>
+<p align="center"><img src="../../assets/screenshots/hero-overview.png" width="640" alt="โซลูชันเรียนภาษาแบบครบวงจรในที่เดียว"></p>
 
 
 > ### 💡 แจ้งเตือนเรื่องโมเดล Freemium
@@ -22,13 +22,13 @@
 - **โรงฝึกฝึกตาม**: คลิกไอคอนเวิร์กช็อปในริบบิ้นด้านซ้าย แล้ววางลิงก์ในช่องป้อนข้อมูล
 - **หน้าการติดตาม YouTube**: สร้างโน้ตให้วิดีโอใดก็ได้ระหว่างเลื่อนดูฟีด **พร้อมดาวน์โหลดแบบเลือกหลายรายการพร้อมกัน** (ฉบับเต็ม)
 
-<p align="center"><img src="./assets/screenshots/video-note.png" width="640" alt="โน้ตวิดีโอที่สร้างขึ้น"></p>
+<p align="center"><img src="../../assets/screenshots/video-note.png" width="640" alt="โน้ตวิดีโอที่สร้างขึ้น"></p>
 
-<p align="center"><img src="./assets/screenshots/nav-video-note.gif" width="640" alt="ป้อนลิงก์วิดีโอในแผงนำทางเพื่อสร้างโน้ตวิดีโอในคลิกเดียว"></p>
+<p align="center"><img src="../../assets/screenshots/nav-video-note.gif" width="640" alt="ป้อนลิงก์วิดีโอในแผงนำทางเพื่อสร้างโน้ตวิดีโอในคลิกเดียว"></p>
 
 **การจัดการโน้ตแบบรวมศูนย์**: โน้ตวิดีโอทั้งหมดอยู่ในหน้าแคตตาล็อกของเวิร์กช็อป พร้อมการจัดเรียง กรอง และจัดกลุ่ม คลิกที่การ์ดเพื่อเริ่มฝึกตาม กด Shift+คลิกเพื่อดูตัวอย่างโน้ต
 
-<p align="center"><img src="./assets/screenshots/workshop-catalog.png" width="640" alt="หน้าแคตตาล็อกเวิร์กช็อป"></p>
+<p align="center"><img src="../../assets/screenshots/workshop-catalog.png" width="640" alt="หน้าแคตตาล็อกเวิร์กช็อป"></p>
 
 ### 📖 ผู้ช่วยพจนานุกรม — อ่านอะไรก็ได้ ค้นได้ทันที
 - **ค้นคำทันที**: `Ctrl/Cmd + ดับเบิลคลิก` คำใดก็ได้ (หรือเลือกข้อความ) — คำอธิบายจะปรากฏในแถบด้านข้างทันที
@@ -38,7 +38,7 @@
 - **การออกเสียง**: เล่นเสียงพร้อมโหลดล่วงหน้าอย่างชาญฉลาด
 - **เพิ่มคลิกเดียว** เข้าสมุดคำศัพท์ของคุณ (IndexedDB + ไฟล์ markdown ที่ดูแลรักษาอัตโนมัติ)
 
-<p align="center"><img src="./assets/screenshots/dictionary-lookup.png" width="640" alt="ค้นคำด้วยดับเบิลคลิกพร้อมคำอธิบายในแถบด้านข้าง"></p>
+<p align="center"><img src="../../assets/screenshots/dictionary-lookup.png" width="640" alt="ค้นคำด้วยดับเบิลคลิกพร้อมคำอธิบายในแถบด้านข้าง"></p>
 
 ### 🧠 การ์ดคำศัพท์ FSRS — จดจำสิ่งที่คุณเรียน
 - **ตัวจัดตาราง FSRS** ที่ล้ำสมัยที่สุด (`ts-fsrs`) คำนวณช่วงเวลาทบทวนที่เหมาะสมที่สุดสำหรับทุกการ์ด
@@ -47,10 +47,10 @@
 - **ตัวจัดการการ์ดคำศัพท์**: ค้นหา กรองตามภาษา/ระดับความชำนาญ จัดเรียง แก้ไขในบรรทัด ลบเป็นชุด
 - **สัตว์เลี้ยงคู่หูการเรียนรู้** 🐣: เพื่อนเล็ก ๆ ที่ฟักออกมา เลเวลอัป และเติบโตไปพร้อมกับความต่อเนื่องในการเรียนของคุณ
 
-<p align="center"><img src="./assets/screenshots/flashcard-review.png" width="300" alt="ทบทวนการ์ดคำศัพท์"> <img src="./assets/screenshots/flashcard-review-2.png" width="300" alt="สถิติการทบทวนการ์ดคำศัพท์"></p>
+<p align="center"><img src="../../assets/screenshots/flashcard-review.png" width="300" alt="ทบทวนการ์ดคำศัพท์"> <img src="../../assets/screenshots/flashcard-review-2.png" width="300" alt="สถิติการทบทวนการ์ดคำศัพท์"></p>
 
-<p align="center"><img src="./assets/screenshots/one-click-cards.png" width="640" alt="ขั้นตอนการสร้างการ์ดในคลิกเดียว"></p>
-<p align="center"><img src="./assets/screenshots/batch-generate.png" width="640" alt="การสร้างการ์ดคำศัพท์ด้วย AI เป็นชุด (ฉบับเต็ม)"></p>
+<p align="center"><img src="../../assets/screenshots/one-click-cards.png" width="640" alt="ขั้นตอนการสร้างการ์ดในคลิกเดียว"></p>
+<p align="center"><img src="../../assets/screenshots/batch-generate.png" width="640" alt="การสร้างการ์ดคำศัพท์ด้วย AI เป็นชุด (ฉบับเต็ม)"></p>
 
 ### 🎬 โรงฝึกฝึกตามวิดีโอ — เรียนรู้จากวิดีโอจริง
 - **YouTube, Bilibili และไฟล์วิดีโอ/เสียงในเครื่อง** อยู่ในพื้นที่ทำงานเดียวกัน
@@ -60,12 +60,12 @@
 - **ควบคุมการเล่นอย่างแม่นยำ**: ความเร็ว 0.8x / 1.0x / 1.25x และกระโดดย้อนเร็ว -5 วินาที / -10 วินาที
 - **หน้าแคตตาล็อกเวิร์กช็อป**: โน้ตซับไตเติลทั้งหมดของคุณถูกจัดระเบียบด้วยการจัดเรียง กรอง และจัดกลุ่ม
 
-<p align="center"><img src="./assets/screenshots/shadowing-mode.png" width="315" alt="โหมดฝึกตาม"> <img src="./assets/screenshots/dictation-mode.png" width="315" alt="โหมดเขียนตามฟัง"></p>
+<p align="center"><img src="../../assets/screenshots/shadowing-mode.png" width="315" alt="โหมดฝึกตาม"> <img src="../../assets/screenshots/dictation-mode.png" width="315" alt="โหมดเขียนตามฟัง"></p>
 <p align="center"><em>โหมดฝึกตาม (ซ้าย) และโหมดเขียนตามฟัง (ขวา)</em></p>
 
-<p align="center"><img src="./assets/screenshots/listening-mode-2.png" width="640" alt="โหมดฝึกฟัง"></p>
-<p align="center"><img src="./assets/screenshots/record-pronunciation.png" width="640" alt="อัดเสียงและรับคะแนนการออกเสียงจาก AI"></p>
-<p align="center"><img src="./assets/screenshots/focus-mode.png" width="640" alt="โหมดจดจ่อสมาธิ"></p>
+<p align="center"><img src="../../assets/screenshots/listening-mode-2.png" width="640" alt="โหมดฝึกฟัง"></p>
+<p align="center"><img src="../../assets/screenshots/record-pronunciation.png" width="640" alt="อัดเสียงและรับคะแนนการออกเสียงจาก AI"></p>
+<p align="center"><img src="../../assets/screenshots/focus-mode.png" width="640" alt="โหมดจดจ่อสมาธิ"></p>
 <p align="center"><em>โหมดจดจ่อสมาธิ</em></p>
 
 ### ✨ การวิเคราะห์ด้วย AI — ใช้ API key ของคุณเอง
@@ -76,14 +76,14 @@
 - **เติมการ์ดคำศัพท์อัตโนมัติในคลิกเดียว**: ให้ AI เติมช่องที่ยังว่างในการ์ดของคุณ
 - ใช้งานร่วมกับ **OpenAI, DeepSeek, Google Gemini, Kimi, GLM, Qwen, OpenRouter หรือ endpoint ที่รองรับ OpenAI ได้ทุกตัว** — คีย์ของคุณ ทางเลือกของคุณ ข้อมูลของคุณ
 
-<p align="center"><img src="./assets/screenshots/ai-analysis-2.png" width="640" alt="รายงานการวิเคราะห์ด้วย AI"></p>
+<p align="center"><img src="../../assets/screenshots/ai-analysis-2.png" width="640" alt="รายงานการวิเคราะห์ด้วย AI"></p>
 
 ### 📺 การติดตามช่อง YouTube
 - ติดตามช่องต่าง ๆ พร้อม **หมวดหมู่, การดึงข้อมูล RSS ตามรอบ และการแจ้งเตือนวิดีโอใหม่**
 - เรียกดูฟีดของคุณในมุมมองการ์ด/รายการ และ **ดูตัวอย่างวิดีโอในแอป** โดยไม่ต้องออกจาก Obsidian
 - **สร้างโน้ตวิดีโอพร้อมซับไตเติลในคลิกเดียว** รวมถึงการดาวน์โหลดแบบเลือกหลายรายการพร้อมกัน
 
-<p align="center"><img src="./assets/screenshots/youtube-subscriptions.png" width="640" alt="การติดตามช่อง YouTube"></p>
+<p align="center"><img src="../../assets/screenshots/youtube-subscriptions.png" width="640" alt="การติดตามช่อง YouTube"></p>
 
 ### 📝 และอื่น ๆ อีกมากมาย
 - **แปลง SRT เป็นโน้ต** (รายเดียวและเป็นชุด) สำหรับไฟล์ซับไตเติลของคุณเอง
@@ -131,7 +131,7 @@
 
 มีคำถามเกี่ยวกับการใช้งานหรือฉบับเต็มหรือไม่? สแกน QR code เพื่อเพิ่มผู้พัฒนาเป็นเพื่อนบน WeChat:
 
-<p align="center"><img src="./assets/wechat-qr.jpg" width="200" alt="เพิ่มผู้พัฒนาบน WeChat" /></p>
+<p align="center"><img src="../../assets/wechat-qr.jpg" width="200" alt="เพิ่มผู้พัฒนาบน WeChat" /></p>
 
 ---
 
@@ -183,7 +183,7 @@
 
 ## 📄 สัญญาอนุญาต
 
-[GPL-3.0](./LICENSE)
+[GPL-3.0](../../LICENSE)
 
 ## ❤️ สนับสนุน
 

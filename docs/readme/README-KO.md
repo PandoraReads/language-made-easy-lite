@@ -1,10 +1,10 @@
 # Language Made Easy — 몰입형 Obsidian 영어 학습 워크스페이스
 
-> 🌐 다른 언어: [English](./README-EN.md) · [简体中文](./README.md) · [繁體中文](./README-ZH-TW.md) · [Deutsch](./README-DE.md) · [Français](./README-FR.md) · [Español](./README-ES.md) · [日本語](./README-JA.md) · 한국어 · [Русский](./README-RU.md) · [ไทย](./README-TH.md)
+> 🌐 다른 언어: [English](./README-EN.md) · [简体中文](../../README.md) · [繁體中文](./README-ZH-TW.md) · [Deutsch](./README-DE.md) · [Français](./README-FR.md) · [Español](./README-ES.md) · [日本語](./README-JA.md) · 한국어 · [Русский](./README-RU.md) · [ไทย](./README-TH.md)
 
 **Language Made Easy (LME)**는 Obsidian 볼트를 완전한 몰입형 영어 학습 워크스페이스로 바꿔줍니다. 읽으면서 즉시 사전 검색, FSRS 간격 반복 플래시카드, 자막 동기화 쉐도잉, AI 분석까지 — 모든 기능을 한곳에서, 모든 데이터는 볼트의 일반 노트로 저장합니다.
 
-<p align="center"><img src="./assets/screenshots/hero-overview.png" width="640" alt="원스톱 언어 학습 솔루션"></p>
+<p align="center"><img src="../../assets/screenshots/hero-overview.png" width="640" alt="원스톱 언어 학습 솔루션"></p>
 
 
 > ### 💡 프리미엄 안내
@@ -22,13 +22,13 @@ YouTube / Bilibili 링크를 붙여넣으면 플러그인이 제목, 채널, 썸
 - **쉐도잉 워크숍**: 왼쪽 리본에서 워크숍 아이콘을 클릭하고 입력창에 링크를 넣어 파싱
 - **YouTube 구독 페이지**: 피드를 둘러보는 동안 어떤 비디오든 노트를 생성, **다중 선택 일괄 다운로드 지원** (Full Edition)
 
-<p align="center"><img src="./assets/screenshots/video-note.png" width="640" alt="생성된 비디오 노트"></p>
+<p align="center"><img src="../../assets/screenshots/video-note.png" width="640" alt="생성된 비디오 노트"></p>
 
-<p align="center"><img src="./assets/screenshots/nav-video-note.gif" width="640" alt="내비게이션 패널에 비디오 링크를 입력해 원클릭으로 비디오 노트 생성"></p>
+<p align="center"><img src="../../assets/screenshots/nav-video-note.gif" width="640" alt="내비게이션 패널에 비디오 링크를 입력해 원클릭으로 비디오 노트 생성"></p>
 
 **통합 노트 관리**: 모든 비디오 노트는 워크숍 카탈로그 페이지에서 정렬, 필터링, 그룹화와 함께 관리됩니다. 카드를 클릭하면 쉐도잉을 시작하고, Shift+클릭으로 노트를 미리 볼 수 있습니다.
 
-<p align="center"><img src="./assets/screenshots/workshop-catalog.png" width="640" alt="워크숍 카탈로그 페이지"></p>
+<p align="center"><img src="../../assets/screenshots/workshop-catalog.png" width="640" alt="워크숍 카탈로그 페이지"></p>
 
 ### 📖 사전 도우미 — 무엇이든 읽고, 즉시 찾아보기
 - **즉시 검색**: 아무 단어나 `Ctrl/Cmd + 더블클릭` (또는 텍스트 선택) — 정의가 사이드바에 즉시 표시됩니다
@@ -38,7 +38,7 @@ YouTube / Bilibili 링크를 붙여넣으면 플러그인이 제목, 채널, 썸
 - **발음**: 스마트 사전 로딩이 적용된 음성 재생
 - **원클릭 추가**로 어휘 노트북에 저장 (IndexedDB + 자동 관리되는 마크다운 파일)
 
-<p align="center"><img src="./assets/screenshots/dictionary-lookup.png" width="640" alt="더블클릭 검색과 사이드바 정의 표시"></p>
+<p align="center"><img src="../../assets/screenshots/dictionary-lookup.png" width="640" alt="더블클릭 검색과 사이드바 정의 표시"></p>
 
 ### 🧠 FSRS 플래시카드 — 배운 것을 기억하세요
 - 최신 기술의 **FSRS 스케줄러** (`ts-fsrs`)가 카드마다 최적의 복습 간격을 계산합니다
@@ -47,10 +47,10 @@ YouTube / Bilibili 링크를 붙여넣으면 플러그인이 제목, 채널, 썸
 - **플래시카드 관리자**: 검색, 언어/숙련도별 필터링, 정렬, 인라인 편집, 일괄 삭제
 - **학습 동반 펫** 🐣: 학습 연속 기록과 함께 부화하고, 레벨업하고, 성장하는 작은 동반자
 
-<p align="center"><img src="./assets/screenshots/flashcard-review.png" width="300" alt="플래시카드 복습"> <img src="./assets/screenshots/flashcard-review-2.png" width="300" alt="플래시카드 복습 통계"></p>
+<p align="center"><img src="../../assets/screenshots/flashcard-review.png" width="300" alt="플래시카드 복습"> <img src="../../assets/screenshots/flashcard-review-2.png" width="300" alt="플래시카드 복습 통계"></p>
 
-<p align="center"><img src="./assets/screenshots/one-click-cards.png" width="640" alt="원클릭 카드 생성 과정"></p>
-<p align="center"><img src="./assets/screenshots/batch-generate.png" width="640" alt="AI 일괄 플래시카드 생성 (Full Edition)"></p>
+<p align="center"><img src="../../assets/screenshots/one-click-cards.png" width="640" alt="원클릭 카드 생성 과정"></p>
+<p align="center"><img src="../../assets/screenshots/batch-generate.png" width="640" alt="AI 일괄 플래시카드 생성 (Full Edition)"></p>
 
 ### 🎬 비디오 쉐도잉 워크숍 — 실제 비디오로 배우기
 - **YouTube, Bilibili, 로컬 비디오/오디오** 파일을 하나의 워크스페이스에서
@@ -60,12 +60,12 @@ YouTube / Bilibili 링크를 붙여넣으면 플러그인이 제목, 채널, 썸
 - **정밀한 재생 제어**: 0.8x / 1.0x / 1.25x 배속, 빠른 -5초 / -10초 이동
 - **워크숍 카탈로그 페이지**: 모든 자막 노트를 정렬, 필터링, 그룹화로 체계적으로 관리
 
-<p align="center"><img src="./assets/screenshots/shadowing-mode.png" width="315" alt="쉐도잉 모드"> <img src="./assets/screenshots/dictation-mode.png" width="315" alt="받아쓰기 모드"></p>
+<p align="center"><img src="../../assets/screenshots/shadowing-mode.png" width="315" alt="쉐도잉 모드"> <img src="../../assets/screenshots/dictation-mode.png" width="315" alt="받아쓰기 모드"></p>
 <p align="center"><em>왼쪽은 쉐도잉 모드, 오른쪽은 받아쓰기 모드</em></p>
 
-<p align="center"><img src="./assets/screenshots/listening-mode-2.png" width="640" alt="듣기 모드"></p>
-<p align="center"><img src="./assets/screenshots/record-pronunciation.png" width="640" alt="녹음 후 AI 발음 채점 받기"></p>
-<p align="center"><img src="./assets/screenshots/focus-mode.png" width="640" alt="집중 모드"></p>
+<p align="center"><img src="../../assets/screenshots/listening-mode-2.png" width="640" alt="듣기 모드"></p>
+<p align="center"><img src="../../assets/screenshots/record-pronunciation.png" width="640" alt="녹음 후 AI 발음 채점 받기"></p>
+<p align="center"><img src="../../assets/screenshots/focus-mode.png" width="640" alt="집중 모드"></p>
 <p align="center"><em>집중 모드</em></p>
 
 ### ✨ AI 기반 분석 — 내 API 키를 직접 사용
@@ -76,14 +76,14 @@ YouTube / Bilibili 링크를 붙여넣으면 플러그인이 제목, 채널, 썸
 - **원클릭 플래시카드 자동 완성**: AI가 카드의 누락된 필드를 채워줍니다
 - **OpenAI, DeepSeek, Google Gemini, Kimi, GLM, Qwen, OpenRouter 또는 OpenAI 호환 엔드포인트**와 연동 — 내 키, 내 선택, 내 데이터
 
-<p align="center"><img src="./assets/screenshots/ai-analysis-2.png" width="640" alt="AI 기반 분석 리포트"></p>
+<p align="center"><img src="../../assets/screenshots/ai-analysis-2.png" width="640" alt="AI 기반 분석 리포트"></p>
 
 ### 📺 YouTube 채널 구독
 - **카테고리, RSS 폴링, 새 비디오 알림**과 함께 채널 구독
 - 카드/목록 보기로 피드를 탐색하고 Obsidian을 벗어나지 않고 **앱 내에서 비디오 미리보기**
 - **자막 포함 원클릭 비디오 노트 생성**, 다중 선택 일괄 다운로드 포함
 
-<p align="center"><img src="./assets/screenshots/youtube-subscriptions.png" width="640" alt="YouTube 채널 구독"></p>
+<p align="center"><img src="../../assets/screenshots/youtube-subscriptions.png" width="640" alt="YouTube 채널 구독"></p>
 
 ### 📝 그 외 기능
 - 직접 만든 자막 파일용 **SRT를 노트로 변환** (단건 & 일괄)
@@ -131,7 +131,7 @@ Full Edition은 **일회성 구매**(구독 아님)로 **평생 무료 업데이
 
 사용법이나 Full Edition에 대해 궁금한 점이 있나요? QR 코드를 스캔해 위챗으로 작가를 추가하세요:
 
-<p align="center"><img src="./assets/wechat-qr.jpg" width="200" alt="위챗으로 작가 추가하기" /></p>
+<p align="center"><img src="../../assets/wechat-qr.jpg" width="200" alt="위챗으로 작가 추가하기" /></p>
 
 ---
 
@@ -183,7 +183,7 @@ Full Edition은 **일회성 구매**(구독 아님)로 **평생 무료 업데이
 
 ## 📄 라이선스
 
-[GPL-3.0](./LICENSE)
+[GPL-3.0](../../LICENSE)
 
 ## ❤️ 지원
 

@@ -1,10 +1,10 @@
 # Language Made Easy — 没入型の Obsidian 英語学習ワークスペース
 
-> 🌐 その他の言語: [English](./README-EN.md) · [简体中文](./README.md) · [繁體中文](./README-ZH-TW.md) · [Deutsch](./README-DE.md) · [Français](./README-FR.md) · [Español](./README-ES.md) · 日本語 · [한국어](./README-KO.md) · [Русский](./README-RU.md) · [ไทย](./README-TH.md)
+> 🌐 その他の言語: [English](./README-EN.md) · [简体中文](../../README.md) · [繁體中文](./README-ZH-TW.md) · [Deutsch](./README-DE.md) · [Français](./README-FR.md) · [Español](./README-ES.md) · 日本語 · [한국어](./README-KO.md) · [Русский](./README-RU.md) · [ไทย](./README-TH.md)
 
 **Language Made Easy (LME)** は、Obsidian のヴォールトを完全な没入型英語学習ワークスペースに変えます。読書中の即時辞書引き、FSRS 分散学習フラッシュカード、同期字幕付きのシャドーイング練習、AI による解析まで、すべてを 1 か所に。すべてのデータはプレーンなノートとしてヴォールト内に保存されます。
 
-<p align="center"><img src="./assets/screenshots/hero-overview.png" width="640" alt="ワンストップの語学学習ソリューション"></p>
+<p align="center"><img src="../../assets/screenshots/hero-overview.png" width="640" alt="ワンストップの語学学習ソリューション"></p>
 
 
 > ### 💡 フリーミアムについて
@@ -22,13 +22,13 @@ YouTube / Bilibili のリンクを貼り付けるだけで、タイトル・チ�
 - **シャドーイング工房**: 左リボンの工房アイコンをクリックし、入力ボックスにリンクを貼り付けて解析
 - **YouTube 登録チャンネルページ**: フィードを閲覧しながら任意の動画のノートを生成、**複数選択の一括ダウンロード対応**（フルエディション）
 
-<p align="center"><img src="./assets/screenshots/video-note.png" width="640" alt="生成された動画ノート"></p>
+<p align="center"><img src="../../assets/screenshots/video-note.png" width="640" alt="生成された動画ノート"></p>
 
-<p align="center"><img src="./assets/screenshots/nav-video-note.gif" width="640" alt="ナビゲーションパネルに動画リンクを入力してワンクリックで動画ノートを生成"></p>
+<p align="center"><img src="../../assets/screenshots/nav-video-note.gif" width="640" alt="ナビゲーションパネルに動画リンクを入力してワンクリックで動画ノートを生成"></p>
 
 **ノートを一元管理**: すべての動画ノートは工房のカタログページに集約され、並べ替え・フィルター・グループ化に対応。カードをクリックするとシャドーイングを開始、Shift+クリックでノートをプレビューできます。
 
-<p align="center"><img src="./assets/screenshots/workshop-catalog.png" width="640" alt="工房カタログページ"></p>
+<p align="center"><img src="../../assets/screenshots/workshop-catalog.png" width="640" alt="工房カタログページ"></p>
 
 ### 📖 辞書アシスタント — 何でも読みながら、すぐに調べる
 - **即時検索**: 任意の単語を `Ctrl/Cmd + ダブルクリック`（またはテキスト選択）— 定義がサイドバーに即座に表示されます
@@ -38,7 +38,7 @@ YouTube / Bilibili のリンクを貼り付けるだけで、タイトル・チ�
 - **発音**: スマートプリロード付きの音声再生
 - **ワンクリックで単語帳に追加**（IndexedDB + 自動管理の markdown ファイル）
 
-<p align="center"><img src="./assets/screenshots/dictionary-lookup.png" width="640" alt="ダブルクリック検索とサイドバーの定義表示"></p>
+<p align="center"><img src="../../assets/screenshots/dictionary-lookup.png" width="640" alt="ダブルクリック検索とサイドバーの定義表示"></p>
 
 ### 🧠 FSRS フラッシュカード — 学んだことを忘れない
 - 最先端の **FSRS スケジューラ**（`ts-fsrs`）が各カードに最適な復習間隔を計算
@@ -47,10 +47,10 @@ YouTube / Bilibili のリンクを貼り付けるだけで、タイトル・チ�
 - **フラッシュカードマネージャー**: 検索、言語/習熟度によるフィルター、並べ替え、インライン編集、一括削除
 - **学習コンパニオンペット** 🐣: 継続日数とともに孵化し、レベルアップして成長していく小さな相棒
 
-<p align="center"><img src="./assets/screenshots/flashcard-review.png" width="300" alt="フラッシュカード復習"> <img src="./assets/screenshots/flashcard-review-2.png" width="300" alt="フラッシュカード復習の統計"></p>
+<p align="center"><img src="../../assets/screenshots/flashcard-review.png" width="300" alt="フラッシュカード復習"> <img src="../../assets/screenshots/flashcard-review-2.png" width="300" alt="フラッシュカード復習の統計"></p>
 
-<p align="center"><img src="./assets/screenshots/one-click-cards.png" width="640" alt="ワンクリックカード作成の流れ"></p>
-<p align="center"><img src="./assets/screenshots/batch-generate.png" width="640" alt="AI によるフラッシュカード一括生成（フルエディション）"></p>
+<p align="center"><img src="../../assets/screenshots/one-click-cards.png" width="640" alt="ワンクリックカード作成の流れ"></p>
+<p align="center"><img src="../../assets/screenshots/batch-generate.png" width="640" alt="AI によるフラッシュカード一括生成（フルエディション）"></p>
 
 ### 🎬 シャドーイング工房 — 実際の動画から学ぶ
 - **YouTube・Bilibili・ローカルの動画/音声**ファイルを 1 つのワークスペースで
@@ -60,12 +60,12 @@ YouTube / Bilibili のリンクを貼り付けるだけで、タイトル・チ�
 - **精密な再生コントロール**: 0.8 倍 / 1.0 倍 / 1.25 倍速、-5 秒 / -10 秒のクイックジャンプ
 - **工房カタログページ**: すべての字幕ノートを並べ替え・フィルター・グループ化して整理
 
-<p align="center"><img src="./assets/screenshots/shadowing-mode.png" width="315" alt="シャドーイングモード"> <img src="./assets/screenshots/dictation-mode.png" width="315" alt="ディクテーションモード"></p>
+<p align="center"><img src="../../assets/screenshots/shadowing-mode.png" width="315" alt="シャドーイングモード"> <img src="../../assets/screenshots/dictation-mode.png" width="315" alt="ディクテーションモード"></p>
 <p align="center"><em>左：シャドーイングモード、右：ディクテーションモード</em></p>
 
-<p align="center"><img src="./assets/screenshots/listening-mode-2.png" width="640" alt="リスニングモード"></p>
-<p align="center"><img src="./assets/screenshots/record-pronunciation.png" width="640" alt="録音して AI 発音スコアを取得"></p>
-<p align="center"><img src="./assets/screenshots/focus-mode.png" width="640" alt="集中モード"></p>
+<p align="center"><img src="../../assets/screenshots/listening-mode-2.png" width="640" alt="リスニングモード"></p>
+<p align="center"><img src="../../assets/screenshots/record-pronunciation.png" width="640" alt="録音して AI 発音スコアを取得"></p>
+<p align="center"><img src="../../assets/screenshots/focus-mode.png" width="640" alt="集中モード"></p>
 <p align="center"><em>集中モード</em></p>
 
 ### ✨ AI 解析 — API キーは自分のものを
@@ -76,14 +76,14 @@ YouTube / Bilibili のリンクを貼り付けるだけで、タイトル・チ�
 - **ワンクリックのフラッシュカード自動入力**: 不足している項目を AI が補完
 - **OpenAI、DeepSeek、Google Gemini、Kimi、GLM、Qwen、OpenRouter、または OpenAI 互換の任意のエンドポイント**に対応 — キーも選択もデータも、すべてあなたのもの
 
-<p align="center"><img src="./assets/screenshots/ai-analysis-2.png" width="640" alt="AI による解析レポート"></p>
+<p align="center"><img src="../../assets/screenshots/ai-analysis-2.png" width="640" alt="AI による解析レポート"></p>
 
 ### 📺 YouTube チャンネル購読
 - **カテゴリー、RSS ポーリング、新着動画通知**付きでチャンネルを購読
 - カード/リスト表示でフィードを閲覧し、Obsidian を離れずに**アプリ内で動画をプレビュー**
 - **字幕付きのワンクリック動画ノート生成**、複数選択の一括ダウンロードにも対応
 
-<p align="center"><img src="./assets/screenshots/youtube-subscriptions.png" width="640" alt="YouTube チャンネル購読"></p>
+<p align="center"><img src="../../assets/screenshots/youtube-subscriptions.png" width="640" alt="YouTube チャンネル購読"></p>
 
 ### 📝 その他の機能
 - **SRT からノートへ**の変換（単一 & 一括）、自分の字幕ファイルに対応
@@ -131,7 +131,7 @@ YouTube / Bilibili のリンクを貼り付けるだけで、タイトル・チ�
 
 使い方やフルエディションについてのご質問は、QR コードをスキャンして作者を WeChat に追加してください:
 
-<p align="center"><img src="./assets/wechat-qr.jpg" width="200" alt="WeChat で作者を追加" /></p>
+<p align="center"><img src="../../assets/wechat-qr.jpg" width="200" alt="WeChat で作者を追加" /></p>
 
 ---
 
@@ -183,7 +183,7 @@ YouTube / Bilibili のリンクを貼り付けるだけで、タイトル・チ�
 
 ## 📄 ライセンス
 
-[GPL-3.0](./LICENSE)
+[GPL-3.0](../../LICENSE)
 
 ## ❤️ サポート
 
