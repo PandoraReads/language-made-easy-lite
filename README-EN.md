@@ -1,6 +1,6 @@
 # Language Made Easy — Immersive Obsidian English Learning Workspace
 
-> 中文文档：见 [README.md](./README.md)
+> 🌐 Documentation in other languages: English · [简体中文](./README.md) · [繁體中文](./README-ZH-TW.md) · [Deutsch](./README-DE.md) · [Français](./README-FR.md) · [Español](./README-ES.md) · [日本語](./README-JA.md) · [한국어](./README-KO.md) · [Русский](./README-RU.md) · [ไทย](./README-TH.md)
 
 **Language Made Easy (LME)** turns your Obsidian vault into a complete immersive English-learning workspace: instant dictionary lookup while reading, FSRS spaced-repetition flashcards, video shadowing with synced subtitles, and AI-powered analysis — all in one place, all stored as plain notes in your vault.
 
