@@ -6,8 +6,18 @@
 
 import Dexie, { type Table } from 'dexie';
 import type { VocabularyEntry, ReviewLog, VocabTestResult, VocabSizeState, PetState, DeletedCardTombstone } from '../models';
+import { planVocabularyMerge, rowsMissingIds, type ImportSummary, type MergeableVocabRow } from '../services/flashcard-backup';
 
 // PandoraReads — 数据库层
+
+/** 异库扫描/找回候选的只读概览。 */
+export interface VaultDbCandidate {
+    name: string;
+    vocabularyCount: number;
+    languages: string[];
+    /** 最近一张卡的添加时间(ms);0 = 未知。 */
+    latestAddedTime: number;
+}
 
 export class LMEDatabase extends Dexie {
     vocabulary!: Table<VocabularyEntry & { language: string }, string>;
@@ -71,7 +81,7 @@ export class LMEDatabase extends Dexie {
         });
     }
 
-    async configureVault(vaultKey: string): Promise<void> {
+    async configureVault(vaultKey: string, legacyVaultKey?: string): Promise<void> {
         const nextName = `LanguageMadeEasyDB_${LMEDatabase.hashVaultKey(vaultKey || 'default')}`;
         if (this.configuredDbName === nextName) {
             await this.open();
@@ -82,7 +92,35 @@ export class LMEDatabase extends Dexie {
         this.name = nextName;
         this.configuredDbName = nextName;
         await this.open();
+        // 4.2.1 前库名派生自 vault 绝对路径;升级首启时把旧路径哈希库一次性
+        // 收编进新的 vaultDbId 库(调用方仅在生成新 vaultDbId 的那次传入
+        // legacyVaultKey,天然只跑一次)。
+        if (legacyVaultKey) await this.adoptLegacyPathDb(legacyVaultKey);
         await this.migrateLegacyGlobalDbOnce();
+    }
+
+    /**
+     * 一次性收编 4.2.1 之前的路径哈希库:全表拷入当前库后删除旧库。
+     * 源库用无 schema 的裸 Dexie 打开——只读拷贝不触发 v2→v7 升级,
+     * 失败时旧库原样保留,下次升级首启还会再试。
+     */
+    private async adoptLegacyPathDb(legacyVaultKey: string): Promise<void> {
+        const legacyName = `LanguageMadeEasyDB_${LMEDatabase.hashVaultKey(legacyVaultKey || 'default')}`;
+        if (legacyName === this.configuredDbName) return;
+        try {
+            const names = await LMEDatabase.listIndexedDbNames();
+            if (!names.includes(legacyName)) return;
+
+            const rows = await LMEDatabase.readAllFromNamedDb(legacyName);
+            const hasData = Object.values(rows).some(list => list.length > 0);
+            if (hasData) {
+                await this.mergeExternalRows(rows);
+                console.debug(`[LME] Adopted legacy path-keyed flashcard db: ${legacyName} -> ${this.configuredDbName}`);
+            }
+            await LMEDatabase.deleteNamedDb(legacyName);
+        } catch (error) {
+            console.warn('[LME] Legacy path-keyed db adoption skipped:', error);
+        }
     }
 
     private async migrateLegacyGlobalDbOnce(): Promise<void> {
@@ -152,6 +190,161 @@ export class LMEDatabase extends Dexie {
         return ((h2 >>> 0).toString(36) + (h1 >>> 0).toString(36)).slice(0, 16);
     }
 
+    // ──── Cross-db recovery helpers (4.2.1) ────────────────────
+
+    private static readonly DATA_TABLE_NAMES = ['vocabulary', 'reviewLogs', 'vocabTests', 'vocabSizeState', 'petState', 'deletedCardTombstones'] as const;
+
+    /** indexedDB.databases() 的特性探测包装;不支持(旧 WebView)或失败 → []。 */
+    static async listIndexedDbNames(): Promise<string[]> {
+        // 项目 tsconfig 无 DOM lib 的 IndexedDB 接口名,经 globalThis 形状访问
+        const factory = (globalThis as { indexedDB?: { databases?: () => Promise<Array<{ name?: string }>> } }).indexedDB;
+        if (!factory || typeof factory.databases !== 'function') return [];
+        try {
+            const dbs = await factory.databases();
+            return dbs
+                .map((d: { name?: string }) => d.name)
+                .filter((n: string | undefined): n is string => typeof n === 'string');
+        } catch {
+            return [];
+        }
+    }
+
+    /**
+     * 用无 schema 的裸 Dexie 读命名库全表:不声明版本即按现有版本打开,
+     * 绝不触发 schema 升级——源库可能属于另一 vault 的旧版本插件,把它
+     * 升到 v7 会让那端的旧 Dexie 直接 VersionError。缺表 → 该表空数组。
+     */
+    private static async readAllFromNamedDb(name: string): Promise<Record<string, unknown[]>> {
+        const out: Record<string, unknown[]> = {};
+        const src = new Dexie(name);
+        try {
+            await src.open();
+            for (const table of LMEDatabase.DATA_TABLE_NAMES) {
+                try {
+                    out[table] = await src.table(table).toArray();
+                } catch {
+                    out[table] = [];
+                }
+            }
+        } catch {
+            for (const table of LMEDatabase.DATA_TABLE_NAMES) out[table] = [];
+        } finally {
+            try { src.close(); } catch { /* already closed */ }
+        }
+        return out;
+    }
+
+    private static async deleteNamedDb(name: string): Promise<void> {
+        try {
+            await Dexie.delete(name);
+        } catch (error) {
+            console.warn(`[LME] Failed to remove adopted db ${name}:`, error);
+        }
+    }
+
+    /**
+     * 扫描本机上其他 LME 闪卡库(改名/移动前的旧库,或其他 vault 的库),
+     * 只报告有卡的库。供"从其他仓库找回闪卡"列表与启动找回提示使用。
+     */
+    static async listOtherVaultDbs(currentName: string): Promise<VaultDbCandidate[]> {
+        const names = await LMEDatabase.listIndexedDbNames();
+        const candidates = names.filter(n => n.startsWith('LanguageMadeEasyDB') && n !== currentName);
+        const out: VaultDbCandidate[] = [];
+        for (const name of candidates) {
+            const probe = new Dexie(name);
+            try {
+                await probe.open();
+                const vocabulary: Array<{ language?: string; addedTime?: number }> = await probe.table('vocabulary').toArray();
+                if (vocabulary.length === 0) continue;
+                const languages = [...new Set(vocabulary.map(v => v.language ?? '').filter(Boolean))];
+                const latestAddedTime = vocabulary.reduce((max, v) => Math.max(max, v.addedTime ?? 0), 0);
+                out.push({ name, vocabularyCount: vocabulary.length, languages, latestAddedTime });
+            } catch {
+                // 打不开的库跳过,不影响其他候选
+            } finally {
+                try { probe.close(); } catch { /* already closed */ }
+            }
+        }
+        return out.sort((a, b) => b.vocabularyCount - a.vocabularyCount);
+    }
+
+    /** 全表导出(自动备份/手动备份用)。 */
+    async dumpAllTables(): Promise<Record<string, unknown[]>> {
+        const [vocabulary, reviewLogs, vocabTests, vocabSizeState, petState, deletedCardTombstones] = await Promise.all([
+            this.vocabulary.toArray(),
+            this.reviewLogs.toArray(),
+            this.vocabTests.toArray(),
+            this.vocabSizeState.toArray(),
+            this.petState.toArray(),
+            this.deletedCardTombstones.toArray(),
+        ]);
+        return { vocabulary, reviewLogs, vocabTests, vocabSizeState, petState, deletedCardTombstones };
+    }
+
+    /**
+     * 把外部行(异库或备份文件)合并进当前库:
+     * - vocabulary 走 planVocabularyMerge(同词保 reps 高者,幂等);
+     * - reviewLogs/vocabTests/tombstones 按主键并集;
+     * - vocabSizeState/petState 只补缺,不覆盖现有状态。
+     * 整批一个事务,失败整体回滚。
+     */
+    async mergeExternalRows(rows: Record<string, unknown[]>): Promise<ImportSummary> {
+        const incomingVocab = (rows.vocabulary ?? []) as Array<VocabularyEntry & { language: string }>;
+        const currentVocab = await this.vocabulary.toArray();
+        const plan = planVocabularyMerge(
+            currentVocab as MergeableVocabRow[],
+            incomingVocab as MergeableVocabRow[],
+        );
+
+        const [currentTests, currentSizeStates, currentPets] = await Promise.all([
+            this.vocabTests.toArray(),
+            this.vocabSizeState.toArray(),
+            this.petState.toArray(),
+        ]);
+        const newTests = rowsMissingIds(new Set(currentTests.map(r => r.id)), (rows.vocabTests ?? []) as VocabTestResult[]);
+        const newSizeStates = rowsMissingIds(new Set(currentSizeStates.map(r => r.id)), (rows.vocabSizeState ?? []) as VocabSizeState[]);
+        const newPets = rowsMissingIds(new Set(currentPets.map(r => r.id)), (rows.petState ?? []) as PetState[]);
+
+        const keepIncoming = plan.keepIncoming as Array<VocabularyEntry & { language: string }>;
+        // Dexie 单事务 >5 表需走数组重载(7 参形式超出 d.ts 覆盖)
+        await this.transaction('rw',
+            [this.vocabulary, this.reviewLogs, this.vocabTests, this.vocabSizeState, this.petState, this.deletedCardTombstones],
+            async () => {
+            if (plan.replaceCurrentIds.length > 0) await this.vocabulary.bulkDelete(plan.replaceCurrentIds);
+            if (keepIncoming.length > 0) await this.vocabulary.bulkPut(keepIncoming);
+            const reviewLogs = (rows.reviewLogs ?? []) as Array<ReviewLog & { language: string }>;
+            if (reviewLogs.length > 0) await this.reviewLogs.bulkPut(reviewLogs);
+            if (newTests.length > 0) await this.vocabTests.bulkPut(newTests);
+            if (newSizeStates.length > 0) await this.vocabSizeState.bulkPut(newSizeStates);
+            if (newPets.length > 0) await this.petState.bulkPut(newPets);
+            const tombstones = (rows.deletedCardTombstones ?? []) as DeletedCardTombstone[];
+            if (tombstones.length > 0) await this.deletedCardTombstones.bulkPut(tombstones);
+        });
+
+        this.notifyMutated();
+        return { imported: plan.keepIncoming.length, skipped: plan.skipCount, replaced: plan.replaceCurrentIds.length };
+    }
+
+    /** 从另一个 LME 库(旧路径库/其他 vault)导入;合并语义同 mergeExternalRows。 */
+    async importFromVaultDb(name: string): Promise<ImportSummary> {
+        const rows = await LMEDatabase.readAllFromNamedDb(name);
+        return await this.mergeExternalRows(rows);
+    }
+
+    // ──── Mutation hook (auto-backup dirty flag) ───────────────
+
+    /** 数据被写入后触发(加卡/复习/删除/测试/宠物);由宿主接去调度自动备份。 */
+    onDataMutated?: () => void;
+
+    private notifyMutated(): void {
+        if (!this.onDataMutated) return;
+        try {
+            this.onDataMutated();
+        } catch (error) {
+            console.warn('[LME] onDataMutated handler failed:', error);
+        }
+    }
+
     // ──── Helper: Get language-specific tables ─────────────────────
 
     private getLanguage(language: string) {
@@ -165,6 +358,7 @@ export class LMEDatabase extends Dexie {
 
     async addVocabulary(entry: VocabularyEntry, language: string = 'english'): Promise<void> {
         await this.vocabulary.put({ ...entry, language });
+        this.notifyMutated();
     }
 
     async getVocabulary(id: string, language: string = 'english'): Promise<VocabularyEntry | undefined> {
@@ -217,6 +411,7 @@ export class LMEDatabase extends Dexie {
             }
         }
         await this.vocabulary.update(id, changes);
+        this.notifyMutated();
     }
 
     async deleteVocabulary(id: string): Promise<void> {
@@ -232,6 +427,7 @@ export class LMEDatabase extends Dexie {
             await this.vocabulary.delete(id);
             await this.reviewLogs.where('vocabId').equals(id).delete();
         });
+        this.notifyMutated();
     }
 
     // ──── Due Cards ───────────────────────────────────────────
@@ -276,6 +472,7 @@ export class LMEDatabase extends Dexie {
 
     async addReviewLog(log: ReviewLog & { language: string }): Promise<void> {
         await this.reviewLogs.put(log);
+        this.notifyMutated();
     }
 
     async getReviewLogs(vocabId: string, language: string): Promise<ReviewLog[]> {
@@ -441,6 +638,7 @@ export class LMEDatabase extends Dexie {
                 await this.reviewLogs.where('vocabId').equals(id).delete();
             }
         });
+        this.notifyMutated();
         return ids.length;
     }
 
@@ -504,6 +702,7 @@ export class LMEDatabase extends Dexie {
      */
     async markAsMastered(id: string): Promise<void> {
         await this.vocabulary.update(id, { masteredAt: Date.now() });
+        this.notifyMutated();
     }
 
     /**
@@ -525,6 +724,7 @@ export class LMEDatabase extends Dexie {
             }
         }
 
+        if (marked > 0) this.notifyMutated();
         return marked;
     }
 
@@ -532,6 +732,7 @@ export class LMEDatabase extends Dexie {
 
     async saveTestResult(result: VocabTestResult): Promise<void> {
         await this.vocabTests.put(result);
+        this.notifyMutated();
     }
 
     async getLatestTestResult(language: string): Promise<VocabTestResult | undefined> {
@@ -548,6 +749,7 @@ export class LMEDatabase extends Dexie {
 
     async saveVocabSizeState(state: VocabSizeState): Promise<void> {
         await this.vocabSizeState.put(state);
+        this.notifyMutated();
     }
 
     async getPetState(language: string): Promise<PetState | undefined> {
@@ -556,6 +758,7 @@ export class LMEDatabase extends Dexie {
 
     async savePetState(state: PetState): Promise<void> {
         await this.petState.put(state);
+        this.notifyMutated();
     }
 
     async getVocabSizeHistory(language: string, limit: number = 10): Promise<VocabTestResult[]> {

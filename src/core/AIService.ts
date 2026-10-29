@@ -15,7 +15,7 @@ export interface WordLookupResult {
 }
 
 /** AI features that can be assigned a dedicated provider (override). */
-export type AiFeature = 'docAnalysis' | 'flashcardFill' | 'aiScoring';
+export type AiFeature = 'docAnalysis' | 'flashcardFill' | 'aiScoring' | 'wordAnalysis';
 
 /** Resolved provider config for a feature (returned by resolveProvider). */
 export interface ResolvedProvider {
@@ -124,6 +124,7 @@ export class AIService {
         docAnalysis: 'aiDocAnalysisProvider',
         flashcardFill: 'aiFlashcardFillProvider',
         aiScoring: 'aiScoringProvider',
+        wordAnalysis: 'aiWordAnalysisProvider',
     };
 
     /**
@@ -699,6 +700,97 @@ export class AIService {
             definition: rec.definition || '',
             example: rec.example || ''
         };
+    }
+
+    // ============================================================
+    // Context-aware Word Analysis (dict view AI 解析)
+    // ============================================================
+
+    /**
+     * Context-aware word analysis for the dict view's AI 解析 card. Unlike
+     * lookupWord (a plain dictionary JSON for flashcard auto-fill), this
+     * produces a Markdown explanation grounded in the sentence the user
+     * double-clicked: what the word means *here*, how it is used, the
+     * cultural background, and similar expressions.
+     */
+    static async analyzeWordContext(
+        word: string,
+        sentence: string,
+        surrounding: string,
+        language: string,
+        level: string,
+        provider: string,
+        apiKey: string,
+        modelName: string,
+        providers?: AIProviderConfig[]
+    ): Promise<string> {
+        if (!apiKey) {
+            throw new Error(t('errors.apiKeyMissing'));
+        }
+
+        const langNames: Record<string, { zh: string; en: string }> = {
+            english: { zh: '英语', en: 'English' },
+            german: { zh: '德语', en: 'German' },
+            french: { zh: '法语', en: 'French' },
+            spanish: { zh: '西班牙语', en: 'Spanish' },
+            korean: { zh: '韩语', en: 'Korean' },
+            russian: { zh: '俄语', en: 'Russian' },
+            japanese: { zh: '日语', en: 'Japanese' },
+        };
+        const isZhUi = getLocale() === 'zh-CN';
+        const langName = langNames[language]?.[isZhUi ? 'zh' : 'en'] || language;
+
+        const levelLabelZh: Record<string, string> = {
+            beginner: '初学者 (Beginner)',
+            intermediate: '中级 (Intermediate)',
+            advanced: '高级 (Advanced)',
+            native: '母语者 (Native)',
+        };
+        const levelLabelEn: Record<string, string> = {
+            beginner: 'Beginner',
+            intermediate: 'Intermediate',
+            advanced: 'Advanced',
+            native: 'Native',
+        };
+
+        const sentenceBlock = sentence
+            ? (isZhUi
+                ? '\n该词所在的句子（核心上下文）：\n' + sentence + '\n'
+                : '\nThe sentence containing the word (core context):\n' + sentence + '\n')
+            : (isZhUi
+                ? '\n（未捕获到该词所在的句子，请按最常见的词义解析，并在开头说明这一点。）\n'
+                : '\n(No sentence was captured for this word. Analyze the most common sense and say so at the top.)\n');
+        const surroundingBlock = surrounding && surrounding.trim() && surrounding.trim() !== sentence.trim()
+            ? (isZhUi
+                ? '\n前后文段落（辅助判断语义，可能为空或不完整）：\n' + surrounding.trim().slice(0, 4000) + '\n'
+                : '\nSurrounding paragraph (contextual aid, may be empty or partial):\n' + surrounding.trim().slice(0, 4000) + '\n')
+            : '';
+
+        const prompt = isZhUi
+            ? '你是一位面向中文母语者的' + langName + '词汇教学专家。学习者正在阅读时查了这个词："' + word + '"。'
+                + '请结合上下文解析这个词，用中文讲解，例句保留' + langName + '原文并附中文翻译。\n'
+                + '学习者水平：' + (levelLabelZh[level] || level) + '，讲解深度请与之匹配。\n'
+                + sentenceBlock
+                + surroundingBlock
+                + '\n请严格按以下 Markdown 结构输出（保持这四个二级标题，不要输出其他一级标题）：\n'
+                + '## 上下文语义\n该词在上面句子中的确切含义是什么、为什么是这个意思（结合句意推断），若句子存在一词多义的可能，说明如何从上下文排除其他词义。\n'
+                + '## 用法解析\n词性、常见搭配、语法模式（及物/不及物、从句结构、介词搭配等）、语域（正式/口语/书面）与感情色彩。\n'
+                + '## 文化背景\n该词相关的文化内涵、典型使用场合或语用注意点。若确无特别的文化背景，用一两句说明即可，不要编造。\n'
+                + '## 类似用法\n2-4 个近义或相关表达，逐个说明与本词的差别和可替换的场景，各配一个简短例句加中文翻译。\n\n'
+                + '要求：讲解准确、直接、面向学习者；上下文信息不足以判断时明确说明，不要编造；直接输出 Markdown，不要代码块包裹。'
+            : 'You are a ' + langName + ' vocabulary teacher for language learners. While reading, the learner looked up this word: "' + word + '". '
+                + 'Analyze it in context. Explain in English; keep example sentences in the original ' + langName + ' with English translations.\n'
+                + 'Learner level: ' + (levelLabelEn[level] || level) + '. Match the depth to it.\n'
+                + sentenceBlock
+                + surroundingBlock
+                + '\nOutput strictly in this Markdown structure (keep these four level-2 headings, no other level-1 headings):\n'
+                + '## Meaning in Context\nWhat the word means in the sentence above and why (inferred from the sentence); if the word is polysemous, explain how the context rules out the other senses.\n'
+                + '## Usage\nPart of speech, common collocations, grammatical patterns (transitive/intransitive, clause structures, preposition patterns), register (formal/spoken/written) and connotation.\n'
+                + '## Cultural Notes\nCultural connotations, typical situations, or pragmatic caveats. If there is nothing notable, say so in a sentence or two — do not invent.\n'
+                + '## Similar Expressions\n2-4 synonyms or related expressions; for each, the difference from this word and when it is interchangeable, with one short example sentence plus translation.\n\n'
+                + 'Requirements: accurate, direct, learner-oriented; state clearly when the context is insufficient instead of guessing; output raw Markdown without code fences.';
+
+        return await AIService.runChat(provider, apiKey, modelName, prompt, providers);
     }
 
 

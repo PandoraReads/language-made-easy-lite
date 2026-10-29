@@ -6,9 +6,11 @@ import { App, PluginSettingTab, Setting, Platform, Notice, FuzzySuggestModal, Mo
 import type LanguageMadeEasyPlugin from './main-unified-full';
 import { DEFAULT_SETTINGS, type LMESettings, BUILTIN_PROMPTS, type PromptTemplate, type AIProviderConfig, type LanguageId, BUILTIN_PROVIDERS, uiThemeLabel } from './models';
 import { FlashcardManagerModal } from './ui/flashcard-manager-modal';
+import { BackupManageModal } from './ui/backup-manage-modal';
+import { VaultRecoveryModal } from './ui/vault-recovery-modal';
 import { UpgradeModal } from './ui/upgrade-modal';
 import { VaultFolderSuggestModal } from './ui/vault-folder-suggest';
-import { db } from './core/Database';
+import { db, LMEDatabase } from './core/Database';
 import { randomUUID } from './mocks/crypto';
 import { t, initI18n, type Locale } from './i18n';
 import { showNativeOpenDialog } from './utils/electron-remote';
@@ -347,6 +349,14 @@ export class LMESettingTab extends PluginSettingTab {
 			async (v) => { this.plugin.settings.doubleClickLookupEnabled = v; await this.plugin.saveSettings(); },
 		);
 
+		this.addToggleWithStatus(
+			containerEl,
+			t('settings.aiWordAnalysis'),
+			t('settings.aiWordAnalysisDesc'),
+			() => this.plugin.settings.aiWordAnalysisEnabled,
+			async (v) => { this.plugin.settings.aiWordAnalysisEnabled = v; await this.plugin.saveSettings(); },
+		);
+
 		// ── Flashcard Settings ─────────────────────────────────
 		new Setting(containerEl).setName("").setHeading();
 
@@ -453,6 +463,56 @@ export class LMESettingTab extends PluginSettingTab {
 					new FlashcardManagerModal(this.app, this.plugin).open();
 				}));
 
+		// ── 数据与备份(4.2.1:自动备份/恢复/异库找回,数据完整性免费可用) ──
+		new Setting(containerEl).setName("").setHeading();
+
+		this.addToggleWithStatus(
+			containerEl,
+			t('dataRecovery.autoBackupName'),
+			t('dataRecovery.autoBackupDesc'),
+			() => this.plugin.settings.autoBackup,
+			async (v) => { this.plugin.settings.autoBackup = v; await this.plugin.saveSettings(); },
+		);
+
+		new Setting(containerEl)
+			.setName(t('dataRecovery.backupNowName'))
+			.setDesc(t('dataRecovery.backupNowDesc'))
+			.addButton(btn => btn
+				.setButtonText(t('dataRecovery.backupNowButton'))
+				.onClick(async () => {
+					btn.setDisabled(true);
+					try {
+						const count = await this.plugin.writeFlashcardBackup();
+						new Notice(t('dataRecovery.backupDone', { count: String(count) }));
+					} catch (e) {
+						console.warn('[LME] 手动备份失败:', e);
+						new Notice(t('dataRecovery.backupFailed'));
+					} finally {
+						btn.setDisabled(false);
+					}
+				}));
+
+		new Setting(containerEl)
+			.setName(t('dataRecovery.restoreName'))
+			.setDesc(t('dataRecovery.restoreDesc'))
+			.addButton(btn => btn
+				.setButtonText(t('dataRecovery.restoreButton'))
+				.onClick(() => {
+					new BackupManageModal(this.app, this.plugin).open();
+				}));
+
+		new Setting(containerEl)
+			.setName(t('dataRecovery.recoverName'))
+			.setDesc(t('dataRecovery.recoverDesc'))
+			.addButton(btn => btn
+				.setButtonText(t('dataRecovery.recoverButton'))
+				.onClick(async () => {
+					btn.setDisabled(true);
+					const candidates = await LMEDatabase.listOtherVaultDbs(db.name);
+					btn.setDisabled(false);
+					new VaultRecoveryModal(this.app, this.plugin, candidates).open();
+				}));
+
 		// ── Video Download Path ──────────────────────────────────
 		new Setting(containerEl).setName("").setHeading();
 		containerEl.createEl('p', {
@@ -523,14 +583,15 @@ export class LMESettingTab extends PluginSettingTab {
 		// Login/cookie is no longer required.
 
 		// ── AI Analysis ────────────────────────────────────────
-		new Setting(containerEl).setName("").setHeading();
+		// Deluxe 同款分区结构:h3 标题进 groupSettingsSections 卡片分组
+		containerEl.createEl('h3', { text: t('settings.aiSection') });
 		containerEl.createEl('p', {
 			text: t('settings.aiSectionDesc'),
 			cls: 'lme-settings-hint'
 		});
 
 		// -- AI Analysis Prompt Management --
-			new Setting(containerEl).setName("").setHeading();
+			containerEl.createEl('h3', { text: t('settings.aiPrompts') });
 			containerEl.createEl('p', {
 				text: t('settings.aiPromptsDesc'),
 				cls: 'setting-item-description'
@@ -634,6 +695,7 @@ export class LMESettingTab extends PluginSettingTab {
 		this.addFeatureProviderDropdown(adv, 'settings.aiFeatureDocAnalysis', 'aiDocAnalysisProvider');
 		this.addFeatureProviderDropdown(adv, 'settings.aiFeatureFlashcardFill', 'aiFlashcardFillProvider');
 		this.addFeatureProviderDropdown(adv, 'settings.aiFeatureAiScoring', 'aiScoringProvider');
+		this.addFeatureProviderDropdown(adv, 'settings.aiFeatureWordAnalysis', 'aiWordAnalysisProvider');
 
 		// ── Audio Transcription (Whisper) ─────────────────────
 		new Setting(containerEl).setName("").setHeading();
@@ -1000,7 +1062,7 @@ export class LMESettingTab extends PluginSettingTab {
 			// and managed right on the row (set-as-default button) so models aren't shown twice.
 			// Every model is editable + deletable, including built-ins (deleted ones return to
 			// the catalog and can be re-added).
-			new Setting(containerEl).setName("").setHeading();
+			containerEl.createEl('h3', { text: t('settings.providerList') });
 			if (providers.length === 0) {
 				containerEl.createEl('p', { text: t('settings.providerListEmpty'), cls: 'lme-settings-hint' });
 			}

@@ -309,6 +309,13 @@ export interface LMESettings {
     autoCleanupMastered: boolean;   // Auto-delete mastered cards after delay
     cleanupDelayDays: number;       // Days to wait before auto-cleanup (default 7)
 
+    // 数据韧性(4.2.1):闪卡 IndexedDB 库名改由稳定 vaultDbId 派生(主存储为
+    // 插件目录 sidecar vault-id.json,本字段仅作镜像与旧版本兼容,防 data.json
+    // 被另一端旧快照覆写后重新生成标识指向空库);改名/移动仓库不再换库。
+    vaultDbId: string;
+    // 闪卡自动备份(默认开启):每日一份全量 JSON 到插件目录 backups/,保留最近 7 份。
+    autoBackup: boolean;
+
     // Video
 	    defaultPlaybackRate: number;
 	    shadowingBufferMs: number;  // ms before next timestamp to pause (default 500)
@@ -349,6 +356,9 @@ export interface LMESettings {
     aiDocAnalysisProvider: string;      // AI analysis
     aiFlashcardFillProvider: string;    // One-click flashcard auto-fill
     aiScoringProvider: string;          // AI scoring
+    aiWordAnalysisProvider: string;     // Dict-view AI word analysis
+    // 查词 AI 解析(4.2.1):查词结果页右下角浮动按钮,结合上下文解析当前词
+    aiWordAnalysisEnabled: boolean;
 
     // Audio transcription (Whisper-compatible /audio/transcriptions endpoint)
     transcriptionBaseUrl: string;       // e.g. 'https://api.openai.com/v1'
@@ -437,6 +447,8 @@ export const DEFAULT_SETTINGS: LMESettings = {
     flashcardStudyMode: 'flip',
     autoCleanupMastered: false,
     cleanupDelayDays: 7,
+    vaultDbId: '',
+    autoBackup: true,
 	    defaultPlaybackRate: 1.0,
 	    shadowingBufferMs: 500,
 	    videoDownloadFolder: '',
@@ -468,6 +480,9 @@ export const DEFAULT_SETTINGS: LMESettings = {
     aiDocAnalysisProvider: '',
     aiFlashcardFillProvider: '',
     aiScoringProvider: '',
+    aiWordAnalysisProvider: '',
+    // 查词 AI 解析(4.2.1):查词结果页右下角浮动按钮,结合上下文解析当前词
+    aiWordAnalysisEnabled: true,
 
     // Audio transcription (Whisper-compatible)
     transcriptionBaseUrl: 'https://api.openai.com/v1',

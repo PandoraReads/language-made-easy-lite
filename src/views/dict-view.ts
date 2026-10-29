@@ -7,7 +7,10 @@
 import { ItemView, WorkspaceLeaf, Notice, setIcon, MarkdownRenderer } from 'obsidian';
 import { lookupMulti, extractSentence, fetchPhonetic, fetchCleanDefinition, playAudio } from '../services/UnifiedDictionaryService';
 import { db } from '../core/Database';
+import { AIService } from '../core/AIService';
 import { assertFlashcardQuota } from '../core/free-quota';
+import { renderBody } from '../utils/ai-report';
+import { UpgradeModal } from '../ui/upgrade-modal';
 import { t, getLocale } from '../i18n';
 import type LanguageMadeEasyPlugin from '../main-unified-full';
 import type { DictResult } from '../models';
@@ -19,13 +22,30 @@ export const DICT_VIEW_TYPE = 'lme-dict-view';
 // ShadowRoot.getSelection() is an experimental API not yet in TS lib.dom
 type ShadowRootWithGetSelection = ShadowRoot & { getSelection?: () => Selection | null };
 
+// ── AI 解析 (word analysis) 每词缓存状态 ──
+interface AiWordCache {
+    key: string;
+    word: string;
+    generating: boolean;
+    noProvider: boolean;
+    markdown?: string;
+    error?: string;
+}
+
 // PandoraReads — 查词侧栏
 export class DictView extends ItemView {
     private plugin: LanguageMadeEasyPlugin;
     private lastResult: DictResult | null = null;
+    private lastWord = '';
     private lastContext = '';
     private lastSource = '';
+    private lastLineText = '';
     private activeLookupId = 0;
+
+    // ── AI word-analysis section state (settings.aiWordAnalysisEnabled) ──
+    private aiWordCache: AiWordCache | null = null;
+    private aiSectionEl: HTMLElement | null = null;  // inline result card, hidden until the float button opens it
+    private aiBtnEl: HTMLElement | null = null;      // bottom-right float trigger
 
     constructor(leaf: WorkspaceLeaf, plugin: LanguageMadeEasyPlugin) {
         super(leaf);
@@ -55,6 +75,12 @@ export class DictView extends ItemView {
         contentEl.addClass('lme-dict-view');
         contentEl.removeClass('lme-dict-mode-results');
         contentEl.addClass('lme-dict-mode-welcome');
+
+        // Welcome screen: drop any in-flight AI state so a late .then
+        // cannot render into a torn-down section.
+        this.aiWordCache = null;
+        this.aiSectionEl = null;
+        this.aiBtnEl = null;
 
         const container = contentEl.createDiv('lme-dict-empty');
 
@@ -232,14 +258,29 @@ export class DictView extends ItemView {
         setIcon(openNoteBtn, 'book-open');
         openNoteBtn.createSpan({ text: ' ' + t('dict.manageVocab') });
         openNoteBtn.onclick = () => this.openVocabNote();
+
+        // AI 解析 stays reachable even when the dictionaries return nothing:
+        // a hidden result section below the context block plus the float button.
+        const aiEnabled = !!this.plugin.settings.aiWordAnalysisEnabled;
+        if (aiEnabled) {
+            this.aiSectionEl = contentEl.createDiv('lme-dict-ai-section is-hidden');
+            this.renderAiSection();
+            const floatGroup = contentEl.createDiv('lme-dict-float-group');
+            this.renderAiButton(floatGroup);
+        } else {
+            this.aiSectionEl = null;
+            this.aiBtnEl = null;
+        }
     }
 
     public async lookup(word: string, lineText: string, sourcePath: string, lineIndex: number) {
         const lookupId = ++this.activeLookupId;
 
         this.lastResult = null;
+        this.lastWord = word || '';
         this.lastContext = '';
         this.lastSource = '';
+        this.lastLineText = lineText || '';
 
         console.debug(`[EME] DictView.lookup("${word}") | source: ${sourcePath} | lineText len: ${lineText?.length}`);
 
@@ -261,6 +302,16 @@ export class DictView extends ItemView {
 
         // Render Search Box even during loading
         this.renderSearchBox(contentEl, false);
+
+        // AI 解析 rides along when enabled: a hidden result section after the
+        // context block, triggered from the bottom-right float button.
+        // Off → the original flat DOM, untouched.
+        const aiEnabled = !!this.plugin.settings.aiWordAnalysisEnabled;
+        this.aiWordCache = null;
+        if (!aiEnabled) {
+            this.aiSectionEl = null;
+            this.aiBtnEl = null;
+        }
 
         const spinner = contentEl.createDiv('lme-spinner');
         const resultsContainer = contentEl.createDiv('lme-dict-results-container');
@@ -305,6 +356,13 @@ export class DictView extends ItemView {
                 void MarkdownRenderer.render(this.app, this.lastContext, contextTextEl, this.lastSource || '', this);
             }
 
+            // AI 解析 result card: hidden placeholder right after the context
+            // block; the float button reveals and fills it.
+            if (aiEnabled) {
+                this.aiSectionEl = contentEl.createDiv('lme-dict-ai-section is-hidden');
+                this.renderAiSection();
+            }
+
             // Footer Actions
             const footerArea = contentEl.createDiv('lme-dict-footer-area');
             const openNoteBtn = footerArea.createEl('button', {
@@ -314,6 +372,12 @@ export class DictView extends ItemView {
             setIcon(openNoteBtn, 'folder-open');
             openNoteBtn.createSpan({ text: ' ' + t('dict.viewVocab') });
             openNoteBtn.onclick = () => this.openVocabNote();
+
+            // Bottom-right floating group with the AI 解析 trigger
+            if (aiEnabled) {
+                const floatGroup = contentEl.createDiv('lme-dict-float-group');
+                this.renderAiButton(floatGroup);
+            }
         } catch (e) {
             if (lookupId !== this.activeLookupId) return;
             contentEl.empty();
@@ -348,6 +412,18 @@ export class DictView extends ItemView {
             void MarkdownRenderer.render(this.app, this.lastContext, contextTextEl, this.lastSource || '', this);
         }
 
+        // AI 解析 result card + float trigger (same wiring as the streaming path)
+        const aiEnabled = !!this.plugin.settings.aiWordAnalysisEnabled;
+        if (aiEnabled) {
+            this.aiSectionEl = contentEl.createDiv('lme-dict-ai-section is-hidden');
+            this.renderAiSection();
+            const floatGroup = contentEl.createDiv('lme-dict-float-group');
+            this.renderAiButton(floatGroup);
+        } else {
+            this.aiSectionEl = null;
+            this.aiBtnEl = null;
+        }
+
         // Footer Actions
         const footerArea = contentEl.createDiv('lme-dict-footer-area');
         const openNoteBtn = footerArea.createEl('button', {
@@ -357,6 +433,178 @@ export class DictView extends ItemView {
         setIcon(openNoteBtn, 'folder-open');
         openNoteBtn.createSpan({ text: ' ' + t('dict.viewVocab') });
         openNoteBtn.onclick = () => this.openVocabNote();
+    }
+
+    // ============================================================
+    // AI word-analysis section (float trigger + inline card)
+    // ============================================================
+
+    /**
+     * The AI 解析 trigger at the bottom-right corner: 32px round button,
+     * solid accent fill.
+     */
+    private renderAiButton(parent: HTMLElement): void {
+        const btn = parent.createEl('button', {
+            cls: 'lme-dict-ai-btn',
+            attr: { type: 'button', 'aria-label': t('dict.tabAi'), title: t('dict.tabAi') },
+        });
+        setIcon(btn, 'sparkles');
+        btn.onclick = () => this.toggleAiSection();
+        this.aiBtnEl = btn;
+    }
+
+    /** Float-button click: open+generate on first use, then toggle visibility. */
+    private toggleAiSection(): void {
+        const section = this.aiSectionEl;
+        if (!section) return;
+        if (this.aiWordCache?.generating) return;  // busy — the pending .then updates the section
+        if (section.hasClass('is-hidden')) {
+            section.removeClass('is-hidden');
+            this.startAiAnalysis();
+            section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else {
+            section.addClass('is-hidden');
+        }
+        this.aiBtnEl?.setAttribute('aria-expanded', String(!section.hasClass('is-hidden')));
+    }
+
+    /** Keep the float button's icon/state in sync with the cache. */
+    private setAiButtonState(state: 'idle' | 'busy' | 'done'): void {
+        const btn = this.aiBtnEl;
+        if (!btn) return;
+        btn.toggleClass('is-busy', state === 'busy');
+        btn.toggleClass('is-done', state === 'done');
+        setIcon(btn, state === 'busy' ? 'loader-circle' : 'sparkles');
+    }
+
+    /**
+     * Generate (or reuse) the AI analysis for the current word. Cached per
+     * word+sentence within the view session; `force` bypasses the cache for
+     * the regenerate button.
+     */
+    private startAiAnalysis(force = false): void {
+        const word = this.lastWord || this.lastResult?.word || '';
+        if (!word) {
+            this.aiWordCache = null;
+            this.renderAiSection();
+            return;
+        }
+        const key = word + '\n' + this.lastContext;
+        const cached = this.aiWordCache;
+        // error included: a failed analysis must NOT silently re-fire a paid
+        // request on every button click — only the explicit retry/regenerate
+        // buttons do. noProvider excluded: re-resolve every click so a key
+        // added in settings takes effect without a fresh lookup (resolution
+        // is local, no API call).
+        if (!force && cached && cached.key === key && (cached.generating || cached.markdown || cached.error)) {
+            this.renderAiSection();
+            return;
+        }
+
+        const ai = AIService.resolveProvider(this.plugin.settings, 'wordAnalysis');
+        if (!ai.apiKey) {
+            this.aiWordCache = { key, word, generating: false, noProvider: true };
+            this.renderAiSection();
+            return;
+        }
+
+        const lookupId = this.activeLookupId;
+        this.aiWordCache = { key, word, generating: true, noProvider: false };
+        this.renderAiSection();
+
+        AIService.analyzeWordContext(
+            word,
+            this.lastContext,
+            this.lastLineText,
+            this.plugin.settings.activeLanguage || 'english',
+            this.plugin.settings.englishLevel || 'intermediate',
+            ai.provider,
+            ai.apiKey,
+            ai.model,
+            this.plugin.settings.aiProviders
+        ).then(markdown => {
+            if (lookupId !== this.activeLookupId) return;
+            if (!this.aiWordCache || this.aiWordCache.key !== key) return;
+            this.aiWordCache = { key, word, generating: false, noProvider: false, markdown };
+            this.renderAiSection();
+        }).catch(err => {
+            if (lookupId !== this.activeLookupId) return;
+            if (!this.aiWordCache || this.aiWordCache.key !== key) return;
+            this.aiWordCache = {
+                key, word, generating: false, noProvider: false,
+                error: (err && err.message) ? err.message : String(err)
+            };
+            this.renderAiSection();
+        });
+    }
+
+    /** Render the AI section (inline glass card) for the current cache state. */
+    private renderAiSection(): void {
+        const section = this.aiSectionEl;
+        if (!section) return;
+        section.empty();
+        const cache = this.aiWordCache;
+
+        if (cache?.generating) this.setAiButtonState('busy');
+        else if (cache?.markdown) this.setAiButtonState('done');
+        else this.setAiButtonState('idle');
+
+        // Header: sparkles badge + AI 解析 label + the word being analyzed.
+        const header = section.createDiv('lme-dict-ai-header');
+        setIcon(header.createDiv('lme-dict-ai-header-icon'), 'sparkles');
+        const headerCopy = header.createDiv('lme-dict-ai-header-copy');
+        headerCopy.createDiv({ cls: 'lme-dict-ai-header-label', text: t('dict.tabAi') });
+        if (cache?.word) headerCopy.createDiv({ cls: 'lme-dict-ai-header-word', text: cache.word });
+
+        const body = section.createDiv('lme-dict-ai-body');
+
+        if (!cache || (!cache.generating && !cache.markdown && !cache.error && !cache.noProvider)) {
+            body.createDiv({ cls: 'lme-dict-ai-hint', text: t('dict.aiHint') });
+            return;
+        }
+        if (cache.noProvider) {
+            body.createDiv({ cls: 'lme-dict-ai-hint', text: t('dict.aiNoProvider') });
+            return;
+        }
+        if (cache.generating) {
+            body.createDiv('lme-spinner');
+            body.createDiv({ cls: 'lme-dict-ai-hint', text: t('dict.aiGenerating', { word: cache.word }) });
+            return;
+        }
+        if (cache.error) {
+            body.createDiv({ cls: 'lme-error', text: t('dict.aiFailed', { error: cache.error }) });
+            this.renderAiActions(section, true);
+            return;
+        }
+
+        // Done: styled markdown body + action bar pinned to the section's
+        // bottom-right corner (save / regenerate).
+        renderBody(cache.markdown || '', body, this.app, this);
+        this.renderAiActions(section, false);
+    }
+
+    /** Bottom-right action row: retry on error, save+regenerate when done. */
+    private renderAiActions(section: HTMLElement, isError: boolean): void {
+        const actions = section.createDiv('lme-dict-ai-actions');
+        if (isError) {
+            const retryBtn = actions.createEl('button', { cls: 'lme-btn-subtle' });
+            setIcon(retryBtn, 'refresh-cw');
+            retryBtn.createSpan({ text: ' ' + t('dict.aiRetry') });
+            retryBtn.onclick = () => this.startAiAnalysis(true);
+            return;
+        }
+        // 社区免费版:保存为笔记为完整版功能,弹付费引导
+        const saveBtn = actions.createEl('button', {
+            cls: 'lme-btn-subtle',
+            attr: { 'aria-label': t('dict.aiSave') }
+        });
+        setIcon(saveBtn, 'save');
+        saveBtn.createSpan({ text: ' ' + t('dict.aiSave') });
+        saveBtn.onclick = () => new UpgradeModal(this.app, t('dict.aiSave')).open();
+        const regenBtn = actions.createEl('button', { cls: 'lme-btn-subtle' });
+        setIcon(regenBtn, 'refresh-cw');
+        regenBtn.createSpan({ text: ' ' + t('dict.aiRegenerate') });
+        regenBtn.onclick = () => this.startAiAnalysis(true);
     }
 
     private async renderSingleResult(parent: HTMLElement, res: DictResult) {

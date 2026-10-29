@@ -37,6 +37,26 @@ import {
     serializeFolderState,
     mergeFolderState,
 } from './services/workshop-folder-store';
+import {
+    VAULT_ID_STORE_VERSION,
+    VaultIdState,
+    parseVaultIdState,
+    serializeVaultIdState,
+    mergeVaultIdState,
+} from './services/vault-id-store';
+import {
+    BACKUP_DIR_NAME,
+    FLASHCARD_BACKUP_VERSION,
+    AUTO_BACKUP_MIN_INTERVAL_MS,
+    DEFAULT_KEEP_BACKUPS,
+    buildBackupFileName,
+    parseBackup,
+    parseBackupFileName,
+    selectBackupsToKeep,
+    serializeBackup,
+    type ImportSummary,
+} from './services/flashcard-backup';
+import { VaultRecoveryModal } from './ui/vault-recovery-modal';
 import { AIReportCatalogView, AI_REPORT_CATALOG_VIEW_TYPE } from './views/ai-report-catalog-view';
 import tedGreatStory from '../samples/ted-ed-great-story.md';
 import tedTariffs from '../samples/ted-ed-tariffs.md';
@@ -55,7 +75,8 @@ import { SrtFileSelectModal } from './views/srt-file-select-modal';
 import { SrtBatchSelectModal } from './views/srt-batch-select-modal';
 import { TextInputModal } from './views/text-input-modal';
 import { parseSrt, buildSubtitleNoteBody, segmentsToTimestampLines } from './utils/srt';
-import { db } from './core/Database';
+import { db, LMEDatabase } from './core/Database';
+import { randomUUID } from './mocks/crypto';
 import { FlashcardManagerModal } from './ui/flashcard-manager-modal';
 import { UpgradeModal } from './ui/upgrade-modal';
 import { checkSubtitleWeeklyQuota } from './core/free-quota';
@@ -78,6 +99,9 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 	 * 同一根因)。settings 字段仅作启动迁移源与旧版本 build 的兼容镜像。
 	 */
 	private workshopFolderState: WorkshopFolderState = emptyFolderState();
+	/** 自动备份:上次落盘后有数据变更(内存脏标记,变更钩子置位)。 */
+	private flashcardBackupDirty = false;
+	private flashcardBackupTimer: number | null = null;
 
 	async onload() {
 		await this.loadSettings();
@@ -85,7 +109,7 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 		// 订阅数据主存储在插件目录 sidecar youtube-rss.json(防 data.json 被 iCloud 旧快照覆写);
 		// 内部吸收旧 data.json 三字段并清空,失败只降级不阻断启动
 		await this.youtubeRssService.initialize();
-		await db.configureVault(this.getVaultStorageKey());
+		await this.initVaultDatabase();
 		// Initialize i18n — explicit setting wins, otherwise follow Obsidian's language
 		const uiLang = this.settings.uiLanguage;
 		initI18n(uiLang && uiLang !== 'auto' ? uiLang : undefined);
@@ -124,6 +148,192 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 			// Fall back below.
 		}
 		return this.app.vault.getName();
+	}
+
+	// ── 闪卡库稳定标识:sidecar vault-id.json(读-合-写,磁盘胜) ──
+
+	private get vaultIdStorePath(): string {
+		return `${this.app.vault.configDir}/plugins/${this.manifest.id}/vault-id.json`;
+	}
+
+	/** 闪卡备份目录(vault 内插件目录下,随 vault 同步/备份走)。 */
+	get backupDirPath(): string {
+		return `${this.app.vault.configDir}/plugins/${this.manifest.id}/${BACKUP_DIR_NAME}`;
+	}
+
+	/**
+	 * 启动装载:sidecar 优先,缺失时用 data.json 镜像播种,仍无值则生成新标识
+	 * (仅此时传 legacyVaultKey,把 4.2.1 之前的路径哈希库一次性收编过来)。
+	 * 无论来源如何,最终值都 read-merge-write 落盘 sidecar 并镜像回 data.json。
+	 */
+	private async initVaultDatabase(): Promise<void> {
+		let disk: VaultIdState | null = null;
+		try {
+			const adapter = this.app.vault.adapter;
+			if (await adapter.exists(this.vaultIdStorePath)) {
+				disk = parseVaultIdState(await adapter.read(this.vaultIdStorePath));
+			}
+		} catch (e) {
+			console.warn('[LME] vault-id.json 读取失败', e);
+		}
+
+		const memory: VaultIdState = {
+			version: VAULT_ID_STORE_VERSION,
+			vaultDbId: (this.settings.vaultDbId || '').trim() || randomUUID(),
+			updatedAt: Date.now(),
+		};
+		// 磁盘胜:磁盘已有标识(本端或对端写入)永远压过内存候选,多端收敛。
+		const merged = mergeVaultIdState(disk, memory);
+		const isFirstAdopt = !disk?.vaultDbId && !this.settings.vaultDbId;
+
+		if (this.settings.vaultDbId !== merged.vaultDbId) {
+			this.settings.vaultDbId = merged.vaultDbId;
+			await this.saveSettings();
+		}
+		await this.writeVaultIdStore(merged);
+
+		// 4.2.1 前库名 = hash(vault 绝对路径);升级首启(新生成标识)时收编旧库
+		await db.configureVault(merged.vaultDbId, isFirstAdopt ? this.getVaultStorageKey() : undefined);
+		db.onDataMutated = () => this.scheduleFlashcardBackup();
+
+		this.app.workspace.onLayoutReady(() => {
+			void this.maybeAutoBackup();
+			void this.maybePromptVaultRecovery();
+		});
+	}
+
+	/** read-merge-write:落盘前重读,对端同步落地的标识不被本端覆写。 */
+	private async writeVaultIdStore(state: VaultIdState): Promise<void> {
+		try {
+			const adapter = this.app.vault.adapter;
+			let disk: VaultIdState | null = null;
+			try {
+				if (await adapter.exists(this.vaultIdStorePath)) {
+					disk = parseVaultIdState(await adapter.read(this.vaultIdStorePath));
+				}
+			} catch { /* 读失败按无文件处理,继续写入 */ }
+			const merged = mergeVaultIdState(disk, state);
+			await adapter.write(this.vaultIdStorePath, serializeVaultIdState(merged));
+		} catch (e) {
+			console.warn('[LME] vault-id.json 写入失败', e);
+		}
+	}
+
+	// ── 闪卡自动备份(默认开启,每日一份,保留最近 7 份) ──
+
+	/** 变更钩子入口:置脏 + 60s 防抖(复习连点不反复全量导出)。 */
+	private scheduleFlashcardBackup(): void {
+		this.flashcardBackupDirty = true;
+		if (this.flashcardBackupTimer !== null) return;
+		this.flashcardBackupTimer = window.setTimeout(() => {
+			this.flashcardBackupTimer = null;
+			void this.maybeAutoBackup();
+		}, 60_000);
+	}
+
+	/**
+	 * 自动备份裁决:非手动时每天最多一份(守住轮换窗口,别让同一天的多波
+	 * 变更把其他日期的备份挤掉);启动时库有卡但最新备份已超一天也补一份。
+	 * 手动"立即备份"走 force 不受限。
+	 */
+	async maybeAutoBackup(force = false): Promise<void> {
+		if (!this.settings.autoBackup) return;
+		try {
+			const names = await this.listBackupFiles();
+			const newestTs = names.length > 0 ? (parseBackupFileName(names[0]) ?? 0) : 0;
+			if (!force && Date.now() - newestTs < AUTO_BACKUP_MIN_INTERVAL_MS) return;
+			if (!force && !this.flashcardBackupDirty) {
+				// 库为空则没必要备份空文件
+				if ((await db.getTotalVocabularyCount()) === 0) return;
+			}
+			await this.writeFlashcardBackup();
+		} catch (e) {
+			console.warn('[LME] 闪卡自动备份失败', e);
+		}
+	}
+
+	/** 全量导出落盘 + 轮换;返回备份的闪卡数,失败向上抛由调用方提示。 */
+	async writeFlashcardBackup(): Promise<number> {
+		const tables = await db.dumpAllTables();
+		const backup = {
+			version: FLASHCARD_BACKUP_VERSION,
+			createdAt: Date.now(),
+			vaultDbId: this.settings.vaultDbId,
+			tables,
+		};
+		const adapter = this.app.vault.adapter;
+		try { await adapter.mkdir(this.backupDirPath); } catch { /* 已存在 */ }
+		const path = `${this.backupDirPath}/${buildBackupFileName(new Date())}`;
+		await adapter.write(path, serializeBackup(backup));
+		this.flashcardBackupDirty = false;
+		await this.rotateBackups();
+		return tables.vocabulary.length;
+	}
+
+	/** 备份目录内文件名列表,新→旧排序(非备份文件被过滤)。 */
+	async listBackupFiles(): Promise<string[]> {
+		try {
+			const adapter = this.app.vault.adapter;
+			if (!(await adapter.exists(this.backupDirPath))) return [];
+			const listing = await adapter.list(this.backupDirPath);
+			return listing.files
+				.map(path => path.split('/').pop() ?? '')
+				.map(name => ({ name, ts: parseBackupFileName(name) }))
+				.filter((x): x is { name: string; ts: number } => x.ts !== null)
+				.sort((a, b) => b.ts - a.ts)
+				.map(x => x.name);
+		} catch (e) {
+			console.warn('[LME] 备份目录读取失败', e);
+			return [];
+		}
+	}
+
+	/** 只保留最近 DEFAULT_KEEP_BACKUPS 份,更旧的删除。 */
+	private async rotateBackups(): Promise<void> {
+		const names = await this.listBackupFiles();
+		const keep = new Set(selectBackupsToKeep(names, DEFAULT_KEEP_BACKUPS));
+		const adapter = this.app.vault.adapter;
+		for (const name of names) {
+			if (keep.has(name)) continue;
+			try { await adapter.remove(`${this.backupDirPath}/${name}`); } catch { /* 单个失败不阻断 */ }
+		}
+	}
+
+	/** 从备份文件恢复(合并语义与异库找回一致,幂等);返回合并摘要,文件损坏抛错。 */
+	async restoreFlashcardBackup(fileName: string): Promise<ImportSummary> {
+		const adapter = this.app.vault.adapter;
+		const raw = await adapter.read(`${this.backupDirPath}/${fileName}`);
+		const backup = parseBackup(raw);
+		if (!backup) throw new Error('invalid backup file');
+		const summary = await db.mergeExternalRows(backup.tables as unknown as Record<string, unknown[]>);
+		await this.refreshLmeViews();
+		return summary;
+	}
+
+	/** ── 存量找回:当前库为空且本机存在有卡的旧库时,启动提示一次 ── */
+	private async maybePromptVaultRecovery(): Promise<void> {
+		try {
+			if ((await db.getTotalVocabularyCount()) > 0) return;
+			const flag = await db.meta.get('vaultRecoveryPromptShown');
+			if (flag?.value === true) return;
+			const candidates = await LMEDatabase.listOtherVaultDbs(db.name);
+			if (candidates.length === 0) return;
+			await db.meta.put({ key: 'vaultRecoveryPromptShown', value: true });
+			new VaultRecoveryModal(this, candidates).open();
+		} catch (e) {
+			console.warn('[LME] 闪卡找回检测失败', e);
+		}
+	}
+
+	/** 数据导入/恢复后刷新所有打开的 LME 视图(闪卡列表等立即反映)。 */
+	async refreshLmeViews(): Promise<void> {
+		this.app.workspace.iterateAllLeaves((leaf) => {
+			const viewType = leaf.view.getViewType();
+			if (typeof viewType !== 'string' || !viewType.startsWith('lme-')) return;
+			const view = leaf.view as { render?: () => unknown; refresh?: () => void };
+			if (typeof view.refresh === 'function') view.refresh();
+			else if (typeof view.render === 'function') void view.render();
+		});
 	}
 
 	/**
@@ -1136,6 +1346,12 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 	}
 
 	onunload() {
+		// Clear pending flashcard backup debounce (next launch backs up if stale)
+		if (this.flashcardBackupTimer !== null) {
+			window.clearTimeout(this.flashcardBackupTimer);
+			this.flashcardBackupTimer = null;
+		}
+
 		// Clear pending flashcard reminder timer
 		if (this.reminderTimer !== null) {
 			window.clearTimeout(this.reminderTimer);
