@@ -13822,3 +13822,225 @@ body.lme-style-coral-warmth .lme-ai-autofill-btn{background:rgba(255,122,92,0.1)
         var(--text-muted),
         rgba(70, 88, 107, 0.58));
 }
+
+/* ── 查词 AI 解析 (word analysis) — 右下角浮动按钮 + 内联结果卡 ── */
+
+/* Bottom-right float group: sticky anchor column hugging the right edge;
+   translucent at rest, full on hover. */
+.lme-dict-float-group {
+    position: sticky;
+    bottom: 8px;
+    /* Hug the right edge: eat into the view's padding */
+    margin-right: -12px;
+    width: fit-content;
+    margin-left: auto;
+    z-index: 30;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 0 6px 4px;
+    opacity: 0.5;
+    transition: opacity 0.2s ease;
+}
+
+.lme-dict-float-group:hover {
+    opacity: 1;
+}
+
+/* Float trigger: solid accent fill, 32px round */
+.lme-dict-ai-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid var(--lme-accent);
+    border-radius: 999px;
+    background: var(--lme-accent);
+    color: var(--text-on-accent);
+    box-shadow: 0 4px 14px rgba(var(--lme-accent-rgb), 0.35);
+    cursor: pointer;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+}
+
+.lme-dict-ai-btn:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.08);
+    box-shadow: 0 8px 20px rgba(var(--lme-accent-rgb), 0.45);
+}
+
+.lme-dict-ai-btn svg {
+    width: 16px;
+    height: 16px;
+    flex: 0 0 auto;
+}
+
+.lme-dict-ai-btn.is-busy svg {
+    animation: lme-ai-spin 1s linear infinite;
+}
+
+.lme-dict-ai-btn.is-done {
+    border-color: rgba(var(--lme-accent-rgb), 0.55);
+}
+
+/* Inline result card: same glass family as .lme-dict-card, with an accent
+   top bar to signal the AI surface; hidden until the float button opens it */
+.lme-dict-ai-section {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    /* .lme-dict-view 是定高 column flex;overflow:hidden 会把 flex 项的
+       自动最小高度清零,没这一句就会被压缩成一条缝 */
+    flex-shrink: 0;
+    padding: 16px 16px 12px;
+    background: var(--lme-glass-bg);
+    border: 1px solid var(--lme-glass-border);
+    border-radius: 12px;
+    box-shadow: var(--lme-paper-shadow);
+    /* Reveal scroll: keep the header clear of the sticky search box at the top */
+    scroll-margin-top: 60px;
+}
+
+.lme-dict-ai-section::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--lme-accent), rgba(var(--lme-accent-rgb), 0.25));
+}
+
+.lme-dict-ai-section.is-hidden {
+    display: none;
+}
+
+.lme-dict-ai-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--lme-glass-border);
+}
+
+.lme-dict-ai-header-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 26px;
+    width: 26px;
+    height: 26px;
+    border-radius: 8px;
+    background: rgba(var(--lme-accent-rgb), 0.14);
+    color: var(--lme-accent);
+}
+
+.lme-dict-ai-header-icon svg {
+    width: 14px;
+    height: 14px;
+}
+
+.lme-dict-ai-header-copy {
+    min-width: 0;
+}
+
+.lme-dict-ai-header-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+}
+
+.lme-dict-ai-header-word {
+    font-size: 16px;
+    font-weight: 750;
+    line-height: 1.25;
+    color: var(--text-normal);
+    overflow-wrap: anywhere;
+}
+
+.lme-dict-ai-hint {
+    padding: 16px 8px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.88em;
+    line-height: 1.6;
+}
+
+.lme-dict-ai-body {
+    line-height: 1.7;
+    font-size: 0.95em;
+    overflow-wrap: anywhere;
+}
+
+/* Markdown from the analyzer: ## sections become accent-barred headings */
+.lme-dict-ai-body h2 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 14px 0 6px;
+    font-size: 0.98em;
+    font-weight: 700;
+    color: var(--text-normal);
+}
+
+.lme-dict-ai-body h2:first-child {
+    margin-top: 2px;
+}
+
+.lme-dict-ai-body h2::before {
+    content: "";
+    flex: 0 0 3px;
+    width: 3px;
+    height: 14px;
+    border-radius: 2px;
+    background: var(--lme-accent);
+}
+
+.lme-dict-ai-body p {
+    margin: 6px 0;
+}
+
+.lme-dict-ai-body ul,
+.lme-dict-ai-body ol {
+    margin: 6px 0;
+    padding-left: 20px;
+}
+
+.lme-dict-ai-body li {
+    margin: 3px 0;
+}
+
+.lme-dict-ai-body strong {
+    color: var(--text-normal);
+}
+
+.lme-dict-ai-body blockquote {
+    margin: 8px 0;
+    padding: 6px 12px;
+    border-left: 3px solid rgba(var(--lme-accent-rgb), 0.5);
+    border-radius: 0 8px 8px 0;
+    background: rgba(var(--lme-accent-rgb), 0.06);
+}
+
+/* Action row pinned to the section's bottom-right corner; padding-right
+   keeps the buttons clear of the sticky float column in the same right lane */
+.lme-dict-ai-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding-top: 8px;
+    padding-right: 44px;
+    border-top: 1px solid var(--lme-glass-border);
+}
+
+@keyframes lme-ai-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}

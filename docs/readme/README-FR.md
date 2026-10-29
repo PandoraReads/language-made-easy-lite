@@ -165,6 +165,14 @@ Le plugin fonctionne entièrement hors ligne, à l'exception des requêtes facul
 
 ## 📋 Journal des modifications
 
+### 4.2.1
+
+- **Protection des données de cartes en trois couches** — la base utilise désormais une identité stable qui suit ton coffre : **renommer ou déplacer le coffre ne perd plus tes cartes**. Les données existantes sont reprises automatiquement à la mise à jour ; un coffre vide propose une récupération en un clic des anciennes données trouvées sur l'appareil (entrée manuelle aussi dans les paramètres).
+- **Sauvegardes automatiques des cartes** — activées par défaut, une sauvegarde complète par jour (progression FSRS + journaux de révision) dans le dossier `backups/` du plugin, les 7 dernières conservées ; sauvegarder, restaurer ou supprimer depuis les paramètres.
+- **Analyse IA des mots** — bouton flottant « Analyse IA » en bas à droite des résultats : sens, usage, contexte culturel et expressions similaires, à partir de la phrase cliquée. Désactivable ; fournisseur IA assignable par fonction.
+- **Paramètres IA regroupés** — la zone de configuration IA adopte des cartes de section titrées (analyse / prompts / modèles ajoutés), comme l'édition complète.
+- Récupération et restauration fusionnent de façon idempotente : les doublons gardent l'entrée avec le plus de progression.
+
 ### 4.2.0
 
 - **Interface en 10 langues** — anglais, chinois simplifié/traditionnel, allemand, français, espagnol, japonais, coréen, russe et thaï. L'interface suit par défaut la langue d'Obsidian et peut être modifiée dans les paramètres ; les vues ouvertes se re-rendent immédiatement après le changement.

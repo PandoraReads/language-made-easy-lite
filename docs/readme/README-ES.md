@@ -165,6 +165,14 @@ El plugin funciona totalmente sin conexión, salvo por las siguientes peticiones
 
 ## 📋 Registro de cambios
 
+### 4.2.1
+
+- **Protección de datos de tarjetas en tres capas** — la base de datos usa ahora una identidad estable que viaja con tu almacén: **renombrar o mover el almacén ya no pierde tus tarjetas**. Los datos existentes se adoptan automáticamente al actualizar; un almacén vacío ofrece recuperación en un clic de datos antiguos encontrados en el dispositivo (también con entrada manual en Ajustes).
+- **Copias de seguridad automáticas** — activadas por defecto, una copia completa al día (progreso FSRS + registros de repaso) en la carpeta `backups/` del plugin, conservando las 7 más recientes; copiar, restaurar o borrar desde Ajustes.
+- **Análisis IA de palabras** — botón flotante «Análisis IA» en la esquina inferior derecha de los resultados: significado, uso, trasfondo cultural y expresiones similares, a partir de la frase pulsada. Desactivable; proveedor IA asignable por función.
+- **Ajustes de IA reorganizados** — la zona de configuración de IA pasa a tarjetas de sección con título (análisis / prompts / modelos añadidos), como la edición completa.
+- Recuperación y restauración fusionan de forma idempotente: los duplicados conservan la entrada con más progreso de repaso.
+
 ### 4.2.0
 
 - **Interfaz en 10 idiomas** — inglés, chino simplificado/tradicional, alemán, francés, español, japonés, coreano, ruso y tailandés. La interfaz sigue el idioma de Obsidian por defecto y puede sobrescribirse en Ajustes; las vistas abiertas se vuelven a renderizar inmediatamente después del cambio.

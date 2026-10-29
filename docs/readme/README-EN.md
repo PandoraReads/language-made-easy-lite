@@ -165,6 +165,14 @@ The plugin works fully offline except for the following optional, user-initiated
 
 ## 📋 Changelog
 
+### 4.2.1
+
+- **Three-layer flashcard data protection** — the flashcard database now keys off a stable identity that travels with your vault: **renaming or moving the vault no longer loses your cards**. Existing data is adopted automatically on upgrade, and an empty vault offers one-click recovery from old data found on this device (manual entry in Settings too).
+- **Automatic flashcard backups** — on by default, one full backup per day (FSRS review progress + review logs) into the plugin's `backups/` folder, keeping the latest 7; back up, restore, or delete any copy from Settings.
+- **AI word analysis in lookups** — a floating "AI analysis" button at the bottom-right of lookup results explains the word's meaning, usage, cultural background, and similar expressions, grounded in the sentence you clicked. Toggle and per-feature AI provider in Settings.
+- **AI settings re-grouped** — the AI configuration area now uses titled section cards (analysis / prompts / added models), matching the full edition.
+- Recovery and restore merge idempotently: duplicate words keep the entry with more review progress.
+
 ### 4.2.0
 
 - **Interface in 10 languages** — English, Simplified/Traditional Chinese, German, French, Spanish, Japanese, Korean, Russian, and Thai. The interface follows Obsidian's language by default and can be overridden in Settings; open views re-render immediately after switching.

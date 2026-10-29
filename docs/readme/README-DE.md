@@ -165,6 +165,14 @@ Das Plugin funktioniert vollständig offline, mit Ausnahme der folgenden optiona
 
 ## 📋 Änderungsprotokoll
 
+### 4.2.1
+
+- **Dreistufiger Schutz der Flashcard-Daten** — die Datenbank nutzt jetzt eine stabile Identität, die mit dem Tresor mitzieht: **Umbenennen oder Verschieben des Tresors verliert keine Karten mehr**. Bestandsdaten werden beim Upgrade automatisch übernommen; ein leerer Tresor bietet eine Ein-Klick-Wiederherstellung gefundener Altbestände (auch manuell in den Einstellungen).
+- **Automatische Flashcard-Backups** — standardmäßig aktiviert; täglich eine vollständige Sicherung (inkl. FSRS-Fortschritt und Wiederholungsprotokoll) in den Ordner `backups/` des Plugins, die neuesten 7 werden behalten. Sichern, Wiederherstellen und Löschen in den Einstellungen.
+- **KI-Wortanalyse beim Nachschlagen** — schwebende „KI-Analyse“-Schaltfläche unten rechts in den Ergebnissen: Bedeutung, Verwendung, kultureller Hintergrund und ähnliche Ausdrücke – gegründet auf dem angeklickten Satz. Abschaltbar; KI-Anbieter pro Funktion wählbar.
+- **KI-Einstellungen neu gegliedert** — der KI-Bereich nutzt jetzt beschriftete Abschnittskarten (Analyse / Prompts / hinzugefügte Modelle), wie in der Vollversion.
+- Wiederherstellung und Wiederfindung mergen idempotent: Bei doppelten Wörtern gewinnt der Eintrag mit mehr Wiederholungsfortschritt.
+
 ### 4.2.0
 
 - **Oberfläche in 10 Sprachen** — Englisch, vereinfachtes/traditionelles Chinesisch, Deutsch, Französisch, Spanisch, Japanisch, Koreanisch, Russisch und Thai. Die Oberfläche folgt standardmäßig der Obsidian-Sprache und kann in den Einstellungen überschrieben werden; geöffnete Ansichten werden unmittelbar nach dem Wechsel neu gerendert.
