@@ -583,15 +583,15 @@ export class LMESettingTab extends PluginSettingTab {
 		// Login/cookie is no longer required.
 
 		// ── AI Analysis ────────────────────────────────────────
-		// Deluxe 同款分区结构:h3 标题进 groupSettingsSections 卡片分组
-		containerEl.createEl('h3', { text: t('settings.aiSection') });
+		// Deluxe 同款分区结构:分区标题用 Setting.setHeading 保持 UI 一致
+		new Setting(containerEl).setName(t('settings.aiSection')).setHeading();
 		containerEl.createEl('p', {
 			text: t('settings.aiSectionDesc'),
 			cls: 'lme-settings-hint'
 		});
 
 		// -- AI Analysis Prompt Management --
-			containerEl.createEl('h3', { text: t('settings.aiPrompts') });
+			new Setting(containerEl).setName(t('settings.aiPrompts')).setHeading();
 			containerEl.createEl('p', {
 				text: t('settings.aiPromptsDesc'),
 				cls: 'setting-item-description'
@@ -1062,7 +1062,7 @@ export class LMESettingTab extends PluginSettingTab {
 			// and managed right on the row (set-as-default button) so models aren't shown twice.
 			// Every model is editable + deletable, including built-ins (deleted ones return to
 			// the catalog and can be re-added).
-			containerEl.createEl('h3', { text: t('settings.providerList') });
+			new Setting(containerEl).setName(t('settings.providerList')).setHeading();
 			if (providers.length === 0) {
 				containerEl.createEl('p', { text: t('settings.providerListEmpty'), cls: 'lme-settings-hint' });
 			}

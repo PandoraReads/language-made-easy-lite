@@ -62,11 +62,11 @@ export class VaultRecoveryModal extends Modal {
         const languages = candidate.languages.length > 0
             ? candidate.languages.join(', ')
             : '—';
-        infoEl.createEl('div', {
+        infoEl.createDiv({
             cls: 'lme-vault-recovery-count',
             text: t('dataRecovery.candidateCards', { count: String(candidate.vocabularyCount) }),
         });
-        infoEl.createEl('div', {
+        infoEl.createDiv({
             cls: 'lme-vault-recovery-meta',
             text: candidate.latestAddedTime > 0
                 ? t('dataRecovery.candidateMeta', {

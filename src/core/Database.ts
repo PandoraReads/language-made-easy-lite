@@ -6,7 +6,7 @@
 
 import Dexie, { type Table } from 'dexie';
 import type { VocabularyEntry, ReviewLog, VocabTestResult, VocabSizeState, PetState, DeletedCardTombstone } from '../models';
-import { planVocabularyMerge, rowsMissingIds, type ImportSummary, type MergeableVocabRow } from '../services/flashcard-backup';
+import { planVocabularyMerge, rowsMissingIds, type ImportSummary } from '../services/flashcard-backup';
 
 // PandoraReads — 数据库层
 
@@ -196,8 +196,8 @@ export class LMEDatabase extends Dexie {
 
     /** indexedDB.databases() 的特性探测包装;不支持(旧 WebView)或失败 → []。 */
     static async listIndexedDbNames(): Promise<string[]> {
-        // 项目 tsconfig 无 DOM lib 的 IndexedDB 接口名,经 globalThis 形状访问
-        const factory = (globalThis as { indexedDB?: { databases?: () => Promise<Array<{ name?: string }>> } }).indexedDB;
+        // 项目 tsconfig 无 DOM lib 的 IndexedDB 接口名,经 window 形状访问(而非 globalThis,保持弹出窗口兼容)
+        const factory = (window as { indexedDB?: { databases?: () => Promise<Array<{ name?: string }>> } }).indexedDB;
         if (!factory || typeof factory.databases !== 'function') return [];
         try {
             const dbs = await factory.databases();
@@ -254,7 +254,7 @@ export class LMEDatabase extends Dexie {
             const probe = new Dexie(name);
             try {
                 await probe.open();
-                const vocabulary: Array<{ language?: string; addedTime?: number }> = await probe.table('vocabulary').toArray();
+                const vocabulary = await probe.table<{ language?: string; addedTime?: number }>('vocabulary').toArray();
                 if (vocabulary.length === 0) continue;
                 const languages = [...new Set(vocabulary.map(v => v.language ?? '').filter(Boolean))];
                 const latestAddedTime = vocabulary.reduce((max, v) => Math.max(max, v.addedTime ?? 0), 0);
@@ -291,10 +291,7 @@ export class LMEDatabase extends Dexie {
     async mergeExternalRows(rows: Record<string, unknown[]>): Promise<ImportSummary> {
         const incomingVocab = (rows.vocabulary ?? []) as Array<VocabularyEntry & { language: string }>;
         const currentVocab = await this.vocabulary.toArray();
-        const plan = planVocabularyMerge(
-            currentVocab as MergeableVocabRow[],
-            incomingVocab as MergeableVocabRow[],
-        );
+        const plan = planVocabularyMerge(currentVocab, incomingVocab);
 
         const [currentTests, currentSizeStates, currentPets] = await Promise.all([
             this.vocabTests.toArray(),

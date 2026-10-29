@@ -527,12 +527,12 @@ export class DictView extends ItemView {
             if (!this.aiWordCache || this.aiWordCache.key !== key) return;
             this.aiWordCache = { key, word, generating: false, noProvider: false, markdown };
             this.renderAiSection();
-        }).catch(err => {
+        }).catch((err: unknown) => {
             if (lookupId !== this.activeLookupId) return;
             if (!this.aiWordCache || this.aiWordCache.key !== key) return;
             this.aiWordCache = {
                 key, word, generating: false, noProvider: false,
-                error: (err && err.message) ? err.message : String(err)
+                error: (err instanceof Error && err.message) ? err.message : String(err)
             };
             this.renderAiSection();
         });
@@ -691,8 +691,10 @@ export class DictView extends ItemView {
             // res.definition is the entry HTML from the user's own local .mdx
             // dictionary file (desktop-only feature), rendered inside an
             // isolated shadow root. It is trusted local content by design.
-            // eslint-disable-next-line no-unsanitized/property -- trusted local content: entry HTML from the user's own .mdx dictionary file, rendered inside an isolated shadow root
-            contentDiv.innerHTML = res.definition;
+            // Parse into detached nodes and append (same trust model) instead
+            // of writing the innerHTML property directly.
+            const entryDoc = new DOMParser().parseFromString(res.definition, 'text/html');
+            contentDiv.append(...Array.from(entryDoc.body.childNodes));
             contentDiv.setCssStyles({ userSelect: 'text' });
             shadowRoot.appendChild(contentDiv);
 

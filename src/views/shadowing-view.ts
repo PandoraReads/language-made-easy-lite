@@ -206,6 +206,8 @@ export class ShadowingView extends ItemView {
     private playerOuterEl: HTMLElement | null = null;
     private playerContainerEl: HTMLElement | null = null;
     private bilibiliBlobUrl: string | null = null;
+    /** bilibiliBlobUrl 背后的 Blob;留作引用,波形提取直接解码,免去对 blob: URL 的 fetch。 */
+    private bilibiliMediaBlob: Blob | null = null;
     private loopSingleBlock: boolean = false;
     private loopPauseGuard: TimestampBlock | null = null;
     private focusMode: boolean = false;
@@ -325,6 +327,7 @@ export class ShadowingView extends ItemView {
         if (this.bilibiliBlobUrl) {
             URL.revokeObjectURL(this.bilibiliBlobUrl);
             this.bilibiliBlobUrl = null;
+            this.bilibiliMediaBlob = null;
         }
         if (this.resizeCleanup) {
             this.resizeCleanup();
@@ -493,8 +496,8 @@ export class ShadowingView extends ItemView {
         if (!file) {
             const lastFiles = this.app.workspace.getLastOpenFiles();
             if (lastFiles && lastFiles.length > 0) {
-                const recentPath = lastFiles[0];
-                file = this.app.vault.getAbstractFileByPath(recentPath) as TFile;
+                const recent = this.app.vault.getAbstractFileByPath(lastFiles[0]);
+                if (recent instanceof TFile) file = recent;
             }
         }
 
@@ -633,7 +636,7 @@ export class ShadowingView extends ItemView {
     /**
      * Resolve a b23.tv short link to a full bilibili.com/video/ URL.
      * Fast path: if the short code itself contains a BV/av ID, skip network request.
-     * Network path: fetch with redirect:'manual', fallback to requestUrl + HTML parsing.
+     * Network path: desktop reads the redirect Location via Node https; otherwise requestUrl + HTML parsing.
      */
     private async resolveBilibiliShortLink(shortCode: string): Promise<string | null> {
         if (!/^[a-zA-Z0-9]+$/.test(shortCode)) {
@@ -698,34 +701,6 @@ export class ShadowingView extends ItemView {
             }
         } catch (e) {
             console.error('[EME] requestUrl attempt failed:', e);
-        }
-
-        // Attempt 3: fetch with redirect:'manual' to read Location header
-        try {
-            const controller = new AbortController();
-            const timeoutId = window.setTimeout(() => controller.abort(), 10000);
-            try {
-                const resp = await fetch(targetUrl, {
-                    method: 'GET',
-                    redirect: 'manual',
-                    signal: controller.signal,
-                });
-                if (resp.status === 301 || resp.status === 302) {
-                    const location = resp.headers.get('location');
-                    if (location) {
-                        const id = this.extractBilibiliVideoId(location);
-                        if (id) return `https://www.bilibili.com/video/${id}`;
-                    }
-                }
-                if (resp.url && resp.url !== targetUrl) {
-                    const id = this.extractBilibiliVideoId(resp.url);
-                    if (id) return `https://www.bilibili.com/video/${id}`;
-                }
-            } finally {
-                window.clearTimeout(timeoutId);
-            }
-        } catch (e) {
-            console.error('[EME] fetch redirect attempt failed:', e);
         }
 
         return null;
@@ -1236,6 +1211,7 @@ export class ShadowingView extends ItemView {
                 const blobUrl = URL.createObjectURL(blob);
                 if (this.bilibiliBlobUrl) URL.revokeObjectURL(this.bilibiliBlobUrl);
                 this.bilibiliBlobUrl = blobUrl;
+                this.bilibiliMediaBlob = blob;
 
                 void this.loadMedia(blobUrl, 'video', false);
                 new Notice(t('shadowing.loadedFromCache', { size: sizeMB }));
@@ -1364,6 +1340,7 @@ export class ShadowingView extends ItemView {
             const blobUrl = URL.createObjectURL(blob);
             if (this.bilibiliBlobUrl) URL.revokeObjectURL(this.bilibiliBlobUrl);
             this.bilibiliBlobUrl = blobUrl;
+            this.bilibiliMediaBlob = blob;
 
             console.debug(`[EME] Bilibili video loaded: ${(blob.size / 1024 / 1024).toFixed(1)}MB`);
             void this.loadMedia(blobUrl, 'video', false);
@@ -2800,19 +2777,24 @@ export class ShadowingView extends ItemView {
                 }
                 arrayBuffer = await this.app.vault.readBinary(this.detectedMediaFile);
             } else {
-                // Fallback: fetch for non-vault URLs (e.g. blob URLs)
-                const response = await fetch(url);
-                if (!response.ok) return null;
-                const contentLength = response.headers.get('content-length');
-                if (contentLength && parseInt(contentLength, 10) > MAX_FILE_BYTES) {
-                    console.warn('[EME] File too large for waveform extraction, skipping');
+                // 非 vault 来源:B站缓存媒体直接从留存的 Blob 解码(requestUrl 读不了 blob: URL);
+                // 远程 http(s) 走 Obsidian 的 requestUrl 网络栈。
+                let buf: ArrayBuffer | null = null;
+                if (url === this.bilibiliBlobUrl && this.bilibiliMediaBlob) {
+                    buf = await this.bilibiliMediaBlob.arrayBuffer();
+                } else if (/^https?:/i.test(url)) {
+                    const response = await requestUrl({ url, method: 'GET', throw: false });
+                    if (response.status < 200 || response.status >= 300) return null;
+                    buf = response.arrayBuffer;
+                } else {
+                    console.debug('[EME] Waveform extraction skipped: unsupported source URL');
                     return null;
                 }
-                arrayBuffer = await response.arrayBuffer();
-                if (arrayBuffer.byteLength > MAX_FILE_BYTES) {
+                if (buf.byteLength > MAX_FILE_BYTES) {
                     console.warn('[EME] Buffer too large for waveform extraction, skipping');
                     return null;
                 }
+                arrayBuffer = buf;
             }
 
             const audioContext = new AudioContext();
@@ -3024,8 +3006,8 @@ export class ShadowingView extends ItemView {
             if (!file) {
                 const lastFiles = this.app.workspace.getLastOpenFiles();
                 if (lastFiles && lastFiles.length > 0) {
-                    const recentPath = lastFiles[0];
-                    file = this.app.vault.getAbstractFileByPath(recentPath) as TFile;
+                    const recent = this.app.vault.getAbstractFileByPath(lastFiles[0]);
+                    if (recent instanceof TFile) file = recent;
                 }
             }
         }

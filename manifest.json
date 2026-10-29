@@ -2,7 +2,7 @@
 	"id": "language-made-easy",
 	"name": "Language Made Easy",
 	"minAppVersion": "1.11.0",
-	"description": "Learn English through immersive reading, instant word lookup, FSRS flashcard review, video shadowing, and dictation. 通过沉浸式阅读、即时查词、FSRS 闪卡复习、视频跟读与听写来学英语。",
+	"description": "Learn English through immersive reading, instant word lookup, FSRS flashcard review, video shadowing, and dictation. 通过沉浸式阅读、即时查词、FSRS 闪卡复习、视频跟读与听写来学英语.",
 	"author": "PandoraReads",
 	"authorUrl": "https://github.com/PandoraReads",
 	"isDesktopOnly": false,

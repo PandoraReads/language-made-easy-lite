@@ -8,6 +8,7 @@ import { db } from '../core/Database';
 import type { LanguageId, VocabularyEntry } from '../models';
 import { t } from '../i18n';
 import { FlashcardEditModal } from './flashcard-edit-modal';
+import { ConfirmModal } from './confirm-modal';
 import { UpgradeModal } from './upgrade-modal';
 import { AddFlashcardModal } from '../views/flashcard-view';
 
@@ -217,16 +218,25 @@ export class FlashcardManagerModal extends Modal {
 			text: t('flashcardManager.deleteSelected', { count: 0 }),
 		});
 		this.deleteBtn.disabled = true;
-		this.deleteBtn.onclick = async () => {
+		this.deleteBtn.onclick = () => {
 			const count = this.selectedIds.size;
 			if (count === 0) return;
-			if (!confirm(t('flashcardManager.deleteConfirm', { count }))) return;
-			await db.batchDeleteVocabulary(Array.from(this.selectedIds));
-			new Notice(t('flashcardManager.deleted', { count }));
-			this.selectedIds.clear();
-			await this.loadData();
-			this.page = 0;
-			this.refresh();
+			new ConfirmModal(this.app, {
+				title: t('flashcardManager.deleteSelected', { count }),
+				message: t('flashcardManager.deleteConfirm', { count }),
+				confirmText: t('common.delete'),
+				confirmStyle: 'danger',
+				onConfirm: () => {
+					void (async () => {
+						await db.batchDeleteVocabulary(Array.from(this.selectedIds));
+						new Notice(t('flashcardManager.deleted', { count }));
+						this.selectedIds.clear();
+						await this.loadData();
+						this.page = 0;
+						this.refresh();
+					})();
+				},
+			}).open();
 		};
 
 		const addBtn = toolbar.createEl('button', { cls: 'lme-fmm-btn lme-fmm-btn-add', text: t('flashcardManager.addNew') });
@@ -505,12 +515,21 @@ export class FlashcardManagerModal extends Modal {
 				}).open();
 			};
 			const delBtn = tdActions.createEl('button', { cls: 'lme-fmm-del-btn', text: t('common.delete') });
-			delBtn.onclick = async () => {
-				if (!confirm(t('flashcardManager.deleteOneConfirm', { word: entry.word }))) return;
-				await db.deleteVocabulary(entry.id);
-				this.selectedIds.delete(entry.id);
-				await this.loadData();
-				this.refresh();
+			delBtn.onclick = () => {
+				new ConfirmModal(this.app, {
+					title: t('common.delete'),
+					message: t('flashcardManager.deleteOneConfirm', { word: entry.word }),
+					confirmText: t('common.delete'),
+					confirmStyle: 'danger',
+					onConfirm: () => {
+						void (async () => {
+							await db.deleteVocabulary(entry.id);
+							this.selectedIds.delete(entry.id);
+							await this.loadData();
+							this.refresh();
+						})();
+					},
+				}).open();
 			};
 		}
 	}

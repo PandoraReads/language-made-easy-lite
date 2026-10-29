@@ -74,11 +74,11 @@ export class BackupManageModal extends Modal {
     private renderRow(parent: HTMLElement, row: BackupRow): void {
         const rowEl = parent.createDiv('lme-backup-manage-item');
         const infoEl = rowEl.createDiv('lme-backup-manage-info');
-        infoEl.createEl('div', {
+        infoEl.createDiv({
             cls: 'lme-backup-manage-time',
             text: row.timestamp > 0 ? new Date(row.timestamp).toLocaleString() : row.fileName,
         });
-        infoEl.createEl('div', {
+        infoEl.createDiv({
             cls: 'lme-backup-manage-size',
             text: row.sizeBytes > 0 ? formatBytes(row.sizeBytes) : '',
         });
