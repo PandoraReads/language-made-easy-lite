@@ -575,6 +575,7 @@ uiLanguageDesc: 'プラグインの表示言語を選択します。「自動」
 		youtubeApiKeyFailed: 'YouTube API キーを抽出できませんでした。',
 		youtubePlayerApiFailed: 'YouTube Player API のリクエストに失敗しました。',
 		youtubeNoSubtitles: 'この動画には利用可能な字幕がありません。',
+		youtubeLiveNoSubtitles: 'このライブ配信のアーカイブにはまだ利用可能な字幕がありません。',
 		subtitlesDownloaded: '元の字幕 {raw} 件をダウンロードし、{merged} 行に統合しました',
 
 		// Bilibili subtitle errors
@@ -971,7 +972,8 @@ youtubeRssUpdated: 'YouTube 登録を更新しました。新着 {added} 件',
 		youtubeSubscriptionAdded: '登録しました：{name}',
 		youtubeSubscriptionFailed: 'YouTube 登録の追加に失敗しました。',
 		youtubeRefreshFailed: 'YouTube 登録の更新に失敗しました。',
-		youtubeNoteCreated: '動画ノートを生成し、字幕のダウンロードを試みました。',
+		youtubeNoteCreated: '動画ノートを生成し、字幕を書き込みました。',
+		youtubeNoteCreatedNoSub: '動画ノートを生成しましたが、字幕は書き込まれませんでした：{reason}',
 		youtubeImportFailed: '動画ノートの生成に失敗しました。',
 		youtubeSelectMode: '複数選択',
 		youtubeSelectAll: '現在の絞り込みをすべて選択',

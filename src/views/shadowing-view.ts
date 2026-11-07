@@ -74,7 +74,14 @@ interface YouTubePlayerResponse {
         errorScreen?: { playerErrorMessageRenderer?: { subreason?: { runs?: { text?: string }[] } } };
     };
     captions?: { playerCaptionsTracklistRenderer?: { captionTracks?: YouTubeCaptionTrack[] } };
+    videoDetails?: { isLiveContent?: boolean };
 }
+
+/**
+ * 字幕下载结果:成功携带原始/合并条数;失败携带原因。
+ * reason 为空串表示原因已由配额弹窗告知,调用方不必再重复提示。
+ */
+export type SubtitleFetchResult = { ok: true; raw: number; merged: number } | { ok: false; reason: string };
 
 /** One caption track from the YouTube InnerTube player response. */
 interface YouTubeCaptionTrack {
@@ -399,7 +406,11 @@ export class ShadowingView extends ItemView {
         btn.onclick = () => this.autoDetectVideo();
     }
 
-    public async createVideoNoteAndParse(url: string, downloadSubtitles: boolean = false, options?: { openNote?: boolean }): Promise<TFile | null> {
+    public async createVideoNoteAndParse(
+        url: string,
+        downloadSubtitles: boolean = false,
+        options?: { openNote?: boolean; onSubtitles?: (result: SubtitleFetchResult) => void }
+    ): Promise<TFile | null> {
         const openNote = options?.openNote !== false;
         const normalizedUrl = url.startsWith('http') ? url : `https://${url}`;
         const metadata = await this.fetchVideoMetadata(normalizedUrl);
@@ -416,9 +427,18 @@ export class ShadowingView extends ItemView {
             await this.autoDetectVideo();
         }
         if (downloadSubtitles) {
-            await this.fetchAndInsertSubtitles();
+            // 字幕失败不在这里弹错(fetchAndInsertSubtitles 内已有提示),
+            // 结果交给调用方决定最终文案 —— 避免"笔记已生成并已下载字幕"式的误报。
+            const result = await this.fetchAndInsertSubtitles();
+            options?.onSubtitles?.(result);
         }
         return file;
+    }
+
+    /** 对指定笔记重跑一次字幕下载(订阅中心对"已导入但字幕为空"笔记的自愈入口)。 */
+    public async downloadSubtitlesForFile(file: TFile): Promise<SubtitleFetchResult> {
+        this.file = file;
+        return await this.fetchAndInsertSubtitles();
     }
 
     private async fetchVideoMetadata(url: string): Promise<SubtitleNoteMetadata> {
@@ -3850,13 +3870,14 @@ export class ShadowingView extends ItemView {
     // Subtitle Download & Insertion
     // ============================================================
 
-    private async fetchAndInsertSubtitles(): Promise<void> {
+    private async fetchAndInsertSubtitles(): Promise<SubtitleFetchResult> {
         // 社区免费版:视频笔记每周配额校验(生成视频笔记与工坊下载共用本入口)
-        if (!checkSubtitleWeeklyQuota(this.app)) return;
+        // 配额不足时弹窗已说明原因,这里返回空 reason 让调用方不再重复提示。
+        if (!checkSubtitleWeeklyQuota(this.app)) return { ok: false, reason: '' };
         const file = this.file || this.app.workspace.getActiveFile();
         if (!file || file.extension !== 'md') {
             new Notice(t('shadowing.noActiveNote'));
-            return;
+            return { ok: false, reason: t('shadowing.noActiveNote') };
         }
 
         const content = await this.app.vault.read(file);
@@ -3887,17 +3908,18 @@ export class ShadowingView extends ItemView {
                 subtitles = await this.fetchYouTubeSubtitles(videoId);
             } else {
                 new Notice(t('shadowing.noVideoLink'));
-                return;
+                return { ok: false, reason: t('shadowing.noVideoLink') };
             }
         } catch (error) {
             console.error('[EME] Subtitle fetch failed:', error);
-            new Notice(error instanceof Error ? error.message : t('shadowing.subDownloadFailed'));
-            return;
+            const message = error instanceof Error ? error.message : t('shadowing.subDownloadFailed');
+            new Notice(message);
+            return { ok: false, reason: message };
         }
 
         if (subtitles.length === 0) {
             new Notice(t('shadowing.noSubtitles'));
-            return;
+            return { ok: false, reason: t('shadowing.noSubtitles') };
         }
 
         // Merge short subtitle blocks into natural sentence chunks
@@ -3927,6 +3949,7 @@ export class ShadowingView extends ItemView {
         // 社区免费版:字幕成功写入笔记后消耗本周配额(失败/无字幕路径不计数)
         recordSubtitleDownload();
         new Notice(t('shadowing.subtitlesDownloaded', { raw: subtitles.length, merged: merged.length }));
+        return { ok: true, raw: subtitles.length, merged: merged.length };
     }
 
     /**
@@ -4073,6 +4096,10 @@ export class ShadowingView extends ItemView {
         const captionsData = playerData?.captions?.playerCaptionsTracklistRenderer;
         const captionTracks = captionsData?.captionTracks;
         if (!captionTracks || captionTracks.length === 0) {
+            // 直播回放(isLiveContent)通常没有常规字幕轨:报精确原因,避免用户误以为插件故障
+            if (playerData?.videoDetails?.isLiveContent) {
+                throw new Error(t('shadowing.youtubeLiveNoSubtitles'));
+            }
             throw new Error(t('shadowing.youtubeNoSubtitles'));
         }
 

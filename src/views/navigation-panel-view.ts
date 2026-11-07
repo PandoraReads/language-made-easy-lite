@@ -256,7 +256,16 @@ export class NavigationPanelView extends ItemView {
 			}
 			videoBtn.disabled = true;
 			try {
-				await this.plugin.createVideoNoteFromUrl(url);
+				await this.plugin.createVideoNoteFromUrl(url, {
+					onSubtitles: (result) => {
+						if (result.ok) {
+							new Notice(t('nav.youtubeNoteCreated'));
+						} else if (result.reason) {
+							// 字幕失败的具体原因已由更早的 Notice 给出;这里只收口"笔记已建但字幕未写入"
+							new Notice(t('nav.youtubeNoteCreatedNoSub', { reason: result.reason }), 10000);
+						}
+					},
+				});
 			} finally {
 				videoBtn.disabled = false;
 			}

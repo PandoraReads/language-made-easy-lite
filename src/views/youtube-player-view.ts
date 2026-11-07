@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { ItemView, Notice, WorkspaceLeaf } from 'obsidian';
+import { ItemView, Notice, TFile, WorkspaceLeaf } from 'obsidian';
 import type LanguageMadeEasyPlugin from '../main-unified-full';
 import { t } from '../i18n';
 import type { YouTubeFeedItem } from '../services/youtube-rss';
@@ -122,15 +122,27 @@ export class YouTubePlayerView extends ItemView {
             if (live) await this.plugin.youtubeRssService.markRead(live.itemId);
             if (live?.status === 'imported' && live.notePath) {
                 const existing = this.app.vault.getAbstractFileByPath(live.notePath);
-                if (existing) {
+                if (existing && existing instanceof TFile) {
                     await this.app.workspace.getLeaf('tab').openFile(existing);
+                    // 自愈:已导入但字幕节为空(当时下载失败/视频暂无字幕)时,顺手补一次字幕下载
+                    if (await this.noteNeedsSubtitleRetry(existing)) {
+                        await this.plugin.retrySubtitlesForNote(existing);
+                    }
                     return;
                 }
             }
-            await this.plugin.createVideoNoteFromUrl(state.url);
+            await this.plugin.createVideoNoteFromUrl(state.url, {
+                onSubtitles: (result) => {
+                    if (result.ok) {
+                        new Notice(t('nav.youtubeNoteCreated'));
+                    } else if (result.reason) {
+                        // 字幕失败的具体原因已由更早的 Notice 给出;这里只收口"笔记已建但字幕未写入"
+                        new Notice(t('nav.youtubeNoteCreatedNoSub', { reason: result.reason }), 10000);
+                    }
+                },
+            });
             const file = this.app.workspace.getActiveFile();
             if (live) await this.plugin.youtubeRssService.markImported(live.itemId, file?.path || '');
-            new Notice(t('nav.youtubeNoteCreated'));
             await this.plugin.refreshYouTubeSubscriptions();
         } catch (error) {
             const message = error instanceof Error ? error.message : t('nav.youtubeImportFailed');
@@ -138,6 +150,30 @@ export class YouTubePlayerView extends ItemView {
             new Notice(message);
         } finally {
             button.disabled = false;
+        }
+    }
+
+    /**
+     * 是否需要自动补一次字幕下载:笔记含视频链接(下载入口按链接识别视频),
+     * 且 `## Subtitles` 节缺失或到下一标题前没有任何非空行。
+     */
+    private async noteNeedsSubtitleRetry(file: TFile): Promise<boolean> {
+        try {
+            const content = await this.app.vault.read(file);
+            const videoLink = /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/|bilibili\.com\/video\/)/i.test(content);
+            if (!videoLink) return false;
+            const lines = content.split('\n');
+            const headerIndex = lines.findIndex((line) => line.trim() === '## Subtitles');
+            if (headerIndex === -1) return true;
+            for (let i = headerIndex + 1; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue;
+                if (line.startsWith('#')) break; // 到下一节仍无内容
+                return false; // 有字幕行
+            }
+            return true;
+        } catch {
+            return false; // 读取失败时不触发自动重试
         }
     }
 

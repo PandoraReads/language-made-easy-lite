@@ -575,6 +575,7 @@ uiLanguageDesc: 'Choisit la langue de l’interface du plugin. « Automatique »
 		youtubeApiKeyFailed: 'Impossible d’extraire la clé API YouTube.',
 		youtubePlayerApiFailed: 'Échec de la requête à l’API YouTube Player.',
 		youtubeNoSubtitles: 'Aucun sous-titre disponible pour cette vidéo.',
+		youtubeLiveNoSubtitles: 'Aucun sous-titre disponible pour cet enregistrement de direct.',
 		subtitlesDownloaded: '{raw} pistes de sous-titres brutes téléchargées, fusionnées en {merged} lignes',
 
 		// Bilibili subtitle errors
@@ -971,7 +972,8 @@ youtubeRssUpdated: 'Abonnements YouTube mis à jour — {added} nouvelles vidéo
 		youtubeSubscriptionAdded: 'Abonné : {name}',
 		youtubeSubscriptionFailed: 'Échec de l’ajout de l’abonnement YouTube.',
 		youtubeRefreshFailed: 'Échec de l’actualisation des abonnements YouTube.',
-		youtubeNoteCreated: 'Note vidéo créée ; le téléchargement des sous-titres a été tenté.',
+		youtubeNoteCreated: 'Note vidéo créée ; les sous-titres ont été écrits dans la note.',
+		youtubeNoteCreatedNoSub: 'Note vidéo créée, mais les sous-titres n’ont pas été écrits : {reason}',
 		youtubeImportFailed: 'Échec de la création de la note vidéo.',
 		youtubeSelectMode: 'Sélection multiple',
 		youtubeSelectAll: 'Tout sélectionner selon le filtre actuel',

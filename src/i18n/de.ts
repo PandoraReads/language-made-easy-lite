@@ -575,6 +575,7 @@ uiLanguageDesc: 'Wählt die Sprache der Plugin-Oberfläche. „Automatisch“ fo
 		youtubeApiKeyFailed: 'YouTube-API-Schlüssel konnte nicht extrahiert werden.',
 		youtubePlayerApiFailed: 'YouTube-Player-API-Anfrage fehlgeschlagen.',
 		youtubeNoSubtitles: 'Für dieses Video sind keine Untertitel verfügbar.',
+		youtubeLiveNoSubtitles: 'Für diese Livestream-Aufnahme sind noch keine Untertitel verfügbar.',
 		subtitlesDownloaded: '{raw} Original-Untertitelspuren geladen, zu {merged} Zeilen zusammengeführt',
 
 		// Bilibili subtitle errors
@@ -971,7 +972,8 @@ youtubeRssUpdated: 'YouTube-Abos aktualisiert — {added} neue Videos',
 		youtubeSubscriptionAdded: 'Abonniert: {name}',
 		youtubeSubscriptionFailed: 'YouTube-Abonnement konnte nicht hinzugefügt werden.',
 		youtubeRefreshFailed: 'Aktualisierung der YouTube-Abonnements fehlgeschlagen.',
-		youtubeNoteCreated: 'Videonotiz erstellt; Untertitel-Download wurde versucht.',
+		youtubeNoteCreated: 'Videonotiz erstellt; Untertitel wurden in die Notiz geschrieben.',
+		youtubeNoteCreatedNoSub: 'Videonotiz erstellt, aber Untertitel wurden nicht geschrieben: {reason}',
 		youtubeImportFailed: 'Videonotiz konnte nicht erstellt werden.',
 		youtubeSelectMode: 'Mehrfachauswahl',
 		youtubeSelectAll: 'Alle Treffer des Filters auswählen',

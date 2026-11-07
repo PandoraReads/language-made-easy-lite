@@ -581,6 +581,7 @@ export default {
 		youtubeApiKeyFailed: '无法提取 YouTube API Key。',
 		youtubePlayerApiFailed: 'YouTube Player API 请求失败。',
 		youtubeNoSubtitles: '该视频没有可用的字幕。',
+		youtubeLiveNoSubtitles: '直播回放视频暂无可用字幕。',
 		subtitlesDownloaded: '已下载 {raw} 条原始字幕，合并为 {merged} 条',
 
 		// Bilibili subtitle errors
@@ -979,7 +980,8 @@ export default {
 		youtubeSubscriptionAdded: '已订阅：{name}',
 		youtubeSubscriptionFailed: '添加 YouTube 订阅失败。',
 		youtubeRefreshFailed: '刷新 YouTube 订阅失败。',
-		youtubeNoteCreated: '视频笔记已生成，并已尝试下载字幕。',
+		youtubeNoteCreated: '视频笔记已生成，字幕已写入。',
+		youtubeNoteCreatedNoSub: '视频笔记已生成，但字幕未写入：{reason}',
 		youtubeImportFailed: '生成视频笔记失败。',
 		youtubeSelectMode: '多选',
 		youtubeSelectAll: '全选当前筛选结果',

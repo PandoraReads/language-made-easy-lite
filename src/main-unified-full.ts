@@ -25,6 +25,7 @@ import { AIService } from './core/AIService';
 import { DictView, DICT_VIEW_TYPE } from './views/dict-view';
 import { FlashcardView, FLASHCARD_VIEW_TYPE, AddFlashcardModal } from './views/flashcard-view';
 import { ShadowingView, SHADOWING_VIEW_TYPE, PromptSelectModal, FileSelectModal } from './views/shadowing-view';
+import type { SubtitleFetchResult } from './views/shadowing-view';
 import { WorkshopCatalogView, WORKSHOP_CATALOG_VIEW_TYPE, DEFAULT_WORKSHOP_FOLDER } from './views/workshop-catalog-view';
 import { YouTubeSubscriptionsView, YOUTUBE_SUBSCRIPTIONS_VIEW_TYPE } from './views/youtube-subscriptions-view';
 import { YouTubePlayerView, YOUTUBE_PLAYER_VIEW_TYPE } from './views/youtube-player-view';
@@ -698,13 +699,28 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 		}
 	}
 
-	public async createVideoNoteFromUrl(url: string, options?: { openNote?: boolean }): Promise<TFile | null> {
+	public async createVideoNoteFromUrl(
+		url: string,
+		options?: { openNote?: boolean; onSubtitles?: (result: SubtitleFetchResult) => void }
+	): Promise<TFile | null> {
 		// 社区免费版:视频笔记每周配额——满额时先弹引导,不创建空笔记
 		if (!checkSubtitleWeeklyQuota(this.app)) return null;
 		const normalizedUrl = url.trim().startsWith('http') ? url.trim() : `https://${url.trim()}`;
-		// 不再把跟读工坊切到前台:后台复用已有工坊叶做创建/下载,
-		// 最终只弹出笔记自己的标签页。工坊叶统一放在中间栏:
-		// 旧版流程把它建在右侧边栏,遇到时迁到中间栏(独立窗口里的不动)。
+		const view = await this.getWorkshopView();
+		if (!view) {
+			new Notice(t('nav.videoNoteFailed'));
+			return null;
+		}
+		return await view.createVideoNoteAndParse(normalizedUrl, true, options);
+	}
+
+	/**
+	 * 确保中间栏存在跟读工坊叶并返回其视图。不把工坊切到前台:
+	 * 后台复用已有工坊叶做创建/下载,最终只弹出笔记自己的标签页。
+	 * 工坊叶统一放在中间栏:旧版流程把它建在右侧边栏,遇到时迁到中间栏
+	 * (独立窗口里的不动)。
+	 */
+	private async getWorkshopView(): Promise<ShadowingView | null> {
 		const { workspace } = this.app;
 		let leaf = workspace.getLeavesOfType(SHADOWING_VIEW_TYPE).find((l) => l.getRoot() === workspace.rootSplit);
 		if (!leaf) {
@@ -715,11 +731,17 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 			await leaf.setViewState({ type: SHADOWING_VIEW_TYPE, active: false });
 		}
 		const view = leaf.view as ShadowingView;
-		if (view?.createVideoNoteAndParse) {
-			return await view.createVideoNoteAndParse(normalizedUrl, true, options);
+		return view?.createVideoNoteAndParse ? view : null;
+	}
+
+	/** 对已存在的笔记重跑字幕下载(订阅中心对"已导入但字幕为空"笔记的自愈入口)。 */
+	public async retrySubtitlesForNote(file: TFile): Promise<void> {
+		const view = await this.getWorkshopView();
+		if (!view) {
+			new Notice(t('nav.videoNoteFailed'));
+			return;
 		}
-		new Notice(t('nav.videoNoteFailed'));
-		return null;
+		await view.downloadSubtitlesForFile(file);
 	}
 
 	public async openBundledGuide(): Promise<void> {

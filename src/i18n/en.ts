@@ -575,6 +575,7 @@ uiLanguageDesc: 'Choose the language used by the plugin UI. "Auto" follows Obsid
 		youtubeApiKeyFailed: 'Could not extract the YouTube API key.',
 		youtubePlayerApiFailed: 'The YouTube Player API request failed.',
 		youtubeNoSubtitles: 'No subtitles are available for this video.',
+		youtubeLiveNoSubtitles: 'This live-stream recording has no subtitles available yet.',
 		subtitlesDownloaded: 'Downloaded {raw} raw subtitle tracks, merged into {merged} lines',
 
 		// Bilibili subtitle errors
@@ -971,7 +972,8 @@ youtubeRssUpdated: 'YouTube subscriptions updated — {added} new videos',
 		youtubeSubscriptionAdded: 'Subscribed: {name}',
 		youtubeSubscriptionFailed: 'Failed to add the YouTube subscription.',
 		youtubeRefreshFailed: 'Failed to refresh YouTube subscriptions.',
-		youtubeNoteCreated: 'Video note created; subtitle download was attempted.',
+		youtubeNoteCreated: 'Video note created; subtitles were written to the note.',
+		youtubeNoteCreatedNoSub: 'Video note created, but subtitles were not written: {reason}',
 		youtubeImportFailed: 'Failed to create the video note.',
 		youtubeSelectMode: 'Multi-select',
 		youtubeSelectAll: 'Select all matching',

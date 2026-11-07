@@ -575,6 +575,7 @@ uiLanguageDesc: 'เลือกภาษาที่ปลั๊กอินใ
 		youtubeApiKeyFailed: 'ดึง YouTube API Key ไม่ได้',
 		youtubePlayerApiFailed: 'ยื่นคำขอ YouTube Player API ไม่สำเร็จ',
 		youtubeNoSubtitles: 'วิดีโอนี้ไม่มีซับที่ใช้ได้',
+		youtubeLiveNoSubtitles: 'วิดีโอบันทึกการไลฟ์นี้ยังไม่มีซับให้ใช้งาน',
 		subtitlesDownloaded: 'ดาวน์โหลดซับดิบ {raw} ชุด รวมเป็น {merged} บรรทัด',
 
 		// Bilibili subtitle errors
@@ -971,7 +972,8 @@ youtubeRssUpdated: 'อัปเดตการติดตาม YouTube แล
 		youtubeSubscriptionAdded: 'ติดตามแล้ว: {name}',
 		youtubeSubscriptionFailed: 'เพิ่มการติดตาม YouTube ไม่สำเร็จ',
 		youtubeRefreshFailed: 'รีเฟรชการติดตาม YouTube ไม่สำเร็จ',
-		youtubeNoteCreated: 'สร้างโน้ตวิดีโอแล้ว และพยายามดาวน์โหลดซับให้แล้ว',
+		youtubeNoteCreated: 'สร้างโน้ตวิดีโอแล้ว และเขียนซับลงในโน้ตแล้ว',
+		youtubeNoteCreatedNoSub: 'สร้างโน้ตวิดีโอแล้ว แต่ยังไม่ได้เขียนซับ: {reason}',
 		youtubeImportFailed: 'สร้างโน้ตวิดีโอไม่สำเร็จ',
 		youtubeSelectMode: 'เลือกหลายรายการ',
 		youtubeSelectAll: 'เลือกทั้งหมดตามผลกรองปัจจุบัน',

@@ -575,6 +575,7 @@ uiLanguageDesc: 'Elige el idioma de la interfaz del plugin. «Automático» sigu
 		youtubeApiKeyFailed: 'No se pudo extraer la clave API de YouTube.',
 		youtubePlayerApiFailed: 'La petición a la API de YouTube Player falló.',
 		youtubeNoSubtitles: 'Este video no tiene subtítulos disponibles.',
+		youtubeLiveNoSubtitles: 'Esta grabación de directo aún no tiene subtítulos disponibles.',
 		subtitlesDownloaded: 'Descargadas {raw} pistas de subtítulos originales, fusionadas en {merged} líneas',
 
 		// Bilibili subtitle errors
@@ -971,7 +972,8 @@ youtubeRssUpdated: 'Suscripciones de YouTube actualizadas: {added} videos nuevos
 		youtubeSubscriptionAdded: 'Suscrito: {name}',
 		youtubeSubscriptionFailed: 'No se pudo añadir la suscripción de YouTube.',
 		youtubeRefreshFailed: 'Error al actualizar las suscripciones de YouTube.',
-		youtubeNoteCreated: 'Nota de video creada; se intentó descargar los subtítulos.',
+		youtubeNoteCreated: 'Nota de video creada; los subtítulos se escribieron en la nota.',
+		youtubeNoteCreatedNoSub: 'Nota de video creada, pero no se escribieron los subtítulos: {reason}',
 		youtubeImportFailed: 'No se pudo crear la nota de video.',
 		youtubeSelectMode: 'Selección múltiple',
 		youtubeSelectAll: 'Seleccionar todos los resultados del filtro',

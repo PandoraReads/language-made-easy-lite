@@ -575,6 +575,7 @@ uiLanguageDesc: '選擇外掛介面顯示語言。「自動」會跟隨 Obsidian
 		youtubeApiKeyFailed: '無法擷取 YouTube API Key。',
 		youtubePlayerApiFailed: 'YouTube Player API 請求失敗。',
 		youtubeNoSubtitles: '該影片沒有可用的字幕。',
+		youtubeLiveNoSubtitles: '直播回放影片暫無可用字幕。',
 		subtitlesDownloaded: '已下載 {raw} 條原始字幕，合併為 {merged} 條',
 
 		// Bilibili subtitle errors
@@ -971,7 +972,8 @@ youtubeRssUpdated: 'YouTube 訂閱已更新，新增 {added} 條影片',
 		youtubeSubscriptionAdded: '已訂閱：{name}',
 		youtubeSubscriptionFailed: '新增 YouTube 訂閱失敗。',
 		youtubeRefreshFailed: '重新整理 YouTube 訂閱失敗。',
-		youtubeNoteCreated: '影片筆記已產生，並已嘗試下載字幕。',
+		youtubeNoteCreated: '影片筆記已產生，字幕已寫入。',
+		youtubeNoteCreatedNoSub: '影片筆記已產生，但字幕未寫入：{reason}',
 		youtubeImportFailed: '產生影片筆記失敗。',
 		youtubeSelectMode: '多選',
 		youtubeSelectAll: '全選目前篩選結果',

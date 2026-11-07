@@ -575,6 +575,7 @@ uiLanguageDesc: '플러그인 인터페이스 언어를 선택합니다. 「자�
 		youtubeApiKeyFailed: 'YouTube API 키를 추출하지 못했습니다.',
 		youtubePlayerApiFailed: 'YouTube Player API 요청에 실패했습니다.',
 		youtubeNoSubtitles: '이 영상에는 사용 가능한 자막이 없습니다.',
+		youtubeLiveNoSubtitles: '이 라이브 스트림 녹화에는 아직 사용 가능한 자막이 없습니다.',
 		subtitlesDownloaded: '원본 자막 {raw}개를 다운로드해 {merged}줄로 병합했습니다',
 
 		// Bilibili subtitle errors
@@ -971,7 +972,8 @@ youtubeRssUpdated: 'YouTube 구독이 업데이트되었습니다. 새 동영상
 		youtubeSubscriptionAdded: '구독했습니다: {name}',
 		youtubeSubscriptionFailed: 'YouTube 구독 추가에 실패했습니다.',
 		youtubeRefreshFailed: 'YouTube 구독 새로고침에 실패했습니다.',
-		youtubeNoteCreated: '영상 노트를 생성하고 자막 다운로드를 시도했습니다.',
+		youtubeNoteCreated: '영상 노트를 생성하고 자막을 작성했습니다.',
+		youtubeNoteCreatedNoSub: '영상 노트를 생성했지만 자막이 작성되지 않았습니다: {reason}',
 		youtubeImportFailed: '영상 노트 생성에 실패했습니다.',
 		youtubeSelectMode: '다중 선택',
 		youtubeSelectAll: '현재 필터 결과 모두 선택',

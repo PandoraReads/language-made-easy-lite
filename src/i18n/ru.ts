@@ -575,6 +575,7 @@ uiLanguageDesc: 'Выберите язык интерфейса плагина. 
 		youtubeApiKeyFailed: 'Не удалось извлечь API-ключ YouTube.',
 		youtubePlayerApiFailed: 'Запрос к YouTube Player API не удался.',
 		youtubeNoSubtitles: 'Для этого видео нет доступных субтитров.',
+		youtubeLiveNoSubtitles: 'Для этой записи прямого эфира субтитры пока недоступны.',
 		subtitlesDownloaded: 'Скачано исходных субтитров: {raw}, объединено в {merged} строк',
 
 		// Bilibili subtitle errors
@@ -971,7 +972,8 @@ youtubeRssUpdated: 'Подписки YouTube обновлены — новых �
 		youtubeSubscriptionAdded: 'Подписка оформлена: {name}',
 		youtubeSubscriptionFailed: 'Не удалось оформить подписку YouTube.',
 		youtubeRefreshFailed: 'Не удалось обновить подписки YouTube.',
-		youtubeNoteCreated: 'Видеозаметка создана, субтитры скачаны при возможности.',
+		youtubeNoteCreated: 'Видеозаметка создана, субтитры записаны в заметку.',
+		youtubeNoteCreatedNoSub: 'Видеозаметка создана, но субтитры не записаны: {reason}',
 		youtubeImportFailed: 'Не удалось создать видеозаметку.',
 		youtubeSelectMode: 'Мультивыбор',
 		youtubeSelectAll: 'Выбрать всё по текущему фильтру',
