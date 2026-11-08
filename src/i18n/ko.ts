@@ -974,6 +974,7 @@ youtubeRssUpdated: 'YouTube 구독이 업데이트되었습니다. 새 동영상
 		youtubeRefreshFailed: 'YouTube 구독 새로고침에 실패했습니다.',
 		youtubeNoteCreated: '영상 노트를 생성하고 자막을 작성했습니다.',
 		youtubeNoteCreatedNoSub: '영상 노트를 생성했지만 자막이 작성되지 않았습니다: {reason}',
+		youtubeImportBusy: '영상 노트를 생성하고 있습니다. 잠시만 기다려 주세요.',
 		youtubeImportFailed: '영상 노트 생성에 실패했습니다.',
 		youtubeSelectMode: '다중 선택',
 		youtubeSelectAll: '현재 필터 결과 모두 선택',

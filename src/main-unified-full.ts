@@ -699,7 +699,26 @@ export default class LanguageMadeEasyPlugin extends Plugin {
 		}
 	}
 
+	/** 生成视频笔记的并发闸门:防止多入口(播放器/导航/批量)同时创建重复笔记、放大 YouTube 限流。 */
+	private videoNoteImportInFlight = false;
+
 	public async createVideoNoteFromUrl(
+		url: string,
+		options?: { openNote?: boolean; onSubtitles?: (result: SubtitleFetchResult) => void }
+	): Promise<TFile | null> {
+		if (this.videoNoteImportInFlight) {
+			new Notice(t('nav.youtubeImportBusy'));
+			return null;
+		}
+		this.videoNoteImportInFlight = true;
+		try {
+			return await this.createVideoNoteFromUrlInner(url, options);
+		} finally {
+			this.videoNoteImportInFlight = false;
+		}
+	}
+
+	private async createVideoNoteFromUrlInner(
 		url: string,
 		options?: { openNote?: boolean; onSubtitles?: (result: SubtitleFetchResult) => void }
 	): Promise<TFile | null> {

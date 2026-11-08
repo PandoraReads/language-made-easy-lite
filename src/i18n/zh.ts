@@ -982,6 +982,7 @@ export default {
 		youtubeRefreshFailed: '刷新 YouTube 订阅失败。',
 		youtubeNoteCreated: '视频笔记已生成，字幕已写入。',
 		youtubeNoteCreatedNoSub: '视频笔记已生成，但字幕未写入：{reason}',
+		youtubeImportBusy: '视频笔记正在生成中，请稍候。',
 		youtubeImportFailed: '生成视频笔记失败。',
 		youtubeSelectMode: '多选',
 		youtubeSelectAll: '全选当前筛选结果',

@@ -974,6 +974,7 @@ youtubeRssUpdated: 'Abonnements YouTube mis à jour — {added} nouvelles vidéo
 		youtubeRefreshFailed: 'Échec de l’actualisation des abonnements YouTube.',
 		youtubeNoteCreated: 'Note vidéo créée ; les sous-titres ont été écrits dans la note.',
 		youtubeNoteCreatedNoSub: 'Note vidéo créée, mais les sous-titres n’ont pas été écrits : {reason}',
+		youtubeImportBusy: 'Une note vidéo est déjà en cours de création ; veuillez patienter.',
 		youtubeImportFailed: 'Échec de la création de la note vidéo.',
 		youtubeSelectMode: 'Sélection multiple',
 		youtubeSelectAll: 'Tout sélectionner selon le filtre actuel',

@@ -4092,58 +4092,118 @@ export class ShadowingView extends ItemView {
         // Step 3: Check playability status
         this.checkYouTubePlayability(playerData);
 
-        // Step 4: Extract caption tracks
-        const captionsData = playerData?.captions?.playerCaptionsTracklistRenderer;
-        const captionTracks = captionsData?.captionTracks;
-        if (!captionTracks || captionTracks.length === 0) {
+        // Step 4: Extract caption tracks — InnerTube first, then the watch page's
+        // embedded ytInitialPlayerResponse as fallback. YouTube is progressively
+        // degrading the legacy ANDROID client: it can omit the whole captions
+        // block while the page itself still lists tracks. The fallback reuses
+        // the step-1 HTML, so it adds no extra network request.
+        const pagePlayerData = this.extractYtInitialPlayerResponse(pageResp.text);
+        const innertubeTracks = playerData?.captions?.playerCaptionsTracklistRenderer?.captionTracks || [];
+        const pageTracks = pagePlayerData?.captions?.playerCaptionsTracklistRenderer?.captionTracks || [];
+        const fromInnertube = innertubeTracks.length > 0;
+        const captionTracks = fromInnertube ? innertubeTracks : pageTracks;
+        if (!fromInnertube && pageTracks.length > 0) {
+            console.debug('[EME] YouTube: InnerTube returned no caption tracks; using watch-page tracks');
+        }
+        if (captionTracks.length === 0) {
             // 直播回放(isLiveContent)通常没有常规字幕轨:报精确原因,避免用户误以为插件故障
-            if (playerData?.videoDetails?.isLiveContent) {
+            if (playerData?.videoDetails?.isLiveContent || pagePlayerData?.videoDetails?.isLiveContent) {
                 throw new Error(t('shadowing.youtubeLiveNoSubtitles'));
             }
             throw new Error(t('shadowing.youtubeNoSubtitles'));
         }
 
-        console.debug(`[EME] YouTube: found ${captionTracks.length} caption track(s): ${
+        console.debug(`[EME] YouTube: found ${captionTracks.length} caption track(s) (${fromInnertube ? 'InnerTube' : 'watch page'}): ${
             captionTracks.map(t => `${t.name?.simpleText || t.languageCode}(${t.languageCode})`).join(', ')
         }`);
 
-        // Select track by matching current active language, fallback to English, then first
+        // Step 5: Select track by matching current active language, fallback to English, then first.
+        // YouTube 对 timedtext 的放行时松时紧(不同来源的签名 URL 待遇可能不同),
+        // 所以备好两个候选 URL:所选音轨本身 + 另一来源的同语言音轨,逐一尝试。
         const track = this.selectYouTubeTrack(captionTracks);
-        const subtitleUrl = (track.baseUrl || '').replace(
+        const alternateTracks = fromInnertube ? pageTracks : innertubeTracks;
+        const alternate = alternateTracks.find(
+            (candidate) => candidate.languageCode === track.languageCode && !!candidate.baseUrl && candidate.baseUrl !== track.baseUrl
+        );
+        const unescapeUrl = (value: string | undefined): string => (value || '').replace(
             /\\u([0-9a-fA-F]{4})/g,
             (_match: string, hex: string) => String.fromCharCode(parseInt(hex, 16))
         );
-        if (!subtitleUrl) {
+        const candidateUrls = [unescapeUrl(track.baseUrl), alternate ? unescapeUrl(alternate.baseUrl) : ''].filter(Boolean);
+        if (candidateUrls.length === 0) {
             throw new Error(t('shadowing.youtubeSubtitleUrlFailed'));
         }
 
-        let xmlResp;
-        try {
-            xmlResp = await fetchWithRetry(() => requestUrl({
-                url: subtitleUrl,
-                method: 'GET',
-                headers: {
-                    'Accept-Language': 'en-US,en;q=0.9',
-                },
-            }));
-        } catch (e: unknown) {
-            if (e?.status === 429) {
-                throw new Error(t('shadowing.youtubeSubtitleRateLimit'));
+        let sawNetworkError = false;
+        for (const url of candidateUrls) {
+            let xmlResp;
+            try {
+                xmlResp = await fetchWithRetry(() => requestUrl({
+                    url,
+                    method: 'GET',
+                    headers: {
+                        'Accept-Language': 'en-US,en;q=0.9',
+                    },
+                }));
+            } catch (e: unknown) {
+                if (e?.status === 429) {
+                    throw new Error(t('shadowing.youtubeSubtitleRateLimit'));
+                }
+                sawNetworkError = true;
+                console.warn('[EME] YouTube subtitle URL failed, trying next candidate:', e);
+                continue;
             }
-            throw new Error(t('shadowing.youtubeSubtitleFetchFailed'));
+            // Step 6: Parse XML — 200 但空 body 也是 YouTube 拒绝的形态之一,换下一个候选
+            const parsed = this.parseYouTubeXml(xmlResp.text || '');
+            if (parsed.length > 0) {
+                return parsed;
+            }
+            console.warn(`[EME] YouTube subtitle response unusable (${(xmlResp.text || '').length} bytes); trying next candidate`);
         }
+        throw new Error(t(sawNetworkError ? 'shadowing.youtubeSubtitleFetchFailed' : 'shadowing.youtubeSubtitleEmpty'));
+    }
 
-        if (!xmlResp.text || xmlResp.text.length === 0) {
-            throw new Error(t('shadowing.youtubeSubtitleEmpty'));
+    /**
+     * Extract the ytInitialPlayerResponse object embedded in a watch-page HTML.
+     * Brace-matched with string/escape awareness — a non-greedy regex would
+     * stop at the first `}` inside a JSON string value.
+     */
+    private extractYtInitialPlayerResponse(html: string): YouTubePlayerResponse | null {
+        const marker = 'ytInitialPlayerResponse';
+        const markerIndex = html.indexOf(marker);
+        if (markerIndex === -1) return null;
+        const braceStart = html.indexOf('{', markerIndex + marker.length);
+        if (braceStart === -1) return null;
+        let depth = 0;
+        let inString = false;
+        let escaped = false;
+        for (let i = braceStart; i < html.length; i++) {
+            const ch = html[i];
+            if (inString) {
+                if (escaped) escaped = false;
+                else if (ch === '\\') escaped = true;
+                else if (ch === '"') inString = false;
+                continue;
+            }
+            if (ch === '"') inString = true;
+            else if (ch === '{') depth++;
+            else if (ch === '}') {
+                depth--;
+                if (depth === 0) {
+                    try {
+                        return JSON.parse(html.slice(braceStart, i + 1)) as YouTubePlayerResponse;
+                    } catch (e) {
+                        console.warn('[EME] Failed to parse ytInitialPlayerResponse:', e);
+                        return null;
+                    }
+                }
+            }
         }
-
-        // Step 6: Parse XML
-        return this.parseYouTubeXml(xmlResp.text);
+        return null;
     }
 
     /** Check YouTube player response playability status. */
-    private checkYouTubePlayability(playerData: YouTubePlayerResponse): void {
-        const status = playerData?.playabilityStatus?.status;
+    private checkYouTubePlayability(playerData: YouTubePlayerResponse): void {        const status = playerData?.playabilityStatus?.status;
         if (!status || status === 'OK') return;
 
         const reason = playerData?.playabilityStatus?.reason || '';

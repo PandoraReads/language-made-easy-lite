@@ -974,6 +974,7 @@ youtubeRssUpdated: 'อัปเดตการติดตาม YouTube แล
 		youtubeRefreshFailed: 'รีเฟรชการติดตาม YouTube ไม่สำเร็จ',
 		youtubeNoteCreated: 'สร้างโน้ตวิดีโอแล้ว และเขียนซับลงในโน้ตแล้ว',
 		youtubeNoteCreatedNoSub: 'สร้างโน้ตวิดีโอแล้ว แต่ยังไม่ได้เขียนซับ: {reason}',
+		youtubeImportBusy: 'กำลังสร้างโน้ตวิดีโออยู่ กรุณารอสักครู่',
 		youtubeImportFailed: 'สร้างโน้ตวิดีโอไม่สำเร็จ',
 		youtubeSelectMode: 'เลือกหลายรายการ',
 		youtubeSelectAll: 'เลือกทั้งหมดตามผลกรองปัจจุบัน',

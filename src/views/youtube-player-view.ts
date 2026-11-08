@@ -131,7 +131,7 @@ export class YouTubePlayerView extends ItemView {
                     return;
                 }
             }
-            await this.plugin.createVideoNoteFromUrl(state.url, {
+            const created = await this.plugin.createVideoNoteFromUrl(state.url, {
                 onSubtitles: (result) => {
                     if (result.ok) {
                         new Notice(t('nav.youtubeNoteCreated'));
@@ -141,8 +141,9 @@ export class YouTubePlayerView extends ItemView {
                     }
                 },
             });
-            const file = this.app.workspace.getActiveFile();
-            if (live) await this.plugin.youtubeRssService.markImported(live.itemId, file?.path || '');
+            // 并发闸门/配额拦截时返回 null:未创建笔记,不改条目状态
+            if (!created) return;
+            if (live) await this.plugin.youtubeRssService.markImported(live.itemId, created.path);
             await this.plugin.refreshYouTubeSubscriptions();
         } catch (error) {
             const message = error instanceof Error ? error.message : t('nav.youtubeImportFailed');

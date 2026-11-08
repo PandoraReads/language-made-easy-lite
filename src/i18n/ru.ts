@@ -974,6 +974,7 @@ youtubeRssUpdated: 'Подписки YouTube обновлены — новых �
 		youtubeRefreshFailed: 'Не удалось обновить подписки YouTube.',
 		youtubeNoteCreated: 'Видеозаметка создана, субтитры записаны в заметку.',
 		youtubeNoteCreatedNoSub: 'Видеозаметка создана, но субтитры не записаны: {reason}',
+		youtubeImportBusy: 'Видеозаметка уже создаётся; подождите.',
 		youtubeImportFailed: 'Не удалось создать видеозаметку.',
 		youtubeSelectMode: 'Мультивыбор',
 		youtubeSelectAll: 'Выбрать всё по текущему фильтру',

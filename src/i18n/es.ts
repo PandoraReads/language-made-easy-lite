@@ -974,6 +974,7 @@ youtubeRssUpdated: 'Suscripciones de YouTube actualizadas: {added} videos nuevos
 		youtubeRefreshFailed: 'Error al actualizar las suscripciones de YouTube.',
 		youtubeNoteCreated: 'Nota de video creada; los subtítulos se escribieron en la nota.',
 		youtubeNoteCreatedNoSub: 'Nota de video creada, pero no se escribieron los subtítulos: {reason}',
+		youtubeImportBusy: 'Ya se está generando una nota de video; espera un momento.',
 		youtubeImportFailed: 'No se pudo crear la nota de video.',
 		youtubeSelectMode: 'Selección múltiple',
 		youtubeSelectAll: 'Seleccionar todos los resultados del filtro',
